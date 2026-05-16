@@ -8,6 +8,10 @@
     "lint": "nx run-many -t lint --all"
   },
   "private": true,
+  "engines": {
+    "node": ">=22",
+    "npm": ">=11"
+  },
   "dependencies": {
     "@angular/cdk": "~21.2.11",
     "@angular/common": "~21.2.0",
