@@ -1,0 +1,19 @@
+{
+  "name": "ports",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ports/src",
+  "projectType": "library",
+  "tags": ["type:ports"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/ports",
+        "main": "libs/ports/src/index.ts",
+        "tsConfig": "libs/ports/tsconfig.lib.json",
+        "assets": ["libs/ports/*.md"]
+      }
+    }
+  }
+}

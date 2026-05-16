@@ -1,0 +1,19 @@
+{
+  "name": "adapters-mock",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/adapters-mock/src",
+  "projectType": "library",
+  "tags": ["type:adapters"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/adapters-mock",
+        "main": "libs/adapters-mock/src/index.ts",
+        "tsConfig": "libs/adapters-mock/tsconfig.lib.json",
+        "assets": ["libs/adapters-mock/*.md"]
+      }
+    }
+  }
+}
