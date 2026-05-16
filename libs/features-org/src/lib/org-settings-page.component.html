@@ -1,7 +1,7 @@
 <div>
   <h1 class="text-2xl font-semibold tracking-tight">Settings</h1>
 
-  <div hlmTabs tab="general" class="mt-8 gap-8">
+  <div hlmTabs tab="general" class="mt-6 gap-8">
     <div hlmTabsList variant="line" class="border-border w-full justify-start border-b">
       <button type="button" hlmTabsTrigger="general" class="flex-none">
         General
@@ -65,7 +65,7 @@
             hlmBtn
             type="submit"
             form="org-general-form"
-            [disabled]="saving() || generalForm.invalid"
+            [disabled]="!canSaveGeneral()"
           >
             {{ saving() ? 'Saving…' : 'Save' }}
           </button>

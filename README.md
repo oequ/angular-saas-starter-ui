@@ -19,6 +19,12 @@ npx nx serve demo
 
 Open http://localhost:4200
 
+## Preview
+
+Org settings in the demo app (mock data):
+
+![Org settings — General tab](./docs/assets/demo-settings.png)
+
 ## Monorepo layout
 
 ```text

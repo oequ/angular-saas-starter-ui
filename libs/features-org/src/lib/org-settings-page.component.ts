@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs';
 import {
   FormControl,
   FormGroup,
@@ -50,12 +52,33 @@ export class OrgSettingsPageComponent {
 
   protected readonly saving = signal(false);
   protected readonly statusMessage = signal<string | null>(null);
+  private readonly savedName = signal<string | null>(null);
+
+  protected readonly generalName = toSignal(
+    this.generalForm.controls.name.valueChanges.pipe(
+      startWith(this.generalForm.controls.name.value),
+    ),
+    { initialValue: '' },
+  );
+
+  protected readonly canSaveGeneral = computed(() => {
+    const saved = this.savedName();
+    const name = this.generalName();
+    return (
+      saved !== null &&
+      name !== saved &&
+      this.generalForm.controls.name.valid &&
+      !this.saving()
+    );
+  });
 
   constructor() {
     effect(() => {
       const org = this.activeOrganization();
       if (org) {
         this.generalForm.patchValue({ name: org.name }, { emitEvent: false });
+        this.generalForm.markAsPristine();
+        this.savedName.set(org.name);
         this.statusMessage.set(null);
       }
     });
@@ -63,7 +86,7 @@ export class OrgSettingsPageComponent {
 
   protected async saveGeneral(): Promise<void> {
     const org = this.activeOrganization();
-    if (!org || this.generalForm.invalid) {
+    if (!org || !this.canSaveGeneral()) {
       this.generalForm.markAllAsTouched();
       return;
     }
@@ -76,6 +99,11 @@ export class OrgSettingsPageComponent {
     });
 
     this.saving.set(false);
+    if (result.ok) {
+      const name = this.generalForm.getRawValue().name;
+      this.savedName.set(name);
+      this.generalForm.markAsPristine();
+    }
     this.statusMessage.set(
       result.ok ? 'Saved.' : result.error.message,
     );
