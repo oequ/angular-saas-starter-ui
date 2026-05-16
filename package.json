@@ -1,8 +1,12 @@
 {
   "name": "angular-saas-starter-ui",
-  "version": "0.0.0",
+  "version": "0.1.0-ui",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "start": "nx serve demo",
+    "build": "nx build demo",
+    "lint": "nx run-many -t lint --all"
+  },
   "private": true,
   "dependencies": {
     "@angular/cdk": "~21.2.11",

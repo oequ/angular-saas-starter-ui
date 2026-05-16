@@ -46,7 +46,11 @@ export class OrgSettingsPageComponent {
   protected readonly generalForm = new FormGroup({
     name: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.minLength(2)],
+      validators: [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(64),
+      ],
     }),
   });
 
@@ -63,10 +67,10 @@ export class OrgSettingsPageComponent {
 
   protected readonly canSaveGeneral = computed(() => {
     const saved = this.savedName();
-    const name = this.generalName();
+    const name = this.generalName().trim();
     return (
       saved !== null &&
-      name !== saved &&
+      name !== saved.trim() &&
       this.generalForm.controls.name.valid &&
       !this.saving()
     );
@@ -94,18 +98,23 @@ export class OrgSettingsPageComponent {
     this.saving.set(true);
     this.statusMessage.set(null);
 
-    const result = await this.orgPort.update(org.id, {
-      name: this.generalForm.getRawValue().name,
-    });
+    const name = this.generalForm.getRawValue().name.trim();
 
-    this.saving.set(false);
-    if (result.ok) {
-      const name = this.generalForm.getRawValue().name;
-      this.savedName.set(name);
-      this.generalForm.markAsPristine();
+    try {
+      const result = await this.orgPort.update(org.id, { name });
+
+      if (result.ok) {
+        this.generalForm.patchValue({ name }, { emitEvent: false });
+        this.savedName.set(name);
+        this.generalForm.markAsPristine();
+        this.statusMessage.set('Saved.');
+      } else {
+        this.statusMessage.set(result.error.message);
+      }
+    } catch {
+      this.statusMessage.set('Something went wrong. Please try again.');
+    } finally {
+      this.saving.set(false);
     }
-    this.statusMessage.set(
-      result.ok ? 'Saved.' : result.error.message,
-    );
   }
 }

@@ -42,7 +42,11 @@
                 generalForm.controls.name.touched
               ) {
                 <p class="text-destructive mt-2 text-sm">
-                  Please enter at least 2 characters.
+                  @if (generalForm.controls.name.hasError('maxlength')) {
+                    Please use 64 characters at maximum.
+                  } @else {
+                    Please enter at least 2 characters.
+                  }
                 </p>
               }
             </div>
