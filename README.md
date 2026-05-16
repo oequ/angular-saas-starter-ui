@@ -19,6 +19,14 @@ npx nx serve demo
 
 Open http://localhost:4200
 
+## Live demo (GitHub Pages)
+
+After enabling **Pages → Source: GitHub Actions** in the repo settings:
+
+**https://oequ.github.io/angular-saas-starter-ui/**
+
+Settings: **https://oequ.github.io/angular-saas-starter-ui/settings**
+
 ## Preview
 
 Org settings in the demo app (mock data):

@@ -37,6 +37,22 @@
           ],
           "outputHashing": "all"
         },
+        "github-pages": {
+          "baseHref": "/angular-saas-starter-ui/",
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
         "development": {
           "optimization": false,
           "extractLicenses": false,
