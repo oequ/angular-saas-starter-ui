@@ -27,8 +27,6 @@ After enabling **Pages → Source: GitHub Actions** in the repo settings:
 
 **https://oequ.github.io/angular-saas-starter-ui/**
 
-Settings: **https://oequ.github.io/angular-saas-starter-ui/settings**
-
 ## Preview
 
 ### Workspace settings (General)
@@ -54,16 +52,6 @@ Collapsible **Billing** in the workspace sidebar: Overview · Invoices · Paymen
 
 ![Members — seat limit reached](./docs/assets/demo-members-seats.png)
 
-Regenerate screenshots after UI changes (starts dev server automatically):
-
-```bash
-# PowerShell
-$env:UPDATE_SCREENSHOTS='1'; npm run screenshots
-
-# bash
-UPDATE_SCREENSHOTS=1 npm run screenshots
-```
-
 ## Monorepo layout
 
 ```text
@@ -83,23 +71,8 @@ libs/adapters-mock     # Mock port implementations for demo
 | `npx nx serve demo` | Dev server |
 | `npx nx build demo` | Production build |
 | `npm run e2e` | Playwright E2E (billing + shell smoke) |
-| `npm run screenshots` | Regenerate `docs/assets/*.png` (set `UPDATE_SCREENSHOTS=1`) |
 | `npx nx run-many -t lint --all` | Lint all projects |
 | `npx nx run-many -t test --all` | Unit tests |
-
-## Billing (v0.3)
-
-Architecture and checklist: [BILLING_UI.md](https://github.com/oequ/saas-starter/blob/main/docs/BILLING_UI.md) in `oequ/saas-starter`.
-
-E2E covers:
-
-- **Upgrade funnel** — Globex (trialing) → Upgrade → simulate checkout → active Professional
-- **Seat guard** — Acme (5/5) → Members → invite disabled + link to billing
-- **Sidebar IA** — Billing sub-nav routes (overview / invoices / payment)
-
-## Product plan
-
-Architecture and integration with the full-stack repo: [ANGULAR_SAAS_STARTER_UI.md](https://github.com/oequ/saas-starter/blob/main/docs/ANGULAR_SAAS_STARTER_UI.md) (in `oequ/saas-starter`).
 
 ## License
 
