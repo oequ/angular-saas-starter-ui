@@ -16,6 +16,11 @@
     "sharedGlobals": []
   },
   "targetDefaults": {
+    "@angular/build:dev-server": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
     "@angular/build:application": {
       "cache": true,
       "dependsOn": [

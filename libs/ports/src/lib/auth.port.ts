@@ -4,6 +4,7 @@ import type { Observable } from 'rxjs';
 import type {
   AuthClaims,
   AuthSession,
+  AuthSessionDevice,
   AuthUser,
   EmailPasswordCredentials,
 } from './models/auth.model';
@@ -41,6 +42,12 @@ export interface AuthPort {
   updateProfile(input: {
     displayName: string;
   }): Promise<PortResult<AuthUser>>;
+
+  listActiveSessions(): Promise<PortResult<readonly AuthSessionDevice[]>>;
+
+  revokeSession(sessionId: string): Promise<PortResult<void>>;
+
+  revokeAllOtherSessions(): Promise<PortResult<void>>;
 }
 
 export const AUTH_PORT = new InjectionToken<AuthPort>('AUTH_PORT');

@@ -20,6 +20,8 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
 
+import { DeleteAccountDialogComponent } from './delete-account-dialog.component';
+
 @Component({
   selector: 'oequ-account-profile-page',
   imports: [
@@ -27,6 +29,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
     HlmCardImports,
     HlmButtonImports,
     HlmInput,
+    DeleteAccountDialogComponent,
   ],
   templateUrl: './account-profile-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,6 +56,7 @@ export class AccountProfilePageComponent {
 
   protected readonly saving = signal(false);
   protected readonly statusMessage = signal<string | null>(null);
+  protected readonly deleteDialogOpen = signal(false);
   private readonly savedDisplayName = signal<string | null>(null);
   /** Bumps when display name is patched without emitting valueChanges. */
   private readonly displayNameStateVersion = signal(0);
@@ -144,25 +148,18 @@ export class AccountProfilePageComponent {
     );
   }
 
-  protected deleteAccount(): void {
-    const email = this.userEmail();
-    const confirmed = globalThis.confirm(
-      `Delete your account permanently? Type your email in the next prompt to confirm.`,
-    );
-    if (!confirmed) {
-      return;
-    }
+  protected openDeleteDialog(): void {
+    this.deleteDialogOpen.set(true);
+  }
 
-    const typed = globalThis.prompt(
-      `Enter your email (${email}) to confirm account deletion:`,
-    );
-    if (typed?.trim() !== email) {
-      this.statusMessage.set('Account deletion cancelled.');
-      return;
-    }
+  protected closeDeleteDialog(): void {
+    this.deleteDialogOpen.set(false);
+  }
 
+  protected confirmDeleteAccount(): void {
+    this.deleteDialogOpen.set(false);
     this.statusMessage.set(
-      'Account deletion will call AuthPort in the full-stack adapter.',
+      'Account deletion will be available in v0.3.',
     );
   }
 }

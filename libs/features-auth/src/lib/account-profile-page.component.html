@@ -119,10 +119,17 @@
         hlmBtn
         type="button"
         class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
-        (click)="deleteAccount()"
+        (click)="openDeleteDialog()"
       >
         Delete account
       </button>
     </div>
   </section>
+
+  <oequ-delete-account-dialog
+    [open]="deleteDialogOpen()"
+    [expectedEmail]="userEmail()"
+    (confirmed)="confirmDeleteAccount()"
+    (cancelled)="closeDeleteDialog()"
+  />
 </div>

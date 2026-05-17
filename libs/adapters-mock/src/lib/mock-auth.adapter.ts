@@ -4,6 +4,7 @@ import {
   type AuthClaims,
   type AuthPort,
   type AuthSession,
+  type AuthSessionDevice,
   type AuthUser,
   type EmailPasswordCredentials,
   portErr,
@@ -12,10 +13,12 @@ import {
 } from '@oequ/ports';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
-import { MOCK_AUTH_SESSION } from './data/mock-data';
+import { MOCK_AUTH_SESSION, MOCK_SESSION_DEVICES } from './data/mock-data';
 
 @Injectable()
 export class MockAuthAdapter implements AuthPort {
+  private sessions = [...MOCK_SESSION_DEVICES];
+
   private readonly sessionSubject = new BehaviorSubject<AuthSession | null>(
     MOCK_AUTH_SESSION,
   );
@@ -67,6 +70,32 @@ export class MockAuthAdapter implements AuthPort {
     });
 
     return portOk(user);
+  }
+
+  async listActiveSessions(): Promise<
+    PortResult<readonly AuthSessionDevice[]>
+  > {
+    if (!this.sessionSubject.value) {
+      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+    }
+    return portOk(this.sessions);
+  }
+
+  async revokeSession(sessionId: string): Promise<PortResult<void>> {
+    const current = this.sessions.find((s) => s.current);
+    if (current?.id === sessionId) {
+      return portErr({
+        code: 'VALIDATION',
+        message: 'You cannot revoke your current session.',
+      });
+    }
+    this.sessions = this.sessions.filter((s) => s.id !== sessionId);
+    return portOk(undefined);
+  }
+
+  async revokeAllOtherSessions(): Promise<PortResult<void>> {
+    this.sessions = this.sessions.filter((s) => s.current);
+    return portOk(undefined);
   }
 
   setSession(session: AuthSession | null): void {

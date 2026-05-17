@@ -100,7 +100,7 @@ export class AccountSecurityPageComponent {
     }
 
     this.statusMessage.set(
-      'Password change will call AuthPort in the full-stack adapter.',
+      'Password change will be available in v0.3.',
     );
     this.passwordForm.reset();
     this.saving.set(false);

@@ -12,7 +12,11 @@ import {
 } from '@oequ/ports';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
-import { MOCK_AUTH_SESSION, MOCK_ORGANIZATIONS } from './data/mock-data';
+import {
+  MOCK_AUTH_SESSION,
+  MOCK_MEMBERS_BY_ORG_ID,
+  MOCK_ORGANIZATIONS,
+} from './data/mock-data';
 import { MockAuthAdapter } from './mock-auth.adapter';
 
 @Injectable()
@@ -52,16 +56,7 @@ export class MockOrgAdapter implements OrgPort {
       return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
     }
 
-    return portOk([
-      {
-        organizationId,
-        userId: session.data.sub,
-        email: session.data.email ?? 'demo@example.com',
-        displayName: 'Demo User',
-        role: 'owner',
-        status: 'active',
-      },
-    ]);
+    return portOk(MOCK_MEMBERS_BY_ORG_ID[organizationId] ?? []);
   }
 
   async update(

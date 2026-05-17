@@ -29,3 +29,13 @@ export interface EmailPasswordCredentials {
   readonly email: string;
   readonly password: string;
 }
+
+/** Active sign-in session / device (account sessions screen). */
+export interface AuthSessionDevice {
+  readonly id: string;
+  readonly deviceLabel: string;
+  readonly browser: string;
+  readonly location: string;
+  readonly lastActiveAt: string;
+  readonly current: boolean;
+}
