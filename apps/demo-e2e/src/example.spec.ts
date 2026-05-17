@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-test('has title', async ({ page }) => {
+test('redirects to workspace general settings', async ({ page }) => {
   await page.goto('/');
-
-  // Expect h1 to contain a substring.
-  expect(await page.locator('h1').innerText()).toContain('Welcome');
+  await expect(page).toHaveURL(/\/workspace\/settings\/general/);
+  await expect(
+    page.getByRole('heading', { name: 'Workspace settings' }),
+  ).toBeVisible();
 });

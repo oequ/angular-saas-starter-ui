@@ -1,12 +1,14 @@
 {
   "name": "angular-saas-starter-ui",
-  "version": "0.1.0-ui",
+  "version": "0.3.0-ui",
   "license": "MIT",
   "scripts": {
     "start": "nx serve demo",
     "build": "nx build demo",
     "build:pages": "nx build demo --configuration=github-pages",
-    "lint": "nx run-many -t lint --all"
+    "lint": "nx run-many -t lint --all",
+    "e2e": "nx e2e demo-e2e",
+    "screenshots": "nx e2e demo-e2e --grep \"README screenshots\""
   },
   "private": true,
   "engines": {

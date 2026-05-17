@@ -130,5 +130,5 @@ export class MockOrgAdapter implements OrgPort {
 
 export const MOCK_ORG_PROVIDER = {
   provide: ORG_PORT,
-  useClass: MockOrgAdapter,
+  useExisting: MockOrgAdapter,
 };

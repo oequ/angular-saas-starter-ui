@@ -1,6 +1,8 @@
 import {
   EnvironmentProviders,
+  inject,
   makeEnvironmentProviders,
+  provideAppInitializer,
 } from '@angular/core';
 
 import {
@@ -9,18 +11,41 @@ import {
 } from './mock-auth.adapter';
 import {
   MOCK_BILLING_PROVIDER,
+  MockBillingAdapter,
 } from './mock-billing.adapter';
 import {
   MOCK_ORG_PROVIDER,
   MockOrgAdapter,
 } from './mock-org.adapter';
 
+declare global {
+  interface Window {
+    __oequResetMock?: () => void;
+    __oequSelectWorkspace?: (slug: string) => Promise<void>;
+  }
+}
+
 export function provideDemoAdapters(): EnvironmentProviders {
   return makeEnvironmentProviders([
     MockAuthAdapter,
     MockOrgAdapter,
+    MockBillingAdapter,
     MOCK_AUTH_PROVIDER,
     MOCK_ORG_PROVIDER,
     MOCK_BILLING_PROVIDER,
+    provideAppInitializer(() => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      const billing = inject(MockBillingAdapter);
+      const org = inject(MockOrgAdapter);
+      window.__oequResetMock = () => {
+        billing.resetMockState();
+        void org.selectOrganization('acme');
+      };
+      window.__oequSelectWorkspace = async (slug) => {
+        await org.selectOrganization(slug);
+      };
+    }),
   ]);
 }

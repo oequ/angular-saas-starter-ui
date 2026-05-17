@@ -45,4 +45,7 @@ Thumbs.db
 
 .angular
 
+# Playwright screenshots accidentally written with wrong cwd
+apps/demo-e2e/docs/
+
 vitest.config.*.timestamp*

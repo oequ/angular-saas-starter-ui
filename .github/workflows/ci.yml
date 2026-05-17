@@ -36,3 +36,9 @@ jobs:
 
       - name: Build demo
         run: npx nx build demo
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: E2E (demo)
+        run: npx nx e2e demo-e2e

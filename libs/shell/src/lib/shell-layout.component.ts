@@ -2,8 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   HostListener,
   inject,
+  signal,
+  untracked,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -16,6 +19,8 @@ import {
 } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
+  lucideChevronDown,
+  lucideChevronUp,
   lucideCreditCard,
   lucideMonitor,
   lucideSettings,
@@ -33,58 +38,15 @@ import {
   resolveSettingsContext,
   SHELL_SIDEBAR_NAV_BUTTON_CLASS,
 } from './settings-layout.tokens';
+import {
+  PERSONAL_SHELL_NAV,
+  WORKSPACE_SHELL_NAV,
+  type ShellNavGroup,
+} from './shell-nav.model';
 import { ThemeService } from './theme.service';
+import { BillingStatusBannerComponent } from './billing-status-banner.component';
 import { UserMenuComponent } from './user-menu.component';
 import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
-
-interface ShellNavItem {
-  readonly label: string;
-  readonly path: string;
-  readonly icon: string;
-  readonly exact: boolean;
-}
-
-const WORKSPACE_NAV: readonly ShellNavItem[] = [
-  {
-    label: 'General',
-    path: '/workspace/settings/general',
-    icon: 'lucideSettings',
-    exact: true,
-  },
-  {
-    label: 'Members',
-    path: '/workspace/settings/members',
-    icon: 'lucideUsers',
-    exact: true,
-  },
-  {
-    label: 'Billing',
-    path: '/workspace/settings/billing',
-    icon: 'lucideCreditCard',
-    exact: true,
-  },
-];
-
-const PERSONAL_NAV: readonly ShellNavItem[] = [
-  {
-    label: 'Profile',
-    path: '/account/profile',
-    icon: 'lucideUser',
-    exact: true,
-  },
-  {
-    label: 'Security',
-    path: '/account/security',
-    icon: 'lucideShield',
-    exact: true,
-  },
-  {
-    label: 'Sessions',
-    path: '/account/sessions',
-    icon: 'lucideMonitor',
-    exact: true,
-  },
-];
 
 @Component({
   selector: 'oequ-shell-layout',
@@ -98,6 +60,7 @@ const PERSONAL_NAV: readonly ShellNavItem[] = [
     HlmIcon,
     WorkspaceSwitcherComponent,
     UserMenuComponent,
+    BillingStatusBannerComponent,
   ],
   templateUrl: './shell-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -109,6 +72,8 @@ const PERSONAL_NAV: readonly ShellNavItem[] = [
       lucideMonitor,
       lucideCreditCard,
       lucideUsers,
+      lucideChevronDown,
+      lucideChevronUp,
     }),
   ],
 })
@@ -119,6 +84,29 @@ export class ShellLayoutComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly orgPort = inject(ORG_PORT);
   private readonly themeService = inject(ThemeService);
+
+  protected readonly workspaceNav = WORKSPACE_SHELL_NAV;
+  protected readonly personalNav = PERSONAL_SHELL_NAV;
+
+  protected readonly billingNavExpanded = signal(false);
+
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  constructor() {
+    effect(() => {
+      const url = this.currentUrl() ?? '';
+      if (url.startsWith('/workspace/settings/billing')) {
+        untracked(() => this.billingNavExpanded.set(true));
+      }
+    });
+  }
 
   @HostListener('document:keydown', ['$event'])
   protected onDocumentKeydown(event: KeyboardEvent): void {
@@ -149,10 +137,6 @@ export class ShellLayoutComponent {
 
   protected readonly shellContext = computed(() =>
     this.activeOrganization() ? 'workspace' : 'personal',
-  );
-
-  protected readonly navItems = computed(() =>
-    this.shellContext() === 'workspace' ? WORKSPACE_NAV : PERSONAL_NAV,
   );
 
   private readonly settingsContext = toSignal(
@@ -187,6 +171,14 @@ export class ShellLayoutComponent {
   protected readonly breadcrumbRootLabel = computed(() =>
     this.settingsContext() === 'account' ? 'Account' : 'Home',
   );
+
+  protected isBillingGroupActive(group: ShellNavGroup): boolean {
+    return (this.currentUrl() ?? '').startsWith(group.basePath);
+  }
+
+  protected toggleBillingNav(): void {
+    this.billingNavExpanded.update((open) => !open);
+  }
 
   private resolveTitle(): string {
     let active = this.route;

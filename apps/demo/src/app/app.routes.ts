@@ -75,11 +75,33 @@ export const appRoutes: Route[] = [
           },
           {
             path: 'billing',
-            loadComponent: () =>
-              import('@oequ/features-org').then(
-                (m) => m.WorkspaceSettingsBillingPageComponent,
-              ),
-            data: { title: 'Billing' },
+            children: [
+              { path: '', pathMatch: 'full', redirectTo: 'overview' },
+              {
+                path: 'overview',
+                loadComponent: () =>
+                  import('@oequ/features-org').then(
+                    (m) => m.WorkspaceSettingsBillingPageComponent,
+                  ),
+                data: { title: 'Overview', billingSection: 'overview' },
+              },
+              {
+                path: 'invoices',
+                loadComponent: () =>
+                  import('@oequ/features-org').then(
+                    (m) => m.WorkspaceSettingsBillingPageComponent,
+                  ),
+                data: { title: 'Invoices', billingSection: 'invoices' },
+              },
+              {
+                path: 'payment',
+                loadComponent: () =>
+                  import('@oequ/features-org').then(
+                    (m) => m.WorkspaceSettingsBillingPageComponent,
+                  ),
+                data: { title: 'Payment method', billingSection: 'payment' },
+              },
+            ],
           },
         ],
       },

@@ -4,16 +4,24 @@ import {
   computed,
   inject,
   input,
+  resource,
   signal,
 } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ORG_PORT, type OrgRole } from '@oequ/ports';
+import {
+  BILLING_PORT,
+  billingSeatUsagePercent,
+  isBillingSeatsExhausted,
+  ORG_PORT,
+  type OrgRole,
+} from '@oequ/ports';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -26,6 +34,7 @@ import { startWith, switchMap } from 'rxjs';
   selector: 'oequ-org-settings-members',
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     HlmCardImports,
     HlmButtonImports,
     HlmDialogImports,
@@ -57,6 +66,48 @@ import { startWith, switchMap } from 'rxjs';
             />
           </div>
         </div>
+
+        @if (billingResource.isLoading()) {
+          <p class="text-muted-foreground mt-4 text-sm">Loading seat usage…</p>
+        } @else if (billingSummary(); as billing) {
+          @if (seatUsagePercent(billing); as percent) {
+            <div class="mt-4 max-w-md">
+              <div class="mb-2 flex justify-between text-sm">
+                <span class="text-muted-foreground">Seats</span>
+                <span class="font-medium">
+                  {{ billing.seatsUsed }} /
+                  {{ billing.seatsLimit ?? '∞' }} used
+                </span>
+              </div>
+              <div
+                class="bg-muted h-2 w-full overflow-hidden rounded-full"
+                role="progressbar"
+                [attr.aria-valuenow]="percent"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <div
+                  class="bg-primary h-full rounded-full transition-[width]"
+                  [style.width.%]="percent"
+                ></div>
+              </div>
+            </div>
+          }
+          @if (seatsExhausted()) {
+            <div
+              class="border-destructive/30 bg-destructive/10 text-destructive mt-4 rounded-md border px-4 py-3 text-sm"
+              role="status"
+            >
+              Seat limit reached. Remove a member or
+              <a
+                routerLink="/workspace/settings/billing/overview"
+                class="font-medium underline underline-offset-2"
+                >upgrade your plan</a
+              >
+              to invite more people.
+            </div>
+          }
+        }
 
         <div class="border-input mt-6 overflow-hidden rounded-[5px] border">
           <table class="w-full text-left text-sm">
@@ -123,7 +174,12 @@ import { startWith, switchMap } from 'rxjs';
             Invite teammates by email. They receive a link to join this workspace.
           </p>
         }
-        <button hlmBtn type="button" (click)="openInviteDialog()">
+        <button
+          hlmBtn
+          type="button"
+          [disabled]="seatsExhausted()"
+          (click)="openInviteDialog()"
+        >
           Invite member
         </button>
       </div>
@@ -212,6 +268,32 @@ export class OrgSettingsMembersComponent {
   protected readonly fieldClass = SETTINGS_FORM_FIELD_CLASS;
 
   private readonly orgPort = inject(ORG_PORT);
+  private readonly billingPort = inject(BILLING_PORT);
+
+  protected readonly seatUsagePercent = billingSeatUsagePercent;
+
+  protected readonly billingResource = resource({
+    params: () => ({ orgId: this.organizationId() }),
+    loader: async ({ params, abortSignal }) => {
+      const result = await this.billingPort.getSummary(
+        params.orgId,
+        abortSignal,
+      );
+      if (!result.ok) {
+        throw new Error(result.error.message);
+      }
+      return result.data;
+    },
+  });
+
+  protected readonly billingSummary = computed(() =>
+    this.billingResource.value(),
+  );
+
+  protected readonly seatsExhausted = computed(() => {
+    const summary = this.billingSummary();
+    return summary ? isBillingSeatsExhausted(summary) : false;
+  });
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
 
@@ -300,6 +382,9 @@ export class OrgSettingsMembersComponent {
   }
 
   protected openInviteDialog(): void {
+    if (this.seatsExhausted()) {
+      return;
+    }
     this.inviteSubmitAttempted.set(false);
     this.statusMessage.set(null);
     this.inviteForm.reset({ email: '', role: 'member' });

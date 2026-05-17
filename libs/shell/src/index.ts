@@ -4,3 +4,4 @@ export * from './lib/user-menu.component';
 export * from './lib/shell.guards';
 export * from './lib/settings-layout.tokens';
 export * from './lib/theme.service';
+export * from './lib/billing-status-banner.component';
