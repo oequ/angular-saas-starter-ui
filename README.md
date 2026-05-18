@@ -39,16 +39,16 @@ Collapsible **Billing** in the workspace sidebar: Overview · Invoices · Paymen
 
 | Workspace | Billing state | Demo purpose |
 |-----------|---------------|--------------|
-| **Acme Corp** | Active, 5/5 seats | Seat meter + invite blocked on Members |
-| **Globex** | Trialing | Shell trial banner + mock upgrade funnel |
+| **Parcel** | Active, 5/5 seats | Seat meter + invite blocked on Members |
+| **Nova** | Trialing | Shell trial banner + mock upgrade funnel |
 
 ![Billing — plan summary and seats](./docs/assets/demo-billing-overview.png)
 
 ![Billing — invoices](./docs/assets/demo-billing-invoices.png)
 
-![Billing — trial workspace (Globex)](./docs/assets/demo-billing-trial.png)
+![Billing — trial workspace (Nova)](./docs/assets/demo-billing-trial.png)
 
-### Members — seat limit (Acme)
+### Members — seat limit (Parcel)
 
 ![Members — seat limit reached](./docs/assets/demo-members-seats.png)
 

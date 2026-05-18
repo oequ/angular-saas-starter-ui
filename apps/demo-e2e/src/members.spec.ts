@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 import {
-  GLOBEX_WORKSPACE,
+  NOVA_WORKSPACE,
   resetMockDemoState,
   switchWorkspace,
   waitForMembersPageLoaded,
@@ -13,7 +13,7 @@ test.describe('members', () => {
   test('invites a member and shows success toast', async ({ page }) => {
     await resetMockDemoState(page);
     await page.goto('/workspace/settings/members');
-    await switchWorkspace(page, GLOBEX_WORKSPACE);
+    await switchWorkspace(page, NOVA_WORKSPACE);
     await waitForMembersPageLoaded(page);
     await expect(page.getByText('2 / 10 used')).toBeVisible();
 

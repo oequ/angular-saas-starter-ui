@@ -8,15 +8,15 @@ export const MOCK_DEMO_PASSWORD = 'demo';
 export const MOCK_ORGANIZATIONS: readonly Organization[] = [
   {
     id: '00000000-0000-4000-8000-000000000001',
-    slug: 'acme',
-    name: 'Acme Corp',
+    slug: 'parcel',
+    name: 'Parcel',
     logoUrl: null,
     createdAt: '2026-01-01T00:00:00.000Z',
   },
   {
     id: '00000000-0000-4000-8000-000000000002',
-    slug: 'globex',
-    name: 'Globex',
+    slug: 'nova',
+    name: 'Nova',
     logoUrl: null,
     createdAt: '2026-01-15T00:00:00.000Z',
   },

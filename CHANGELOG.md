@@ -10,7 +10,7 @@ Workspace billing demo on mock ports: sidebar IA, upgrade funnel, seat limits, P
 
 ### Added
 
-- `BillingPort` extensions, `billing.utils`, mock billing fixtures (Acme 5/5 seats, Globex trialing)
+- `BillingPort` extensions, `billing.utils`, mock billing fixtures (Parcel 5/5 seats, Nova trialing)
 - Billing settings: overview (plan + seat meter), invoices table, payment portal stub, mock upgrade dialog
 - Shell: collapsible Billing nav, trial/past-due status banner (workspace only)
 - Members: seat usage meter, disable invite when seats exhausted, CTA to billing

@@ -7,8 +7,8 @@ import type {
 
 import { MOCK_ORGANIZATIONS } from './mock-data';
 
-const ACME_ID = MOCK_ORGANIZATIONS[0].id;
-const GLOBEX_ID = MOCK_ORGANIZATIONS[1].id;
+const PARCEL_ID = MOCK_ORGANIZATIONS[0].id;
+const NOVA_ID = MOCK_ORGANIZATIONS[1].id;
 
 export function addDaysIso(days: number): string {
   const date = new Date();
@@ -17,8 +17,8 @@ export function addDaysIso(days: number): string {
 }
 
 export const MOCK_BILLING_SUMMARIES: Readonly<Record<string, BillingSummary>> = {
-  [ACME_ID]: {
-    organizationId: ACME_ID,
+  [PARCEL_ID]: {
+    organizationId: PARCEL_ID,
     planId: 'professional',
     planName: 'Professional',
     status: 'active',
@@ -29,8 +29,8 @@ export const MOCK_BILLING_SUMMARIES: Readonly<Record<string, BillingSummary>> = 
     meters: [],
     trialEnd: null,
   },
-  [GLOBEX_ID]: {
-    organizationId: GLOBEX_ID,
+  [NOVA_ID]: {
+    organizationId: NOVA_ID,
     planId: 'starter',
     planName: 'Starter',
     status: 'trialing',
@@ -73,41 +73,41 @@ export const MOCK_BILLING_PLANS: readonly BillingPlan[] = [
 ];
 
 const MOCK_INVOICES_BY_ORG: Readonly<Record<string, readonly Invoice[]>> = {
-  [ACME_ID]: [
+  [PARCEL_ID]: [
     {
-      id: 'inv_acme_1',
-      number: 'ACME-1001',
+      id: 'inv_parcel_1',
+      number: 'PARCEL-1001',
       amountDue: 4900,
       amountPaid: 4900,
       currency: 'USD',
       status: 'paid',
       created: addDaysIso(-30),
-      hostedInvoiceUrl: 'https://example.com/invoices/acme-1001',
-      invoicePdf: 'https://example.com/invoices/acme-1001.pdf',
+      hostedInvoiceUrl: 'https://example.com/invoices/parcel-1001',
+      invoicePdf: 'https://example.com/invoices/parcel-1001.pdf',
     },
     {
-      id: 'inv_acme_2',
-      number: 'ACME-1002',
+      id: 'inv_parcel_2',
+      number: 'PARCEL-1002',
       amountDue: 4900,
       amountPaid: 4900,
       currency: 'USD',
       status: 'paid',
       created: addDaysIso(-60),
-      hostedInvoiceUrl: 'https://example.com/invoices/acme-1002',
-      invoicePdf: 'https://example.com/invoices/acme-1002.pdf',
+      hostedInvoiceUrl: 'https://example.com/invoices/parcel-1002',
+      invoicePdf: 'https://example.com/invoices/parcel-1002.pdf',
     },
   ],
-  [GLOBEX_ID]: [
+  [NOVA_ID]: [
     {
-      id: 'inv_globex_1',
-      number: 'GLOBEX-2001',
+      id: 'inv_nova_1',
+      number: 'NOVA-2001',
       amountDue: 0,
       amountPaid: 0,
       currency: 'USD',
       status: 'paid',
       created: addDaysIso(-7),
-      hostedInvoiceUrl: 'https://example.com/invoices/globex-2001',
-      invoicePdf: 'https://example.com/invoices/globex-2001.pdf',
+      hostedInvoiceUrl: 'https://example.com/invoices/nova-2001',
+      invoicePdf: 'https://example.com/invoices/nova-2001.pdf',
     },
   ],
 };

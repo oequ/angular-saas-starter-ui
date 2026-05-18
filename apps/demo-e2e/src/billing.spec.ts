@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
-  ACME_WORKSPACE,
-  GLOBEX_WORKSPACE,
+  PARCEL_WORKSPACE,
+  NOVA_WORKSPACE,
   resetMockDemoState,
   switchWorkspace,
   waitForBillingLoaded,
@@ -16,7 +16,7 @@ test.describe('Billing v0.3 (mock demo)', () => {
     page,
   }) => {
     await page.goto('/workspace/settings/billing/overview');
-    await switchWorkspace(page, GLOBEX_WORKSPACE);
+    await switchWorkspace(page, NOVA_WORKSPACE);
 
     await expect(page.getByText('You are on a trial.')).toBeVisible();
     await waitForBillingLoaded(page);
@@ -42,11 +42,11 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await expect(page.getByText('You are on a trial.')).toHaveCount(0);
   });
 
-  test('seats: Acme at limit blocks invite and links to billing', async ({
+  test('seats: Parcel at limit blocks invite and links to billing', async ({
     page,
   }) => {
     await page.goto('/workspace/settings/members');
-    await switchWorkspace(page, ACME_WORKSPACE);
+    await switchWorkspace(page, PARCEL_WORKSPACE);
     await waitForMembersPageLoaded(page);
     await expect(page.getByText(/Seat limit reached/)).toBeVisible();
     await expect(
@@ -61,7 +61,7 @@ test.describe('Billing v0.3 (mock demo)', () => {
     page,
   }) => {
     await page.goto('/workspace/settings/general');
-    await switchWorkspace(page, ACME_WORKSPACE);
+    await switchWorkspace(page, PARCEL_WORKSPACE);
 
     await page.getByRole('button', { name: 'Billing' }).click();
     await page.getByRole('link', { name: 'Overview' }).click();

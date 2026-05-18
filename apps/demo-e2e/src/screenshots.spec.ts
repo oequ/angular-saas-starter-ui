@@ -3,8 +3,8 @@ import path from 'node:path';
 import { workspaceRoot } from '@nx/devkit';
 import { test } from '@playwright/test';
 import {
-  ACME_WORKSPACE,
-  GLOBEX_WORKSPACE,
+  PARCEL_WORKSPACE,
+  NOVA_WORKSPACE,
   resetMockDemoState,
   switchWorkspace,
   waitForBillingLoaded,
@@ -25,7 +25,7 @@ test.describe('README screenshots', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     fs.mkdirSync(assetsDir, { recursive: true });
     await resetMockDemoState(page);
-    await switchWorkspace(page, ACME_WORKSPACE);
+    await switchWorkspace(page, PARCEL_WORKSPACE);
     await page.screenshot({
       path: path.join(assetsDir, 'demo-settings.png'),
       fullPage: false,
@@ -45,7 +45,7 @@ test.describe('README screenshots', () => {
       fullPage: false,
     });
 
-    await switchWorkspace(page, GLOBEX_WORKSPACE);
+    await switchWorkspace(page, NOVA_WORKSPACE);
     await page.goto('/workspace/settings/billing/overview');
     await waitForBillingLoaded(page);
     await page.getByText(/You are on a trial/).waitFor({ timeout: 15_000 });
@@ -56,7 +56,7 @@ test.describe('README screenshots', () => {
     });
 
     await page.goto('/workspace/settings/members');
-    await switchWorkspace(page, ACME_WORKSPACE);
+    await switchWorkspace(page, PARCEL_WORKSPACE);
     await waitForMembersPageLoaded(page);
     await page.getByText(/Seat limit reached/).waitFor();
     await page.screenshot({

@@ -23,7 +23,7 @@ test.describe('auth', () => {
 
     await expect(page).toHaveURL(/\/workspace$/);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Acme Corp',
+      'Parcel',
     );
   });
 

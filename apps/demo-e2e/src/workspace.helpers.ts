@@ -1,14 +1,14 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Default mock workspace (Acme Corp, 5/5 seats). */
-export const ACME_WORKSPACE = 'Acme Corp';
+/** Default mock workspace (Parcel, 5/5 seats). */
+export const PARCEL_WORKSPACE = 'Parcel';
 
 /** Trialing workspace for upgrade funnel and trial banner. */
-export const GLOBEX_WORKSPACE = 'Globex';
+export const NOVA_WORKSPACE = 'Nova';
 
 const WORKSPACE_SLUG_BY_NAME: Record<string, string> = {
-  [ACME_WORKSPACE]: 'acme',
-  [GLOBEX_WORKSPACE]: 'globex',
+  [PARCEL_WORKSPACE]: 'parcel',
+  [NOVA_WORKSPACE]: 'nova',
 };
 
 export async function resetMockDemoState(page: Page): Promise<void> {

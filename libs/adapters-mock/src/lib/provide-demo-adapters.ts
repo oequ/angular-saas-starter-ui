@@ -46,7 +46,7 @@ export function provideDemoAdapters(): EnvironmentProviders {
         auth.resetMockState();
         billing.resetMockState();
         org.resetMockState();
-        void org.selectOrganization('acme');
+        void org.selectOrganization('parcel');
       };
       window.__oequSetZeroOrgs = () => {
         org.setZeroOrganizations();
