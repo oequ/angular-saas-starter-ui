@@ -23,6 +23,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideBarChart2,
   lucideCreditCard,
+  lucideGauge,
   lucideHome,
   lucideKeyRound,
   lucideMonitor,
@@ -83,6 +84,7 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
       lucideShield,
       lucideMonitor,
       lucideCreditCard,
+      lucideGauge,
       lucideUsers,
     }),
   ],

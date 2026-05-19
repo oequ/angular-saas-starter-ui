@@ -35,6 +35,9 @@ export class WorkspaceSettingsLayoutComponent {
     if (url.startsWith('/workspace/settings/billing')) {
       return false;
     }
+    if (url.startsWith('/workspace/settings/usage')) {
+      return false;
+    }
     if (url.startsWith('/workspace/settings/members')) {
       return false;
     }

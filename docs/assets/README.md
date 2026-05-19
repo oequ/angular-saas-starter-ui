@@ -22,7 +22,7 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 | `demo-members.png` | Nova — `/workspace/settings/members` (member list, seats hint) |
 | `demo-settings.png` | Parcel — `/workspace/settings/general` |
 | `demo-billing.png` | Parcel — `/workspace/settings/billing` (full page: subscription + invoices + payment) |
-| `demo-billing-trial.png` | Nova — billing page (trial banner + Pro plan) |
+| `demo-usage.png` | Nova — `/workspace/settings/usage` (meters + locked SSO / image transforms with Upgrade) |
 | `demo-paywall.png` | Nova — Billing → **Change subscription plan** → paywall open (Free / Pro / Team cards visible) |
 | `demo-help-panel.png` | Parcel — `/workspace/metrics` → **Need help?** → help sheet open (hub: *For this page* + *Browse topics*) |
 
@@ -45,5 +45,11 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 
 1. **Parcel** — `/workspace/settings/billing`, full-page scroll capture shows all three cards.
 2. **Nova** — same route with trial banner visible at top of viewport.
+
+### Usage capture tips
+
+1. Switch to **Nova** (Pro trial — shows locked premium rows).
+2. Open `/workspace/settings/usage`.
+3. Capture full card: header, Usage Summary sidebar, and 2-column meter grid.
 
 Legacy URLs (`/billing/overview`, `/invoices`, `/payment`) redirect to the unified page.

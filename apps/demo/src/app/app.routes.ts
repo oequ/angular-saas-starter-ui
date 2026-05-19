@@ -193,6 +193,14 @@ export const appRoutes: Route[] = [
                   },
                 ],
               },
+              {
+                path: 'usage',
+                loadComponent: () =>
+                  import('@oequ/features-org').then(
+                    (m) => m.WorkspaceSettingsUsagePageComponent,
+                  ),
+                data: { title: 'Usage' },
+              },
             ],
           },
         ],

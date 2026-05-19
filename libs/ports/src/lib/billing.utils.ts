@@ -1,4 +1,4 @@
-import type { BillingSummary, SubscriptionStatus } from './models/billing.model';
+import type { BillingSummary, SubscriptionStatus, UsageMeter } from './models/billing.model';
 
 export type CommercialPlanId = 'free' | 'pro' | 'team';
 
@@ -52,6 +52,103 @@ export function isBillingSeatUsageCritical(summary: BillingSummary): boolean {
   return percent !== null && percent >= 90;
 }
 
+export function billingMeterUsagePercent(meter: UsageMeter): number | null {
+  if (!meter.available || meter.limit === null || meter.limit <= 0) {
+    return null;
+  }
+  return Math.min(100, Math.round((meter.consumed / meter.limit) * 100));
+}
+
+export function formatUsageNumber(value: number): string {
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+export function formatUsageMeterValue(meter: UsageMeter): string {
+  if (!meter.available) {
+    return 'Unavailable in plan';
+  }
+  const consumed = formatUsageNumber(meter.consumed);
+  if (meter.limit === null) {
+    return `${consumed} / Unlimited${meter.unit ? ` ${meter.unit}` : ''}`;
+  }
+  const limit = formatUsageNumber(meter.limit);
+  return `${consumed} / ${limit}${meter.unit ? ` ${meter.unit}` : ''}`;
+}
+
+export function billingPeriodLabel(summary: BillingSummary): string {
+  const end = summary.currentPeriodEnd
+    ? new Date(summary.currentPeriodEnd)
+    : new Date();
+  if (Number.isNaN(end.getTime())) {
+    return 'Current billing cycle';
+  }
+  const start = new Date(end);
+  start.setDate(start.getDate() - 30);
+  return `${formatShortDate(start.toISOString())} – ${formatShortDate(summary.currentPeriodEnd)}`;
+}
+
+export function formatSeatUsageValue(summary: BillingSummary): string {
+  const limit =
+    summary.seatsLimit === null ? 'Unlimited' : formatUsageNumber(summary.seatsLimit);
+  return `${formatUsageNumber(summary.seatsUsed)} / ${limit}`;
+}
+
+function formatIncludedLimit(
+  limit: number | null | undefined,
+  unit?: string,
+): string {
+  if (limit === null || limit === undefined) {
+    return unit ? `unlimited ${unit}` : 'unlimited usage';
+  }
+  const formatted = formatUsageNumber(limit);
+  return unit ? `${formatted} ${unit}` : formatted;
+}
+
+export function usageDetailTooltip(
+  metricId: string,
+  summary: BillingSummary,
+  options: {
+    readonly available?: boolean;
+    readonly limit?: number | null;
+    readonly unit?: string;
+  } = {},
+): string {
+  const planName = formatPlanLabel(summary.planId, summary.planName);
+  const available = options.available ?? true;
+
+  if (!available) {
+    switch (metricId) {
+      case 'sso_users':
+        return 'Team plan includes up to 100 monthly active SSO users. Upgrade to enable single sign-on for your organization.';
+      case 'storage_image_transformations':
+        return 'Team plan includes unlimited storage image transformations. Upgrade to optimize images on delivery.';
+      default:
+        return 'This feature is not included on your current plan. Upgrade to unlock it.';
+    }
+  }
+
+  switch (metricId) {
+    case 'seats':
+      return `Your ${planName} plan includes up to ${formatIncludedLimit(summary.seatsLimit)} seats. Active and invited members count toward this limit.`;
+    case 'emails_sent':
+      return `${planName} includes ${formatIncludedLimit(options.limit, options.unit ?? 'emails')} per billing cycle for transactional and marketing sends.`;
+    case 'api_requests':
+      return `${planName} includes ${formatIncludedLimit(options.limit, 'API requests')} per billing cycle across sending and management endpoints.`;
+    case 'webhook_deliveries':
+      return `${planName} includes ${formatIncludedLimit(options.limit, 'webhook deliveries')} per billing cycle for event notifications.`;
+    case 'storage_size':
+      return `${planName} includes ${formatIncludedLimit(options.limit, options.unit ?? 'GB')} of file and attachment storage.`;
+    case 'sso_users':
+      return `Team plan includes ${formatIncludedLimit(options.limit, options.unit ?? 'MAU')} for SSO-enabled sign-ins each billing cycle.`;
+    case 'storage_image_transformations':
+      return `Team plan includes ${formatIncludedLimit(options.limit, 'image transformations')} for on-the-fly image processing.`;
+    default:
+      return `${planName} includes ${formatIncludedLimit(options.limit, options.unit)} for this metric each billing cycle.`;
+  }
+}
+
 export type BillingBannerTone = 'info' | 'warning' | 'critical';
 
 export interface BillingStatusBanner {
@@ -62,6 +159,8 @@ export interface BillingStatusBanner {
 }
 
 const BILLING_SETTINGS_PATH = '/workspace/settings/billing';
+
+export const USAGE_SETTINGS_PATH = '/workspace/settings/usage';
 
 export function billingStatusBanner(
   summary: BillingSummary | null | undefined,

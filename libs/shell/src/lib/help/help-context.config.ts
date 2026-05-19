@@ -3,6 +3,7 @@ export type HelpTopicCategory =
   | 'api-keys'
   | 'members'
   | 'billing'
+  | 'usage'
   | 'onboarding'
   | 'account'
   | 'general';
@@ -128,6 +129,31 @@ const BILLING_TOPICS: readonly HelpTopic[] = [
   },
 ];
 
+const USAGE_TOPICS: readonly HelpTopic[] = [
+  {
+    id: 'usage-summary',
+    title: 'Reading usage meters',
+    summary: 'How plan limits and consumption are displayed.',
+    category: 'usage',
+    paragraphs: [
+      'Each row shows consumed amount versus your plan limit for the current billing cycle.',
+      'Circular indicators fill as you approach limits. Seats and email volume are common early constraints.',
+      'Usage may take up to an hour to refresh after changes in the workspace.',
+    ],
+  },
+  {
+    id: 'usage-upgrade',
+    title: 'Unavailable features on your plan',
+    summary: 'When metrics show Upgrade instead of a meter.',
+    category: 'usage',
+    paragraphs: [
+      'Some capabilities are only included on higher tiers — Monthly Active SSO Users and Storage Image Transformations appear as unavailable on Free and Pro.',
+      'Click Upgrade to open the plan picker and compare tiers without leaving settings.',
+      'After upgrading, locked rows become active meters on your next usage refresh.',
+    ],
+  },
+];
+
 const ONBOARDING_TOPICS: readonly HelpTopic[] = [
   {
     id: 'onboarding-activation',
@@ -208,6 +234,7 @@ const ROUTE_TOPIC_ENTRIES: readonly {
   { prefix: '/workspace/api-keys', topics: API_KEYS_TOPICS },
   { prefix: '/workspace/settings/members', topics: MEMBERS_TOPICS },
   { prefix: '/workspace/settings/billing', topics: BILLING_TOPICS },
+  { prefix: '/workspace/settings/usage', topics: USAGE_TOPICS },
   { prefix: '/onboarding', topics: ONBOARDING_TOPICS },
   { prefix: '/account', topics: ACCOUNT_TOPICS },
 ];
@@ -232,6 +259,7 @@ export function findHelpTopicById(id: string): HelpTopic | null {
     ...API_KEYS_TOPICS,
     ...MEMBERS_TOPICS,
     ...BILLING_TOPICS,
+    ...USAGE_TOPICS,
     ...ONBOARDING_TOPICS,
     ...ACCOUNT_TOPICS,
   ];

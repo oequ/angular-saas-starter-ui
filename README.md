@@ -67,10 +67,17 @@ Single scroll page: **Subscription Plan** · **Past Invoices** · **Payment Meth
 
 | Workspace | Billing state | Demo purpose |
 |-----------|---------------|--------------|
-| **Parcel** | Active Team, 5/5 seats | Seat meter + invite blocked on Members |
+| **Parcel** | Active Team, 5/5 seats | Full usage on Usage page + invite blocked on Members |
 | **Nova** | Trialing Pro | Shell trial banner + mock upgrade funnel |
+| **Lumen** | Free | Locked premium meters + Upgrade → paywall |
 
 ![Billing — subscription, invoices, and payment](./docs/assets/demo-billing.png)
+
+### Usage
+
+Supabase-style quota page: billing cycle, plan limits, circular progress rings, tooltips on metrics, **Upgrade** for Team-only features. Linked from Billing via *included usage quota*.
+
+![Usage — plan quotas and meters](./docs/assets/demo-usage.png)
 
 ### Paywall (plan picker)
 

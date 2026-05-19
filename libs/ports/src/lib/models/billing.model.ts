@@ -36,6 +36,8 @@ export interface UsageMeter {
   readonly name: string;
   readonly consumed: number;
   readonly limit: number | null;
+  readonly available: boolean;
+  readonly unit?: string;
 }
 
 export interface BillingSummary {

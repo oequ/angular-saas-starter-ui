@@ -20,6 +20,13 @@ export const MOCK_ORGANIZATIONS: readonly Organization[] = [
     logoUrl: null,
     createdAt: '2026-01-15T00:00:00.000Z',
   },
+  {
+    id: '00000000-0000-4000-8000-000000000003',
+    slug: 'lumen',
+    name: 'Lumen',
+    logoUrl: null,
+    createdAt: '2026-02-01T00:00:00.000Z',
+  },
 ];
 
 export const MOCK_SESSION_DEVICES: readonly AuthSessionDevice[] = [
@@ -107,6 +114,10 @@ export const MOCK_MEMBERS_BY_ORG_ID: Readonly<
   [MOCK_ORGANIZATIONS[1].id]: membersForOrg(
     MOCK_ORGANIZATIONS[1].id,
     MOCK_ORGANIZATIONS[1].name,
+  ),
+  [MOCK_ORGANIZATIONS[2].id]: membersForOrg(
+    MOCK_ORGANIZATIONS[2].id,
+    MOCK_ORGANIZATIONS[2].name,
   ),
 };
 

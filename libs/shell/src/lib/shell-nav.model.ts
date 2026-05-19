@@ -58,6 +58,13 @@ export const WORKSPACE_SHELL_NAV: readonly ShellNavLink[] = [
     icon: 'lucideCreditCard',
     exact: true,
   },
+  {
+    kind: 'link',
+    label: 'Usage',
+    path: '/workspace/settings/usage',
+    icon: 'lucideGauge',
+    exact: true,
+  },
 ];
 
 export const PERSONAL_SHELL_NAV: readonly ShellNavLink[] = [

@@ -6,9 +6,13 @@ export const PARCEL_WORKSPACE = 'Parcel';
 /** Trialing workspace for upgrade funnel and trial banner. */
 export const NOVA_WORKSPACE = 'Nova';
 
+/** Free-plan workspace for usage limits demo. */
+export const LUMEN_WORKSPACE = 'Lumen';
+
 const WORKSPACE_SLUG_BY_NAME: Record<string, string> = {
   [PARCEL_WORKSPACE]: 'parcel',
   [NOVA_WORKSPACE]: 'nova',
+  [LUMEN_WORKSPACE]: 'lumen',
 };
 
 export async function signInAsDemo(page: Page): Promise<void> {
@@ -51,6 +55,11 @@ export async function switchWorkspace(
 export async function waitForBillingLoaded(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Billing', level: 1 })).toBeVisible();
   await page.getByText('Loading subscription…').waitFor({ state: 'hidden' });
+}
+
+export async function waitForUsageLoaded(page: Page): Promise<void> {
+  await expect(page.getByRole('heading', { name: 'Usage', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Usage Summary' })).toBeVisible();
 }
 
 export async function waitForMembersPageLoaded(page: Page): Promise<void> {

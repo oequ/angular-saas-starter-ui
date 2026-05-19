@@ -8,12 +8,12 @@ import {
   resource,
   signal,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   BILLING_PORT,
-  billingSeatUsagePercent,
   formatPlanLabel,
   formatSubscriptionStatus,
-  isBillingSeatsExhausted,
+  USAGE_SETTINGS_PATH,
   type BillingSummary,
   type Invoice,
   type InvoiceStatus,
@@ -32,6 +32,7 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
   imports: [
     CurrencyPipe,
     DatePipe,
+    RouterLink,
     NgIcon,
     HlmCardImports,
     HlmButtonImports,
@@ -108,39 +109,22 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
                 </button>
               </div>
 
-              @if (usageNotice(billing); as notice) {
-                <div
-                  class="border-border bg-muted/30 rounded-[5px] border px-4 py-3 text-sm leading-6"
-                  role="note"
-                >
-                  <p class="font-medium">This workspace is limited by the included usage</p>
-                  <p class="text-muted-foreground mt-1">{{ notice }}</p>
-                </div>
-              }
-
-              @if (seatUsagePercent(billing); as percent) {
-                <div class="max-w-md">
-                  <div class="mb-2 flex justify-between text-sm">
-                    <span class="text-muted-foreground">Seats</span>
-                    <span class="font-medium">
-                      {{ billing.seatsUsed }} /
-                      {{ billing.seatsLimit ?? '∞' }} used
-                    </span>
-                  </div>
-                  <div
-                    class="bg-muted h-2 w-full overflow-hidden rounded-full"
-                    role="progressbar"
-                    [attr.aria-valuenow]="percent"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  >
-                    <div
-                      class="bg-primary h-full rounded-full transition-[width]"
-                      [style.width.%]="percent"
-                    ></div>
-                  </div>
-                </div>
-              }
+              <div
+                class="border-border bg-muted/30 rounded-[5px] border px-4 py-3 text-sm leading-6"
+                role="note"
+              >
+                <p class="font-medium">
+                  This organization is limited by the included usage
+                </p>
+                <p class="text-muted-foreground mt-1">
+                  Projects may become unresponsive when this organization
+                  exceeds its
+                  <a
+                    [routerLink]="usageSettingsPath"
+                    class="text-foreground underline underline-offset-4 hover:opacity-80"
+                  >included usage quota</a>. To scale seamlessly, upgrade to a paid plan.
+                </p>
+              </div>
             </div>
           } @else {
             <p class="text-muted-foreground text-sm">
@@ -272,7 +256,7 @@ export class OrgSettingsBillingComponent {
 
   protected readonly formatPlanLabel = formatPlanLabel;
   protected readonly formatSubscriptionStatus = formatSubscriptionStatus;
-  protected readonly seatUsagePercent = billingSeatUsagePercent;
+  protected readonly usageSettingsPath = USAGE_SETTINGS_PATH;
 
   protected readonly statusMessage = signal<string | null>(null);
   protected readonly invoiceDownloadTooltip = 'Download invoice';
@@ -314,16 +298,6 @@ export class OrgSettingsBillingComponent {
 
   protected planDisplayLabel(summary: BillingSummary): string {
     return `${formatPlanLabel(summary.planId, summary.planName)} Plan`;
-  }
-
-  protected usageNotice(summary: BillingSummary): string | null {
-    if (isBillingSeatsExhausted(summary)) {
-      return 'Your workspace may be unable to invite new members when the seat limit is reached. To scale seamlessly, upgrade to a higher plan.';
-    }
-    if (!summary.planId || summary.planId === 'free') {
-      return 'Your workspace may become restricted when it exceeds the included quota. To scale seamlessly, upgrade to a paid plan.';
-    }
-    return null;
   }
 
   protected invoiceStatusLabel(status: InvoiceStatus): string {

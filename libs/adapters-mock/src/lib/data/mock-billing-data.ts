@@ -3,12 +3,113 @@ import type {
   BillingSummary,
   Invoice,
   InvoiceListPage,
+  UsageMeter,
 } from '@oequ/ports';
 
 import { MOCK_ORGANIZATIONS } from './mock-data';
 
 const PARCEL_ID = MOCK_ORGANIZATIONS[0].id;
 const NOVA_ID = MOCK_ORGANIZATIONS[1].id;
+const LUMEN_ID = MOCK_ORGANIZATIONS[2].id;
+
+const PARCEL_METERS: readonly UsageMeter[] = [
+  {
+    metricId: 'emails_sent',
+    name: 'Emails sent',
+    consumed: 12_400,
+    limit: 50_000,
+    available: true,
+    unit: 'emails',
+  },
+  {
+    metricId: 'api_requests',
+    name: 'API requests',
+    consumed: 89_000,
+    limit: 500_000,
+    available: true,
+  },
+  {
+    metricId: 'webhook_deliveries',
+    name: 'Webhook deliveries',
+    consumed: 1_200,
+    limit: 10_000,
+    available: true,
+  },
+  {
+    metricId: 'storage_size',
+    name: 'Storage size',
+    consumed: 0.45,
+    limit: 5,
+    available: true,
+    unit: 'GB',
+  },
+];
+
+const NOVA_METERS: readonly UsageMeter[] = [
+  {
+    metricId: 'emails_sent',
+    name: 'Emails sent',
+    consumed: 890,
+    limit: 10_000,
+    available: true,
+    unit: 'emails',
+  },
+  {
+    metricId: 'api_requests',
+    name: 'API requests',
+    consumed: 12_000,
+    limit: 100_000,
+    available: true,
+  },
+  {
+    metricId: 'webhook_deliveries',
+    name: 'Webhook deliveries',
+    consumed: 45,
+    limit: 2_000,
+    available: true,
+  },
+  {
+    metricId: 'storage_size',
+    name: 'Storage size',
+    consumed: 0.08,
+    limit: 1,
+    available: true,
+    unit: 'GB',
+  },
+];
+
+const FREE_METERS: readonly UsageMeter[] = [
+  {
+    metricId: 'emails_sent',
+    name: 'Emails sent',
+    consumed: 52,
+    limit: 3_000,
+    available: true,
+    unit: 'emails',
+  },
+  {
+    metricId: 'api_requests',
+    name: 'API requests',
+    consumed: 11,
+    limit: 100,
+    available: true,
+  },
+  {
+    metricId: 'webhook_deliveries',
+    name: 'Webhook deliveries',
+    consumed: 0,
+    limit: 100,
+    available: true,
+  },
+  {
+    metricId: 'storage_size',
+    name: 'Storage size',
+    consumed: 0,
+    limit: 0.5,
+    available: true,
+    unit: 'GB',
+  },
+];
 
 export function addDaysIso(days: number): string {
   const date = new Date();
@@ -26,7 +127,7 @@ export const MOCK_BILLING_SUMMARIES: Readonly<Record<string, BillingSummary>> = 
     cancelAtPeriodEnd: false,
     seatsUsed: 5,
     seatsLimit: 5,
-    meters: [],
+    meters: PARCEL_METERS,
     trialEnd: null,
   },
   [NOVA_ID]: {
@@ -38,8 +139,20 @@ export const MOCK_BILLING_SUMMARIES: Readonly<Record<string, BillingSummary>> = 
     cancelAtPeriodEnd: false,
     seatsUsed: 2,
     seatsLimit: 10,
-    meters: [],
+    meters: NOVA_METERS,
     trialEnd: addDaysIso(5),
+  },
+  [LUMEN_ID]: {
+    organizationId: LUMEN_ID,
+    planId: null,
+    planName: 'Free',
+    status: 'none',
+    currentPeriodEnd: addDaysIso(30),
+    cancelAtPeriodEnd: false,
+    seatsUsed: 1,
+    seatsLimit: 3,
+    meters: FREE_METERS,
+    trialEnd: null,
   },
 };
 
@@ -147,7 +260,7 @@ export function mockBillingSummaryForOrg(
       cancelAtPeriodEnd: false,
       seatsUsed: 1,
       seatsLimit: 3,
-      meters: [],
+      meters: FREE_METERS,
       trialEnd: null,
     }
   );
