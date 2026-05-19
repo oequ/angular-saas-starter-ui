@@ -107,6 +107,8 @@ Wide plan picker (**Free · Pro · Team**) from **Change subscription plan** on 
 
 GDPR-style first-layer banner on all routes: **Reject all** and **Accept all** with equal prominence, plus **Manage preferences** (categories off by default). Consent stored in `localStorage`; reopen via **Cookie preferences** in the user menu. See `/auth/cookies`.
 
+![Cookie consent — first-layer banner](./docs/assets/demo-cookie-consent.png)
+
 ### Help panel
 
 Context-aware help sheet in the shell header (**Need help?** or `?`). Route-specific topics, browse section, system status, and contact support form.

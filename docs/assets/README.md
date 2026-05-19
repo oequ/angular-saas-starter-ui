@@ -24,6 +24,7 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 | `demo-billing.png` | Parcel — `/workspace/settings/billing` (subscription + invoices + payment methods list) |
 | `demo-usage.png` | Nova — `/workspace/settings/usage` (meters + locked SSO / image transforms with Upgrade) |
 | `demo-paywall.png` | Nova — Billing → **Change subscription plan** → paywall open (Free / Pro / Team cards visible) |
+| `demo-cookie-consent.png` | Login — `/auth/login` with bottom cookie banner visible (Reject all / Accept all / Manage preferences) |
 | `demo-help-panel.png` | Parcel — `/workspace/metrics` → **Need help?** → help sheet open (hub: *For this page* + *Browse topics*) |
 
 ### Paywall capture tips
@@ -33,6 +34,12 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 3. Click **Change subscription plan**.
 4. Wait until plan cards are loaded (not skeletons).
 5. Frame the main paywall with all three tiers visible (screenshot is the plan picker only, not the stacked upgrade/downgrade dialogs).
+
+### Cookie consent capture tips
+
+1. Open `/auth/login` in a private window (or clear `oequ-cookie-consent` in localStorage).
+2. Wait for the bottom **Cookie consent** bar — do not click any button.
+3. Frame the banner and login card; ~1280px wide PNG as `demo-cookie-consent.png`.
 
 ### Help panel capture tips
 
