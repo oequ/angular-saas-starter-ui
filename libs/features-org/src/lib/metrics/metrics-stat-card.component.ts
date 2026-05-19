@@ -33,7 +33,8 @@ export interface MetricsLegendItem {
   template: `
     <section
       hlmCard
-      class="ring-border/60 gap-0 overflow-hidden rounded-xl border-0 py-0 ring-1 ring-inset"
+      variant="outline"
+      class="bg-muted/30 ring-border/60 gap-0 overflow-hidden rounded-xl border-0 py-0 ring-1 ring-inset"
     >
       <div hlmCardContent class="!p-5">
         <div class="mb-4 flex items-start justify-between gap-3">

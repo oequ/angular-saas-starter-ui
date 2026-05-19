@@ -164,7 +164,7 @@ type MemberRoleFilter = 'all' | OrgRole;
         <div hlmTableContainer class="border-input rounded-[5px] border">
           <table hlmTable>
             <thead hlmTHead>
-              <tr hlmTr class="bg-muted/50 text-muted-foreground text-xs">
+              <tr hlmTr class="text-muted-foreground border-b text-xs">
                 <th hlmTh class="px-4">Member</th>
                 <th hlmTh class="hidden px-4 sm:table-cell">Role</th>
                 <th hlmTh class="px-4">Status</th>

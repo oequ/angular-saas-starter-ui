@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   input,
   output,
   signal,
@@ -150,6 +151,15 @@ export class InviteMemberDialogComponent {
       validators: [Validators.required],
     }),
   });
+
+  constructor() {
+    effect(() => {
+      if (this.open()) {
+        this.submitAttempted.set(false);
+        this.form.reset({ email: '', role: 'member' });
+      }
+    });
+  }
 
   protected readonly dialogState = computed(() =>
     this.open() ? 'open' : 'closed',

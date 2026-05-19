@@ -141,7 +141,7 @@ const API_KEYS_PAGE_SIZE = 10;
       <div hlmTableContainer class="border-input rounded-[5px] border">
         <table hlmTable>
           <thead hlmTHead>
-            <tr hlmTr class="bg-muted/50 text-muted-foreground text-xs">
+            <tr hlmTr class="text-muted-foreground border-b text-xs">
               <th hlmTh class="px-4">Name</th>
               <th hlmTh class="px-4">Token</th>
               <th hlmTh class="hidden px-4 md:table-cell">Permission</th>

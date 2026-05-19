@@ -1,5 +1,5 @@
 <div class="space-y-8">
-  <section hlmCard class="gap-0 overflow-hidden py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <form id="account-profile-form" (ngSubmit)="saveProfile()">
         <h2 class="text-xl leading-8 font-semibold tracking-tight">
@@ -51,7 +51,7 @@
     </div>
     <div
       hlmCardFooter
-      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
+      class="border-border text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
     >
       @if (statusMessage(); as message) {
         <p role="status">{{ message }}</p>
@@ -69,7 +69,7 @@
     </div>
   </section>
 
-  <section hlmCard class="gap-0 overflow-hidden py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-xl leading-8 font-semibold tracking-tight">
         Email address
@@ -90,7 +90,7 @@
     </div>
     <div
       hlmCardFooter
-      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
+      class="border-border text-foreground flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
     >
       <button hlmBtn type="button" variant="secondary" (click)="updateEmail()">
         Update email
@@ -98,7 +98,7 @@
     </div>
   </section>
 
-  <section hlmCard class="gap-0 overflow-hidden border-destructive/40 py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden border-destructive/40 py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-destructive text-xl leading-8 font-semibold tracking-tight">
         Danger zone

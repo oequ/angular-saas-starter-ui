@@ -15,7 +15,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">
-      <section hlmCard class="gap-0 overflow-hidden py-0">
+      <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
         <div hlmCardContent class="!p-6">
           <h2 class="text-xl leading-8 font-semibold tracking-tight">
             Active sessions
@@ -28,7 +28,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
           <div class="border-input overflow-hidden rounded-[5px] border">
             <table class="w-full text-left text-sm">
               <thead
-                class="bg-muted/50 text-muted-foreground border-b text-xs font-medium"
+                class="text-muted-foreground border-b text-xs font-medium"
               >
                 <tr>
                   <th class="px-4 py-2.5 font-medium">Device</th>
@@ -113,7 +113,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 
         <div
           hlmCardFooter
-          class="border-border bg-muted/50 text-foreground flex min-h-[57px] flex-wrap items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
+          class="border-border text-foreground flex min-h-[57px] flex-wrap items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
         >
           @if (statusMessage(); as message) {
             <p role="status" class="min-w-0 flex-1">{{ message }}</p>

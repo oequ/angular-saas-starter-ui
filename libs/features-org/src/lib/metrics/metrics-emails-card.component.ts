@@ -16,7 +16,8 @@ import { MetricsLineChartComponent } from './metrics-line-chart.component';
   template: `
     <section
       hlmCard
-      class="ring-border/60 gap-0 overflow-hidden rounded-xl border-0 py-0 shadow-sm ring-1 ring-inset"
+      variant="outline"
+      class="bg-muted/30 ring-border/60 gap-0 overflow-hidden rounded-xl border-0 py-0 shadow-sm ring-1 ring-inset"
     >
       <div hlmCardContent class="!p-5">
         <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

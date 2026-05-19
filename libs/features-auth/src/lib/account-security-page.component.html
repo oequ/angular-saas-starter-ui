@@ -1,5 +1,5 @@
 <div class="space-y-8">
-  <section hlmCard class="gap-0 overflow-hidden py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <form id="account-password-form" (ngSubmit)="savePassword()">
         <h2 class="text-xl leading-8 font-semibold tracking-tight">Password</h2>
@@ -36,7 +36,7 @@
     </div>
     <div
       hlmCardFooter
-      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
+      class="border-border text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
     >
       @if (statusMessage(); as message) {
         <p role="status">{{ message }}</p>
@@ -58,7 +58,7 @@
     </div>
   </section>
 
-  <section hlmCard class="gap-0 overflow-hidden py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-xl leading-8 font-semibold tracking-tight">
         Two-factor authentication
@@ -70,7 +70,7 @@
     </div>
     <div
       hlmCardFooter
-      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
+      class="border-border text-foreground flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
     >
       <button hlmBtn type="button" (click)="enableTwoFactor()">
         Enable 2FA
@@ -78,7 +78,7 @@
     </div>
   </section>
 
-  <section hlmCard class="gap-0 overflow-hidden py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-xl leading-8 font-semibold tracking-tight">
         Connected accounts

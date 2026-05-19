@@ -55,7 +55,7 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
           } @else if (billingResource.error(); as err) {
             <p class="text-destructive text-sm">{{ err.message }}</p>
           } @else if (summary(); as billing) {
-            <section hlmCard class="gap-0 overflow-hidden py-0">
+            <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
               <div hlmCardContent class="!p-6">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                   <div>
@@ -133,7 +133,7 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
             <div class="border-input overflow-hidden rounded-[5px] border">
               <table class="w-full text-left text-sm">
                 <thead
-                  class="bg-muted/50 text-muted-foreground border-b text-xs font-medium"
+                  class="text-muted-foreground border-b text-xs font-medium"
                 >
                   <tr>
                     <th class="px-4 py-2.5 font-medium">Date</th>
@@ -184,7 +184,7 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
           }
         }
         @case ('payment') {
-          <section hlmCard class="gap-0 overflow-hidden py-0">
+          <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
             <div hlmCardContent class="!p-6">
               <h3 class="text-lg font-semibold">Payment method</h3>
               <p class="text-muted-foreground mt-2 text-sm leading-6">
@@ -197,7 +197,7 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
             </div>
             <div
               hlmCardFooter
-              class="border-border bg-muted/50 flex min-h-[57px] items-center justify-end border-t !py-3"
+              class="border-border flex min-h-[57px] items-center justify-end border-t !py-3"
             >
               <button hlmBtn type="button" (click)="openPaymentPortal()">
                 Manage in portal

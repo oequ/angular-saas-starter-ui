@@ -1,5 +1,5 @@
 <div class="space-y-8">
-  <section hlmCard class="gap-0 overflow-hidden py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <form id="org-general-form" (ngSubmit)="saveGeneral()">
         <h2
@@ -36,7 +36,7 @@
 
     <div
       hlmCardFooter
-      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
+      class="border-border text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
     >
       @if (statusMessage(); as message) {
         <p role="status">{{ message }}</p>
@@ -54,7 +54,7 @@
     </div>
   </section>
 
-  <section hlmCard class="gap-0 overflow-hidden py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <div class="flex items-start justify-between gap-6">
         <div class="min-w-0 flex-1">
@@ -102,7 +102,7 @@
 
     <div
       hlmCardFooter
-      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center border-t !py-3 text-sm leading-relaxed"
+      class="border-border text-foreground flex min-h-[57px] items-center border-t !py-3 text-sm leading-relaxed"
     >
       @if (logoStatusMessage(); as message) {
         <p role="status">{{ message }}</p>
@@ -114,7 +114,7 @@
     </div>
   </section>
 
-  <section hlmCard class="gap-0 overflow-hidden border-destructive/40 py-0">
+  <section hlmCard variant="outline" class="gap-0 overflow-hidden border-destructive/40 py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-destructive text-xl leading-8 font-semibold tracking-tight">
         Danger zone
