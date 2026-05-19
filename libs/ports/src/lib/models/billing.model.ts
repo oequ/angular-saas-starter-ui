@@ -84,3 +84,23 @@ export interface CheckoutSession {
 export interface PortalSession {
   readonly url: string;
 }
+
+export type PaymentMethodBrand = 'visa' | 'mastercard' | 'amex' | 'unknown';
+
+export interface PaymentMethod {
+  readonly id: string;
+  readonly brand: PaymentMethodBrand;
+  readonly last4: string;
+  readonly expMonth: number;
+  readonly expYear: number;
+  readonly isDefault: boolean;
+}
+
+/** Demo / mock card capture. Production: Stripe Elements + SetupIntent.confirm. */
+export interface AddPaymentMethodInput {
+  readonly cardholderName: string;
+  readonly number: string;
+  readonly expMonth: number;
+  readonly expYear: number;
+  readonly cvc: string;
+}

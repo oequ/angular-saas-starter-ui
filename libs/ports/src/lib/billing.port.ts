@@ -2,10 +2,12 @@ import { InjectionToken } from '@angular/core';
 import type { Observable } from 'rxjs';
 
 import type {
+  AddPaymentMethodInput,
   BillingPlan,
   BillingSummary,
   CheckoutSession,
   InvoiceListPage,
+  PaymentMethod,
   PortalSession,
 } from './models/billing.model';
 import type { PortResult } from './models/common.model';
@@ -55,6 +57,27 @@ export interface BillingPort {
     organizationId: OrganizationId,
     returnUrl: string,
   ): Promise<PortResult<PortalSession>>;
+
+  listPaymentMethods(
+    organizationId: OrganizationId,
+    abortSignal?: AbortSignal,
+  ): Promise<PortResult<readonly PaymentMethod[]>>;
+
+  /** Mock: validates test card; v1.0: SetupIntent + attach to Stripe Customer. */
+  addPaymentMethod(
+    organizationId: OrganizationId,
+    input: AddPaymentMethodInput,
+  ): Promise<PortResult<PaymentMethod>>;
+
+  setDefaultPaymentMethod(
+    organizationId: OrganizationId,
+    paymentMethodId: string,
+  ): Promise<PortResult<PaymentMethod>>;
+
+  removePaymentMethod(
+    organizationId: OrganizationId,
+    paymentMethodId: string,
+  ): Promise<PortResult<void>>;
 
   cancelSubscription(
     organizationId: OrganizationId,

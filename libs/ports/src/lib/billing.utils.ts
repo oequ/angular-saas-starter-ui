@@ -1,6 +1,8 @@
 import type {
+  AddPaymentMethodInput,
   BillingPlan,
   BillingSummary,
+  PaymentMethodBrand,
   SubscriptionStatus,
   UsageMeter,
 } from './models/billing.model';
@@ -367,4 +369,101 @@ function formatShortDate(isoDate: string | null): string {
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+export function formatPaymentMethodBrand(brand: PaymentMethodBrand): string {
+  switch (brand) {
+    case 'visa':
+      return 'Visa';
+    case 'mastercard':
+      return 'Mastercard';
+    case 'amex':
+      return 'American Express';
+    default:
+      return 'Card';
+  }
+}
+
+export function formatPaymentMethodExpiry(
+  expMonth: number,
+  expYear: number,
+): string {
+  const month = String(expMonth).padStart(2, '0');
+  const year = String(expYear).slice(-2);
+  return `${month}/${year}`;
+}
+
+export function normalizeCardNumber(raw: string): string {
+  return raw.replace(/\D/g, '');
+}
+
+export function detectCardBrandFromNumber(number: string): PaymentMethodBrand {
+  const digits = normalizeCardNumber(number);
+  if (digits.startsWith('4')) {
+    return 'visa';
+  }
+  if (/^5[1-5]/.test(digits) || digits.startsWith('2')) {
+    return 'mastercard';
+  }
+  if (/^3[47]/.test(digits)) {
+    return 'amex';
+  }
+  return 'unknown';
+}
+
+/** Parses MM/YY or MM/YYYY from a single expiry field. */
+export function parseCardExpiryInput(
+  raw: string,
+): { expMonth: number; expYear: number } | null {
+  const trimmed = raw.trim();
+  const match = /^(\d{1,2})\s*\/\s*(\d{2}|\d{4})$/.exec(trimmed);
+  if (!match) {
+    return null;
+  }
+  const expMonth = Number.parseInt(match[1], 10);
+  let expYear = Number.parseInt(match[2], 10);
+  if (expYear < 100) {
+    expYear += 2000;
+  }
+  if (expMonth < 1 || expMonth > 12) {
+    return null;
+  }
+  return { expMonth, expYear };
+}
+
+/** Demo validation aligned with Stripe test cards (4242…). */
+export function validateMockPaymentMethodInput(
+  input: AddPaymentMethodInput,
+): string | null {
+  const name = input.cardholderName.trim();
+  if (!name) {
+    return 'Enter the name on the card.';
+  }
+
+  const digits = normalizeCardNumber(input.number);
+  if (digits.length < 13 || digits.length > 19) {
+    return 'Enter a valid card number.';
+  }
+  if (!digits.startsWith('4242') && !digits.startsWith('5555')) {
+    return 'Use test card 4242 4242 4242 4242 or 5555 5555 5555 4444.';
+  }
+
+  if (input.expMonth < 1 || input.expMonth > 12) {
+    return 'Enter a valid expiry date (MM/YY).';
+  }
+
+  const now = new Date();
+  const expiryEnd = new Date(input.expYear, input.expMonth, 0, 23, 59, 59);
+  if (expiryEnd < now) {
+    return 'This card has expired.';
+  }
+
+  const cvc = input.cvc.replace(/\D/g, '');
+  const brand = detectCardBrandFromNumber(digits);
+  const cvcLength = brand === 'amex' ? 4 : 3;
+  if (cvc.length !== cvcLength) {
+    return `Enter a valid ${cvcLength}-digit security code.`;
+  }
+
+  return null;
 }

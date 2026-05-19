@@ -3,6 +3,7 @@ import type {
   BillingSummary,
   Invoice,
   InvoiceListPage,
+  PaymentMethod,
   UsageMeter,
 } from '@oequ/ports';
 
@@ -271,6 +272,38 @@ export function mockInvoicesForOrg(organizationId: string): InvoiceListPage {
     items: MOCK_INVOICES_BY_ORG[organizationId] ?? [],
     nextCursor: null,
   };
+}
+
+const MOCK_PAYMENT_METHODS_BY_ORG: Readonly<
+  Record<string, readonly PaymentMethod[]>
+> = {
+  [PARCEL_ID]: [
+    {
+      id: 'pm_parcel_default',
+      brand: 'visa',
+      last4: '4242',
+      expMonth: 12,
+      expYear: 2028,
+      isDefault: true,
+    },
+  ],
+  [NOVA_ID]: [
+    {
+      id: 'pm_nova_default',
+      brand: 'mastercard',
+      last4: '4444',
+      expMonth: 8,
+      expYear: 2027,
+      isDefault: true,
+    },
+  ],
+};
+
+export function mockPaymentMethodsForOrg(
+  organizationId: string,
+): readonly PaymentMethod[] {
+  const seeded = MOCK_PAYMENT_METHODS_BY_ORG[organizationId] ?? [];
+  return seeded.map((method) => ({ ...method }));
 }
 
 export const MOCK_BILLING_LATENCY_MS = 900;

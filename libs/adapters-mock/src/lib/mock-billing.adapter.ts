@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {
   alignBillingSummarySeats,
   BILLING_PORT,
+  type AddPaymentMethodInput,
   type BillingPort,
   type BillingPlan,
   type BillingSummary,
@@ -9,14 +10,18 @@ import {
   type CommercialPlanId,
   type InvoiceListPage,
   type OrganizationId,
+  type PaymentMethod,
   type PortalSession,
   comparePlanTiers,
+  detectCardBrandFromNumber,
   getDowngradeBlocker,
   getPlanChangeDirection,
+  normalizeCardNumber,
   portErr,
   portOk,
   type PortResult,
   resolveCurrentPlanId,
+  validateMockPaymentMethodInput,
 } from '@oequ/ports';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
@@ -26,6 +31,7 @@ import {
   MOCK_BILLING_PLANS,
   mockBillingSummaryForOrg,
   mockInvoicesForOrg,
+  mockPaymentMethodsForOrg,
 } from './data/mock-billing-data';
 import { MOCK_ORGANIZATIONS } from './data/mock-data';
 
@@ -60,6 +66,13 @@ export class MockBillingAdapter implements BillingPort {
       );
       return [org.id, summary] as const;
     }),
+  );
+
+  private readonly paymentMethods = new Map<string, PaymentMethod[]>(
+    MOCK_ORGANIZATIONS.map((org) => [
+      org.id,
+      [...mockPaymentMethodsForOrg(org.id)],
+    ]),
   );
 
   private readonly summarySubject = new BehaviorSubject<BillingSummary | null>(
@@ -163,6 +176,90 @@ export class MockBillingAdapter implements BillingPort {
     });
   }
 
+  async listPaymentMethods(
+    organizationId: OrganizationId,
+    abortSignal?: AbortSignal,
+  ): Promise<PortResult<readonly PaymentMethod[]>> {
+    await delay(MOCK_BILLING_LATENCY_MS, abortSignal);
+    return portOk(this.getPaymentMethods(organizationId));
+  }
+
+  async addPaymentMethod(
+    organizationId: OrganizationId,
+    input: AddPaymentMethodInput,
+  ): Promise<PortResult<PaymentMethod>> {
+    await delay(400);
+    const validationError = validateMockPaymentMethodInput(input);
+    if (validationError) {
+      return portErr({ code: 'VALIDATION', message: validationError });
+    }
+
+    const digits = normalizeCardNumber(input.number);
+    const methods = this.getPaymentMethodsMutable(organizationId);
+    const isFirst = methods.length === 0;
+    const created: PaymentMethod = {
+      id: `pm_${organizationId}_${Date.now()}`,
+      brand: detectCardBrandFromNumber(digits),
+      last4: digits.slice(-4),
+      expMonth: input.expMonth,
+      expYear: input.expYear,
+      isDefault: isFirst,
+    };
+
+    if (isFirst) {
+      methods.push(created);
+    } else {
+      methods.push({ ...created, isDefault: false });
+    }
+    return portOk(created);
+  }
+
+  async setDefaultPaymentMethod(
+    organizationId: OrganizationId,
+    paymentMethodId: string,
+  ): Promise<PortResult<PaymentMethod>> {
+    await delay(300);
+    const methods = this.getPaymentMethodsMutable(organizationId);
+    const target = methods.find((m) => m.id === paymentMethodId);
+    if (!target) {
+      return portErr({
+        code: 'NOT_FOUND',
+        message: 'Payment method not found.',
+      });
+    }
+    const next = methods.map((method) => ({
+      ...method,
+      isDefault: method.id === paymentMethodId,
+    }));
+    this.paymentMethods.set(organizationId, next);
+    return portOk(next.find((m) => m.id === paymentMethodId)!);
+  }
+
+  async removePaymentMethod(
+    organizationId: OrganizationId,
+    paymentMethodId: string,
+  ): Promise<PortResult<void>> {
+    await delay(300);
+    const methods = this.getPaymentMethodsMutable(organizationId);
+    const index = methods.findIndex((m) => m.id === paymentMethodId);
+    if (index < 0) {
+      return portErr({
+        code: 'NOT_FOUND',
+        message: 'Payment method not found.',
+      });
+    }
+    const removed = methods[index];
+    let next = methods.filter((m) => m.id !== paymentMethodId);
+    if (removed.isDefault && next.length > 0) {
+      next = next.map((method, i) => ({
+        ...method,
+        isDefault: i === 0,
+      }));
+    }
+    this.paymentMethods.set(organizationId, next);
+    return portOk(undefined);
+  }
+
   async cancelSubscription(
     organizationId: OrganizationId,
     reason: string,
@@ -195,6 +292,7 @@ export class MockBillingAdapter implements BillingPort {
 
   removeOrganization(organizationId: OrganizationId): void {
     this.summaries.delete(organizationId);
+    this.paymentMethods.delete(organizationId);
     if (this.summarySubject.value?.organizationId === organizationId) {
       this.summarySubject.next(null);
     }
@@ -215,8 +313,10 @@ export class MockBillingAdapter implements BillingPort {
   resetMockState(): void {
     this.pendingCheckout = null;
     this.summaries.clear();
+    this.paymentMethods.clear();
     for (const org of MOCK_ORGANIZATIONS) {
       this.persistSummary({ ...mockBillingSummaryForOrg(org.id) });
+      this.paymentMethods.set(org.id, [...mockPaymentMethodsForOrg(org.id)]);
     }
     this.summarySubject.next(
       this.summaries.get(MOCK_ORGANIZATIONS[0].id) ?? null,
@@ -285,6 +385,23 @@ export class MockBillingAdapter implements BillingPort {
       this.summarySubject.next(next);
     }
     return next;
+  }
+
+  private getPaymentMethods(organizationId: OrganizationId): PaymentMethod[] {
+    return this.getPaymentMethodsMutable(organizationId).map((method) => ({
+      ...method,
+    }));
+  }
+
+  private getPaymentMethodsMutable(
+    organizationId: OrganizationId,
+  ): PaymentMethod[] {
+    let methods = this.paymentMethods.get(organizationId);
+    if (!methods) {
+      methods = [];
+      this.paymentMethods.set(organizationId, methods);
+    }
+    return methods;
   }
 }
 

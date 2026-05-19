@@ -11,22 +11,29 @@ import {
 import { RouterLink } from '@angular/router';
 import {
   BILLING_PORT,
+  formatPaymentMethodBrand,
+  formatPaymentMethodExpiry,
   formatPlanLabel,
   formatSubscriptionStatus,
   resolveCurrentPlanId,
   USAGE_SETTINGS_PATH,
+  type AddPaymentMethodInput,
   type BillingSummary,
   type Invoice,
   type InvoiceStatus,
+  type PaymentMethod,
   type SubscriptionStatus,
 } from '@oequ/ports';
 import { PaywallDialogService } from '@oequ/shell';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideReceipt } from '@ng-icons/lucide';
+import { lucideCreditCard, lucideReceipt } from '@ng-icons/lucide';
+import { toast } from '@spartan-ng/brain/sonner';
 import { HlmBadgeImports, type BadgeVariants } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+
+import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.component';
 
 @Component({
   selector: 'oequ-org-settings-billing',
@@ -39,8 +46,9 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
     HlmButtonImports,
     HlmBadgeImports,
     HlmTooltipImports,
+    AddPaymentMethodDialogComponent,
   ],
-  providers: [provideIcons({ lucideReceipt })],
+  providers: [provideIcons({ lucideCreditCard, lucideReceipt })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">
@@ -235,22 +243,94 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
             Payment Methods
           </h2>
           <p class="text-muted-foreground mt-3 text-sm leading-6">
-            Payments for your subscription are made using the default card. In
-            production, open the billing portal to update your payment method,
-            cancel, or change plans (Stripe Customer Portal).
+            Subscription charges use the default card. Add or remove cards and
+            choose which one is default.
           </p>
-          <p class="text-muted-foreground mt-4 text-sm">No payment methods</p>
+          @if (paymentMethodsResource.isLoading()) {
+            <p class="text-muted-foreground mt-4 text-sm">Loading payment methods…</p>
+          } @else if (paymentMethodsResource.error(); as err) {
+            <p class="text-destructive mt-4 text-sm">{{ err.message }}</p>
+          } @else if (paymentMethods().length === 0) {
+            <p class="text-muted-foreground mt-4 text-sm">No payment methods</p>
+          } @else {
+            <ul class="divide-border mt-4 divide-y rounded-[5px] border">
+              @for (method of paymentMethods(); track method.id) {
+                <li
+                  class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div class="flex min-w-0 items-center gap-3">
+                    <span
+                      class="bg-muted text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-[5px]"
+                      aria-hidden="true"
+                    >
+                      <ng-icon name="lucideCreditCard" class="size-4" />
+                    </span>
+                    <div class="min-w-0">
+                      <p class="font-medium">
+                        {{ formatPaymentMethodBrand(method.brand) }} ••••
+                        {{ method.last4 }}
+                      </p>
+                      <p class="text-muted-foreground text-sm">
+                        Expires
+                        {{
+                          formatPaymentMethodExpiry(
+                            method.expMonth,
+                            method.expYear
+                          )
+                        }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    @if (method.isDefault) {
+                      <span hlmBadge variant="secondary">Default</span>
+                    } @else {
+                      <button
+                        hlmBtn
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        [disabled]="paymentMethodActionId() === method.id"
+                        (click)="setDefaultPaymentMethod(method)"
+                      >
+                        Make default
+                      </button>
+                    }
+                    <button
+                      hlmBtn
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      class="text-muted-foreground"
+                      [disabled]="paymentMethodActionId() === method.id"
+                      (click)="removePaymentMethod(method)"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
         </div>
         <div
           hlmCardFooter
           class="border-border flex min-h-[57px] items-center justify-end border-t !py-3"
         >
-          <button hlmBtn type="button" (click)="openPaymentPortal()">
-            Manage billing
+          <button hlmBtn type="button" (click)="openAddPaymentMethodDialog()">
+            Add payment method
           </button>
         </div>
       </section>
     </div>
+
+    <oequ-add-payment-method-dialog
+      [open]="addPaymentDialogOpen()"
+      [saving]="addPaymentSaving()"
+      [serverError]="addPaymentError()"
+      (submitted)="onAddPaymentMethodSubmitted($event)"
+      (cancelled)="closeAddPaymentMethodDialog()"
+    />
   `,
 })
 export class OrgSettingsBillingComponent {
@@ -261,10 +341,16 @@ export class OrgSettingsBillingComponent {
 
   protected readonly formatPlanLabel = formatPlanLabel;
   protected readonly formatSubscriptionStatus = formatSubscriptionStatus;
+  protected readonly formatPaymentMethodBrand = formatPaymentMethodBrand;
+  protected readonly formatPaymentMethodExpiry = formatPaymentMethodExpiry;
   protected readonly resolveCurrentPlanId = resolveCurrentPlanId;
   protected readonly usageSettingsPath = USAGE_SETTINGS_PATH;
 
   protected readonly statusMessage = signal<string | null>(null);
+  protected readonly addPaymentDialogOpen = signal(false);
+  protected readonly addPaymentSaving = signal(false);
+  protected readonly addPaymentError = signal<string | null>(null);
+  protected readonly paymentMethodActionId = signal<string | null>(null);
   protected readonly invoiceDownloadTooltip = 'Download invoice';
 
   protected readonly billingResource = resource({
@@ -302,6 +388,25 @@ export class OrgSettingsBillingComponent {
     (): readonly Invoice[] => this.invoicesResource.value() ?? [],
   );
 
+  protected readonly paymentMethodsResource = resource({
+    params: () => ({ orgId: this.organizationId() }),
+    loader: async ({ params, abortSignal }) => {
+      const result = await this.billingPort.listPaymentMethods(
+        params.orgId,
+        abortSignal,
+      );
+      if (!result.ok) {
+        throw new Error(result.error.message);
+      }
+      return result.data;
+    },
+  });
+
+  protected readonly paymentMethods = computed(
+    (): readonly PaymentMethod[] =>
+      this.paymentMethodsResource.value() ?? [],
+  );
+
   protected planDisplayLabel(summary: BillingSummary): string {
     return `${formatPlanLabel(summary.planId, summary.planName)} Plan`;
   }
@@ -332,18 +437,66 @@ export class OrgSettingsBillingComponent {
     }
   }
 
-  protected async openPaymentPortal(): Promise<void> {
-    const returnUrl =
-      typeof window !== 'undefined' ? window.location.href : '/';
-    const result = await this.billingPort.createPortalSession(
+  protected openAddPaymentMethodDialog(): void {
+    this.addPaymentError.set(null);
+    this.addPaymentDialogOpen.set(true);
+  }
+
+  protected closeAddPaymentMethodDialog(): void {
+    this.addPaymentDialogOpen.set(false);
+    this.addPaymentSaving.set(false);
+    this.addPaymentError.set(null);
+  }
+
+  protected async onAddPaymentMethodSubmitted(
+    input: AddPaymentMethodInput,
+  ): Promise<void> {
+    this.addPaymentSaving.set(true);
+    this.addPaymentError.set(null);
+    const result = await this.billingPort.addPaymentMethod(
       this.organizationId(),
-      returnUrl,
+      input,
     );
-    if (result.ok && typeof window !== 'undefined') {
-      window.location.assign(result.data.url);
-    } else if (!result.ok) {
-      this.statusMessage.set(result.error.message);
+    this.addPaymentSaving.set(false);
+    if (!result.ok) {
+      this.addPaymentError.set(result.error.message);
+      return;
     }
+    this.paymentMethodsResource.reload();
+    this.closeAddPaymentMethodDialog();
+    toast.success('Payment method added.');
+  }
+
+  protected async setDefaultPaymentMethod(
+    method: PaymentMethod,
+  ): Promise<void> {
+    this.paymentMethodActionId.set(method.id);
+    const result = await this.billingPort.setDefaultPaymentMethod(
+      this.organizationId(),
+      method.id,
+    );
+    this.paymentMethodActionId.set(null);
+    if (!result.ok) {
+      toast.error(result.error.message);
+      return;
+    }
+    this.paymentMethodsResource.reload();
+    toast.success('Default payment method updated.');
+  }
+
+  protected async removePaymentMethod(method: PaymentMethod): Promise<void> {
+    this.paymentMethodActionId.set(method.id);
+    const result = await this.billingPort.removePaymentMethod(
+      this.organizationId(),
+      method.id,
+    );
+    this.paymentMethodActionId.set(null);
+    if (!result.ok) {
+      toast.error(result.error.message);
+      return;
+    }
+    this.paymentMethodsResource.reload();
+    toast.success('Payment method removed.');
   }
 
   protected subscriptionStatusBadge(status: SubscriptionStatus): {
