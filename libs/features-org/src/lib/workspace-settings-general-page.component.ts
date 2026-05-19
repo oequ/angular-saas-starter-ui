@@ -78,7 +78,6 @@ export class WorkspaceSettingsGeneralPageComponent {
   protected readonly deletingWorkspace = signal(false);
 
   protected readonly logoUploading = signal(false);
-  protected readonly logoStatusMessage = signal<string | null>(null);
   private readonly logoPreviewUrl = signal<string | null>(null);
 
   protected readonly logoDisplayUrl = computed(
@@ -111,7 +110,6 @@ export class WorkspaceSettingsGeneralPageComponent {
         this.generalForm.markAsPristine();
         this.submitAttempted.set(false);
         this.logoPreviewUrl.set(null);
-        this.logoStatusMessage.set(null);
         this.nameStateVersion.update((v) => v + 1);
       }
     });
@@ -132,14 +130,15 @@ export class WorkspaceSettingsGeneralPageComponent {
     }
 
     const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      this.logoStatusMessage.set('Use a PNG, JPG, or WebP image.');
+    const hasAllowedExtension = /\.(png|jpe?g|webp)$/i.test(file.name);
+    if (!allowedTypes.includes(file.type) && !hasAllowedExtension) {
+      toast.error('Use a PNG, JPG, or WebP image.');
       return;
     }
 
     const maxBytes = 2 * 1024 * 1024;
     if (file.size > maxBytes) {
-      this.logoStatusMessage.set('Image must be 2 MB or smaller.');
+      toast.error('Image must be 2 MB or smaller.');
       return;
     }
 
@@ -148,34 +147,47 @@ export class WorkspaceSettingsGeneralPageComponent {
       void this.uploadLogo(org.id, reader.result as string);
     };
     reader.onerror = () => {
-      this.logoStatusMessage.set('Could not read the image. Please try again.');
+      toast.error('Could not read the image. Please try again.');
     };
     reader.readAsDataURL(file);
+  }
+
+  protected removeLogo(): void {
+    const org = this.activeOrganization();
+    if (!org || this.logoUploading()) {
+      return;
+    }
+    void this.persistLogo(org.id, null);
   }
 
   private async uploadLogo(
     organizationId: string,
     logoUrl: string,
   ): Promise<void> {
-    this.logoUploading.set(true);
-    this.logoStatusMessage.set(null);
     this.logoPreviewUrl.set(logoUrl);
+    await this.persistLogo(organizationId, logoUrl);
+  }
+
+  private async persistLogo(
+    organizationId: string,
+    logoUrl: string | null,
+  ): Promise<void> {
+    this.logoUploading.set(true);
 
     try {
       const result = await this.orgPort.update(organizationId, { logoUrl });
 
       if (result.ok) {
         this.logoPreviewUrl.set(null);
-        this.logoStatusMessage.set(null);
-        toast.success('Workspace logo updated.');
+        toast.success(
+          logoUrl === null ? 'Workspace icon removed.' : 'Workspace icon updated.',
+        );
       } else {
         this.logoPreviewUrl.set(null);
-        this.logoStatusMessage.set(null);
         toast.error(result.error.message);
       }
     } catch {
       this.logoPreviewUrl.set(null);
-      this.logoStatusMessage.set(null);
       toast.error('Something went wrong. Please try again.');
     } finally {
       this.logoUploading.set(false);

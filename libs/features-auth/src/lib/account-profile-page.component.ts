@@ -7,7 +7,6 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { startWith } from 'rxjs';
 import {
   FormControl,
   FormGroup,
@@ -65,13 +64,6 @@ export class AccountProfilePageComponent {
   /** Bumps when display name is patched without emitting valueChanges. */
   private readonly displayNameStateVersion = signal(0);
 
-  protected readonly displayNameValue = toSignal(
-    this.profileForm.controls.displayName.valueChanges.pipe(
-      startWith(this.profileForm.controls.displayName.value),
-    ),
-    { initialValue: '' },
-  );
-
   protected readonly canSaveProfile = computed(() => {
     this.displayNameStateVersion();
     const saved = this.savedDisplayName();
@@ -84,15 +76,6 @@ export class AccountProfilePageComponent {
   protected readonly userEmail = computed(
     () => this.session()?.user.email ?? '',
   );
-
-  protected readonly userInitial = computed(() => {
-    const name =
-      this.displayNameValue().trim() ||
-      this.session()?.user.displayName?.trim() ||
-      this.session()?.user.email ||
-      '?';
-    return name.charAt(0).toUpperCase();
-  });
 
   constructor() {
     this.profileForm.controls.displayName.valueChanges.subscribe(() => {

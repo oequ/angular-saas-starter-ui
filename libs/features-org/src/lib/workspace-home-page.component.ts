@@ -68,12 +68,20 @@ interface ChecklistGroup {
   template: `
     <div class="space-y-8">
       <header class="flex flex-wrap items-start gap-4">
-        <span
-          class="from-primary/25 via-primary/15 to-muted flex size-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xl font-semibold tracking-tight"
-          aria-hidden="true"
-        >
-          {{ workspaceInitial() }}
-        </span>
+        @if (workspaceLogoUrl(); as logoUrl) {
+          <img
+            [src]="logoUrl"
+            alt=""
+            class="size-16 shrink-0 rounded-md object-cover"
+          />
+        } @else {
+          <span
+            class="from-primary/25 via-primary/15 to-muted flex size-16 shrink-0 items-center justify-center rounded-md bg-gradient-to-br text-xl font-semibold tracking-tight"
+            aria-hidden="true"
+          >
+            {{ workspaceInitial() }}
+          </span>
+        }
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-center gap-2">
             <h1 class="text-2xl font-semibold tracking-tight">
@@ -222,6 +230,10 @@ export class WorkspaceHomePageComponent {
     const name = this.workspaceName().trim();
     return name ? name.charAt(0).toUpperCase() : '?';
   });
+
+  protected readonly workspaceLogoUrl = computed(
+    () => this.activeOrganization()?.logoUrl ?? null,
+  );
 
   protected readonly billingResource = resource({
     params: () => {

@@ -43,12 +43,20 @@ export const PERSONAL_WORKSPACE_VALUE = '__personal__';
       [class]="sidebarSelectTriggerClass"
     >
       <span class="flex h-9 w-full min-w-0 items-center gap-2 px-2 text-left">
-        <span
-          class="bg-muted text-foreground grid size-7 shrink-0 place-content-center rounded-md text-xs font-semibold"
-          aria-hidden="true"
-        >
-          {{ triggerInitial() }}
-        </span>
+        @if (triggerLogoUrl(); as logoUrl) {
+          <img
+            [src]="logoUrl"
+            alt=""
+            class="size-7 shrink-0 rounded-md object-cover"
+          />
+        } @else {
+          <span
+            class="bg-muted text-foreground grid size-7 shrink-0 place-content-center rounded-md text-xs font-semibold"
+            aria-hidden="true"
+          >
+            {{ triggerInitial() }}
+          </span>
+        }
         <span class="min-w-0 flex-1 truncate text-sm font-medium leading-none">
           {{ triggerLabel() }}
         </span>
@@ -106,12 +114,20 @@ export const PERSONAL_WORKSPACE_VALUE = '__personal__';
             [class.bg-accent]="selectedValue() === org.slug"
             (triggered)="onWorkspaceSelect(org.slug)"
           >
-            <span
-              class="bg-muted text-foreground grid size-6 shrink-0 place-content-center rounded-md text-[11px] font-semibold"
-              aria-hidden="true"
-            >
-              {{ orgInitial(org.name) }}
-            </span>
+            @if (org.logoUrl) {
+              <img
+                [src]="org.logoUrl"
+                alt=""
+                class="size-6 shrink-0 rounded-md object-cover"
+              />
+            } @else {
+              <span
+                class="bg-muted text-foreground grid size-6 shrink-0 place-content-center rounded-md text-[11px] font-semibold"
+                aria-hidden="true"
+              >
+                {{ orgInitial(org.name) }}
+              </span>
+            }
             <span class="min-w-0 truncate">{{ org.name }}</span>
             @if (selectedValue() === org.slug) {
               <ng-icon
@@ -171,6 +187,10 @@ export class WorkspaceSwitcherComponent {
     const org = this.activeOrganization();
     return org ? this.orgInitial(org.name) : 'P';
   });
+
+  protected readonly triggerLogoUrl = computed(
+    () => this.activeOrganization()?.logoUrl ?? null,
+  );
 
   protected orgInitial(name: string | null | undefined): string {
     const trimmed = name?.trim() ?? '';

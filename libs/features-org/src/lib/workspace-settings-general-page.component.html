@@ -58,13 +58,23 @@
     <div hlmCardContent class="!p-6">
       <div class="flex items-start justify-between gap-6">
         <div class="min-w-0 flex-1">
-          <h2 class="text-xl leading-8 font-semibold tracking-tight">Logo</h2>
+          <h2 class="text-xl leading-8 font-semibold tracking-tight">
+            Workspace icon
+          </h2>
           <p class="text-muted-foreground mt-3 text-sm leading-6">
-            This is your workspace logo.
+            Shown in the sidebar and workspace switcher. PNG, JPG, or WebP up to
+            2&nbsp;MB.
           </p>
-          <p class="text-muted-foreground text-sm leading-6">
-            Click on the logo to upload a custom one from your files.
-          </p>
+          @if (logoDisplayUrl()) {
+            <button
+              type="button"
+              class="text-muted-foreground hover:text-foreground mt-3 text-sm underline underline-offset-4"
+              [disabled]="logoUploading()"
+              (click)="removeLogo()"
+            >
+              Remove icon
+            </button>
+          }
         </div>
         <input
           #logoFileInput
@@ -75,22 +85,25 @@
         />
         <button
           type="button"
-          class="border-input focus-visible:ring-ring/50 shrink-0 rounded-full border focus-visible:ring-3 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+          class="focus-visible:ring-ring/50 flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md border focus-visible:ring-3 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+          [class.border-input]="logoDisplayUrl()"
+          [class.from-primary/25]="!logoDisplayUrl()"
+          [class.via-primary/15]="!logoDisplayUrl()"
+          [class.to-muted]="!logoDisplayUrl()"
+          [class.bg-gradient-to-br]="!logoDisplayUrl()"
           [attr.aria-label]="
-            logoUploading() ? 'Uploading logo' : 'Upload workspace logo'
+            logoUploading() ? 'Uploading icon' : 'Upload workspace icon'
           "
+          [attr.aria-busy]="logoUploading()"
           [disabled]="logoUploading()"
+          [class.opacity-60]="logoUploading()"
           (click)="logoFileInput.click()"
         >
           @if (logoDisplayUrl(); as logoUrl) {
-            <img
-              [src]="logoUrl"
-              alt=""
-              class="size-20 rounded-full object-cover"
-            />
+            <img [src]="logoUrl" alt="" class="size-full object-cover" />
           } @else {
             <span
-              class="from-primary/25 via-primary/15 to-muted flex size-20 items-center justify-center rounded-full bg-gradient-to-br text-2xl font-semibold tracking-tight"
+              class="text-2xl font-semibold tracking-tight"
               aria-hidden="true"
             >
               {{ workspaceInitial() }}
@@ -104,13 +117,9 @@
       hlmCardFooter
       class="border-border text-foreground flex min-h-[57px] items-center border-t !py-3 text-sm leading-relaxed"
     >
-      @if (logoStatusMessage(); as message) {
-        <p role="status">{{ message }}</p>
-      } @else {
-        <p class="text-muted-foreground">
-          A logo is optional but strongly recommended.
-        </p>
-      }
+      <p class="text-muted-foreground">
+        Click the icon to upload or replace it.
+      </p>
     </div>
   </section>
 
