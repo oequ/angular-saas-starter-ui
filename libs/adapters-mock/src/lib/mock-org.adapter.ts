@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
+  countMembersTowardSeats,
   isValidOrganizationSlug,
   ORG_PORT,
   type CreateOrganizationInput,
@@ -159,7 +160,9 @@ export class MockOrgAdapter implements OrgPort {
     private readonly billingAdapter: MockBillingAdapter,
     private readonly activationAdapter: MockActivationAdapter,
     private readonly apiKeysAdapter: MockApiKeysAdapter,
-  ) {}
+  ) {
+    this.syncAllBillingSeatUsage();
+  }
 
   resetMockState(): void {
     if (typeof sessionStorage !== 'undefined') {
@@ -168,6 +171,7 @@ export class MockOrgAdapter implements OrgPort {
     writeDemoOrgsSnapshot(null);
     this.organizationsSubject.next([...MOCK_ORGANIZATIONS]);
     this.membersByOrgId = cloneMembersMap();
+    this.syncAllBillingSeatUsage();
     this.activeOrganizationSubject.next(MOCK_ORGANIZATIONS[0]);
     void this.syncPersonalClaims();
   }
@@ -303,7 +307,7 @@ export class MockOrgAdapter implements OrgPort {
     };
 
     this.membersByOrgId.set(organizationId, [...members, member]);
-    this.billingAdapter.adjustSeatsUsed(organizationId, 1);
+    this.syncBillingSeatUsage(organizationId);
 
     return portOk(member);
   }
@@ -335,9 +339,7 @@ export class MockOrgAdapter implements OrgPort {
 
     const next = members.filter((member) => member.userId !== userId);
     this.membersByOrgId.set(organizationId, next);
-    if (countsTowardSeat(target)) {
-      this.billingAdapter.adjustSeatsUsed(organizationId, -1);
-    }
+    this.syncBillingSeatUsage(organizationId);
 
     return portOk(undefined);
   }
@@ -546,6 +548,20 @@ export class MockOrgAdapter implements OrgPort {
     }
 
     return portOk(undefined);
+  }
+
+  private syncBillingSeatUsage(organizationId: OrganizationId): void {
+    const members = this.membersByOrgId.get(organizationId) ?? [];
+    this.billingAdapter.syncSeatsUsed(
+      organizationId,
+      countMembersTowardSeats(members),
+    );
+  }
+
+  private syncAllBillingSeatUsage(): void {
+    for (const org of this.organizationsSubject.value) {
+      this.syncBillingSeatUsage(org.id);
+    }
   }
 }
 

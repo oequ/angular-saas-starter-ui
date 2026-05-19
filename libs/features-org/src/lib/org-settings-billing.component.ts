@@ -13,6 +13,7 @@ import {
   BILLING_PORT,
   formatPlanLabel,
   formatSubscriptionStatus,
+  resolveCurrentPlanId,
   USAGE_SETTINGS_PATH,
   type BillingSummary,
   type Invoice,
@@ -109,22 +110,24 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
                 </button>
               </div>
 
-              <div
-                class="border-border bg-muted/30 rounded-[5px] border px-4 py-3 text-sm leading-6"
-                role="note"
-              >
-                <p class="font-medium">
-                  This organization is limited by the included usage
-                </p>
-                <p class="text-muted-foreground mt-1">
-                  Projects may become unresponsive when this organization
-                  exceeds its
-                  <a
-                    [routerLink]="usageSettingsPath"
-                    class="text-foreground underline underline-offset-4 hover:opacity-80"
-                  >included usage quota</a>. To scale seamlessly, upgrade to a paid plan.
-                </p>
-              </div>
+              @if (resolveCurrentPlanId(billing) === 'free') {
+                <div
+                  class="border-border bg-muted/30 rounded-[5px] border px-4 py-3 text-sm leading-6"
+                  role="note"
+                >
+                  <p class="font-medium">
+                    This organization is limited by the included usage
+                  </p>
+                  <p class="text-muted-foreground mt-1">
+                    Projects may become unresponsive when this organization
+                    exceeds its
+                    <a
+                      [routerLink]="usageSettingsPath"
+                      class="text-foreground underline underline-offset-4 hover:opacity-80"
+                    >included usage quota</a>. To scale seamlessly, upgrade to a paid plan.
+                  </p>
+                </div>
+              }
             </div>
           } @else {
             <p class="text-muted-foreground text-sm">
@@ -232,7 +235,9 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
             Payment Methods
           </h2>
           <p class="text-muted-foreground mt-3 text-sm leading-6">
-            Payments for your subscription are made using the default card.
+            Payments for your subscription are made using the default card. In
+            production, open the billing portal to update your payment method,
+            cancel, or change plans (Stripe Customer Portal).
           </p>
           <p class="text-muted-foreground mt-4 text-sm">No payment methods</p>
         </div>
@@ -241,7 +246,7 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
           class="border-border flex min-h-[57px] items-center justify-end border-t !py-3"
         >
           <button hlmBtn type="button" (click)="openPaymentPortal()">
-            Add new card
+            Manage billing
           </button>
         </div>
       </section>
@@ -256,6 +261,7 @@ export class OrgSettingsBillingComponent {
 
   protected readonly formatPlanLabel = formatPlanLabel;
   protected readonly formatSubscriptionStatus = formatSubscriptionStatus;
+  protected readonly resolveCurrentPlanId = resolveCurrentPlanId;
   protected readonly usageSettingsPath = USAGE_SETTINGS_PATH;
 
   protected readonly statusMessage = signal<string | null>(null);
@@ -322,7 +328,7 @@ export class OrgSettingsBillingComponent {
     const result = await this.paywallDialog.requestOpen();
     if (result === 'success') {
       this.billingResource.reload();
-      this.statusMessage.set('Plan upgraded successfully.');
+      this.statusMessage.set('Plan updated successfully.');
     }
   }
 

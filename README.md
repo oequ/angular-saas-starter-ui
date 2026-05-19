@@ -69,9 +69,9 @@ Single scroll page: **Subscription Plan** · **Past Invoices** · **Payment Meth
 
 | Workspace | Billing state | Demo purpose |
 |-----------|---------------|--------------|
-| **Parcel** | Active Team, 5/5 seats | Full usage on Usage page + invite blocked on Members |
+| **Parcel** | Active Team, 4/50 seats | Full usage on Usage page; room to invite |
+| **Lumen** | Free, 4/3 seats | Seat limit exhausted on Members (upgrade CTA) |
 | **Nova** | Trialing Pro | Shell trial banner + mock upgrade funnel |
-| **Lumen** | Free | Locked premium meters + Upgrade → paywall |
 
 ![Billing — subscription, invoices, and payment](./docs/assets/demo-billing.png)
 
@@ -83,7 +83,7 @@ Supabase-style quota page: billing cycle, plan limits, circular progress rings, 
 
 ### Paywall (plan picker)
 
-Wide upgrade modal (**Free · Pro · Team**) opened from **Change subscription plan** on the Billing page. Mock checkout simulates payment — no Stripe in the UI repo.
+Wide plan picker (**Free · Pro · Team**) from **Change subscription plan** on Billing. Mock **upgrade** uses checkout; **downgrade** applies immediately with seat-limit checks — no Stripe in the UI repo.
 
 ![Paywall — change subscription plan](./docs/assets/demo-paywall.png)
 

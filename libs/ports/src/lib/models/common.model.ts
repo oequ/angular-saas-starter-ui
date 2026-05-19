@@ -6,6 +6,7 @@ export type PortErrorCode =
   | 'VALIDATION'
   | 'CONFLICT'
   | 'SEATS_EXHAUSTED'
+  | 'PLAN_DOWNGRADE_BLOCKED'
   | 'RATE_LIMITED'
   | 'UNAVAILABLE'
   | 'UNKNOWN';

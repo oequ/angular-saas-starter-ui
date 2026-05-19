@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Default mock workspace (Parcel, 5/5 seats). */
+/** Default mock workspace (Parcel, Team plan). */
 export const PARCEL_WORKSPACE = 'Parcel';
 
 /** Trialing workspace for upgrade funnel and trial banner. */

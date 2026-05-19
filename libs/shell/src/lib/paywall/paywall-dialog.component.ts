@@ -10,14 +10,16 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowLeft, lucideCheck } from '@ng-icons/lucide';
+import { lucideCheck } from '@ng-icons/lucide';
 import {
   BILLING_PORT,
   COMMERCIAL_PLAN_IDS,
   comparePlanTiers,
+  getDowngradeBlocker,
   ORG_PORT,
   resolveCurrentPlanId,
   type BillingPlan,
+  type BillingSummary,
   type CommercialPlanId,
 } from '@oequ/ports';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
@@ -30,9 +32,11 @@ import {
   PAYWALL_DIALOG_BODY_CLASS,
   PAYWALL_DIALOG_CONTENT_CLASS,
 } from '../settings-layout.tokens';
+import { PlanDowngradeConfirmDialogComponent } from './plan-downgrade-confirm-dialog.component';
+import { PlanUpgradeCheckoutDialogComponent } from './plan-upgrade-checkout-dialog.component';
 import { PaywallDialogService } from './paywall-dialog.service';
 
-type PaywallView = 'plans' | 'checkout';
+type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
 
 @Component({
   selector: 'oequ-paywall-dialog',
@@ -44,67 +48,20 @@ type PaywallView = 'plans' | 'checkout';
     HlmBadgeImports,
     HlmCardImports,
     HlmSkeletonImports,
+    PlanDowngradeConfirmDialogComponent,
+    PlanUpgradeCheckoutDialogComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [provideIcons({ lucideCheck, lucideArrowLeft })],
+  providers: [provideIcons({ lucideCheck })],
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
-          @if (view() === 'checkout') {
-            <hlm-dialog-header class="shrink-0">
-              <button
-                type="button"
-                class="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center gap-1.5 text-sm"
-                (click)="backToPlans()"
-              >
-                <ng-icon name="lucideArrowLeft" class="size-4" />
-                Back
-              </button>
-              <h3 hlmDialogTitle>Upgrade to {{ selectedPlan()?.name }}</h3>
-              <p hlmDialogDescription>
-                Simulated checkout for the standalone demo. No card is charged.
-              </p>
-            </hlm-dialog-header>
-
-            <div [class]="paywallBodyClass">
-            @if (checkoutLoading()) {
-              <div class="space-y-4 py-2" aria-busy="true" aria-label="Initializing checkout">
-                <hlm-skeleton class="h-4 w-full" />
-                <hlm-skeleton class="h-4 w-5/6" />
-                <hlm-skeleton class="mt-2 h-10 w-full rounded-md" />
-              </div>
-            } @else {
-              <div class="space-y-4 py-2">
-                <p class="text-sm leading-6">
-                  By upgrading, you agree to the organizational Terms of Service.
-                  Billed securely via our payment partner.
-                </p>
-                @if (checkoutError(); as error) {
-                  <p class="text-destructive text-sm" role="alert">{{ error }}</p>
-                }
-                <button
-                  hlmBtn
-                  type="button"
-                  class="w-full"
-                  [disabled]="checkoutConfirming()"
-                  (click)="confirmMockCheckout()"
-                >
-                  @if (checkoutConfirming()) {
-                    Processing…
-                  } @else {
-                    Simulate payment success
-                  }
-                </button>
-              </div>
-            }
-            </div>
-          } @else {
             <hlm-dialog-header class="shrink-0 space-y-1 text-start">
               <h3 hlmDialogTitle class="text-xl">Change subscription plan</h3>
               <p hlmDialogDescription>
-                Compare tiers and upgrade when you need more seats or enterprise
-                features.
+                Compare tiers and upgrade or downgrade your plan when your needs
+                change.
               </p>
             </hlm-dialog-header>
 
@@ -139,6 +96,14 @@ type PaywallView = 'plans' | 'checkout';
             } @else if (loadError(); as error) {
               <p class="text-destructive py-6 text-sm" role="alert">{{ error }}</p>
             } @else {
+              @if (
+                !downgradeConfirmOpen() && downgradeError();
+                as downgradeMessage
+              ) {
+                <p class="text-destructive mb-4 text-sm" role="alert">
+                  {{ downgradeMessage }}
+                </p>
+              }
               <div class="grid gap-4 py-2 md:grid-cols-3">
                 @for (plan of orderedPlans(); track plan.id) {
                   <article
@@ -214,6 +179,16 @@ type PaywallView = 'plans' | 'checkout';
                           >
                             Upgrade to {{ plan.name }}
                           </button>
+                        } @else if (planAction(plan.id) === 'downgrade') {
+                          <button
+                            hlmBtn
+                            type="button"
+                            variant="outline"
+                            class="w-full"
+                            (click)="startDowngrade(plan)"
+                          >
+                            Downgrade to {{ plan.name }}
+                          </button>
                         }
                       </div>
 
@@ -248,10 +223,28 @@ type PaywallView = 'plans' | 'checkout';
               </div>
             }
             </div>
-          }
         </hlm-dialog-content>
       </ng-template>
     </hlm-dialog>
+
+    <oequ-plan-upgrade-checkout-dialog
+      [open]="checkoutConfirmOpen()"
+      [planName]="selectedPlan()?.name ?? ''"
+      [loading]="checkoutLoading()"
+      [confirming]="checkoutConfirming()"
+      [error]="checkoutConfirmError()"
+      (confirmed)="confirmMockCheckout()"
+      (cancelled)="closeCheckoutConfirm()"
+    />
+
+    <oequ-plan-downgrade-confirm-dialog
+      [open]="downgradeConfirmOpen()"
+      [planName]="selectedPlan()?.name ?? ''"
+      [confirming]="downgradeConfirming()"
+      [error]="downgradeConfirmError()"
+      (confirmed)="confirmDowngrade()"
+      (cancelled)="closeDowngradeConfirm()"
+    />
   `,
 })
 export class PaywallDialogComponent {
@@ -262,8 +255,9 @@ export class PaywallDialogComponent {
   protected readonly planSkeletonSlots = [0, 1, 2] as const;
   protected readonly featureSkeletonSlots = [0, 1, 2, 3, 4] as const;
 
-  protected readonly dialogContentClass = PAYWALL_DIALOG_CONTENT_CLASS;
   protected readonly paywallBodyClass = PAYWALL_DIALOG_BODY_CLASS;
+
+  protected readonly dialogContentClass = PAYWALL_DIALOG_CONTENT_CLASS;
 
   protected readonly dialogState = computed(() =>
     this.dialogService.open() ? 'open' : 'closed',
@@ -274,15 +268,20 @@ export class PaywallDialogComponent {
     { initialValue: null },
   );
 
-  protected readonly view = signal<PaywallView>('plans');
   protected readonly loading = signal(false);
   protected readonly loadError = signal<string | null>(null);
   protected readonly plans = signal<readonly BillingPlan[]>([]);
   protected readonly currentPlanId = signal<CommercialPlanId>('free');
+  protected readonly billingSummary = signal<BillingSummary | null>(null);
   protected readonly selectedPlanId = signal<CommercialPlanId | null>(null);
+  protected readonly checkoutConfirmOpen = signal(false);
   protected readonly checkoutLoading = signal(false);
   protected readonly checkoutConfirming = signal(false);
-  protected readonly checkoutError = signal<string | null>(null);
+  protected readonly checkoutConfirmError = signal<string | null>(null);
+  protected readonly downgradeConfirmOpen = signal(false);
+  protected readonly downgradeError = signal<string | null>(null);
+  protected readonly downgradeConfirmError = signal<string | null>(null);
+  protected readonly downgradeConfirming = signal(false);
 
   protected readonly orderedPlans = computed(() => {
     const byId = new Map(this.plans().map((plan) => [plan.id, plan]));
@@ -306,7 +305,7 @@ export class PaywallDialogComponent {
     });
   }
 
-  protected planAction(planId: string): 'current' | 'upgrade' | 'none' {
+  protected planAction(planId: string): PlanAction {
     const current = this.currentPlanId();
     const tier = planId as CommercialPlanId;
     if (tier === current) {
@@ -314,6 +313,9 @@ export class PaywallDialogComponent {
     }
     if (comparePlanTiers(tier, current) > 0) {
       return 'upgrade';
+    }
+    if (comparePlanTiers(tier, current) < 0) {
+      return 'downgrade';
     }
     return 'none';
   }
@@ -329,10 +331,11 @@ export class PaywallDialogComponent {
       return;
     }
 
+    this.downgradeConfirmOpen.set(false);
     this.selectedPlanId.set(plan.id as CommercialPlanId);
-    this.view.set('checkout');
+    this.checkoutConfirmOpen.set(true);
     this.checkoutLoading.set(true);
-    this.checkoutError.set(null);
+    this.checkoutConfirmError.set(null);
 
     const seatFeature = plan.features.find((feature) => feature.id === 'seats');
     const result = await this.billingPort.createCheckoutSession(
@@ -343,18 +346,67 @@ export class PaywallDialogComponent {
     this.checkoutLoading.set(false);
 
     if (!result.ok) {
-      this.checkoutError.set(result.error.message);
-      this.view.set('plans');
-      this.selectedPlanId.set(null);
+      this.checkoutConfirmError.set(result.error.message);
     }
   }
 
-  protected backToPlans(): void {
-    this.view.set('plans');
+  protected closeCheckoutConfirm(): void {
+    if (this.checkoutConfirming()) {
+      return;
+    }
+    this.checkoutConfirmOpen.set(false);
     this.selectedPlanId.set(null);
     this.checkoutLoading.set(false);
-    this.checkoutConfirming.set(false);
-    this.checkoutError.set(null);
+    this.checkoutConfirmError.set(null);
+  }
+
+  protected startDowngrade(plan: BillingPlan): void {
+    const summary = this.billingSummary();
+    if (!summary) {
+      this.loadError.set('Billing information is not available.');
+      return;
+    }
+
+    const blocker = getDowngradeBlocker(summary, plan.id, this.plans());
+    if (blocker) {
+      this.downgradeError.set(blocker);
+      return;
+    }
+
+    this.checkoutConfirmOpen.set(false);
+    this.downgradeError.set(null);
+    this.downgradeConfirmError.set(null);
+    this.selectedPlanId.set(plan.id as CommercialPlanId);
+    this.downgradeConfirmOpen.set(true);
+  }
+
+  protected closeDowngradeConfirm(): void {
+    if (this.downgradeConfirming()) {
+      return;
+    }
+    this.downgradeConfirmOpen.set(false);
+    this.selectedPlanId.set(null);
+    this.downgradeConfirmError.set(null);
+  }
+
+  protected async confirmDowngrade(): Promise<void> {
+    const org = this.activeOrganization();
+    const plan = this.selectedPlan();
+    if (!org || !plan) {
+      return;
+    }
+
+    this.downgradeConfirming.set(true);
+    this.downgradeConfirmError.set(null);
+    const result = await this.billingPort.changePlan(org.id, plan.id);
+    this.downgradeConfirming.set(false);
+
+    if (result.ok) {
+      this.downgradeConfirmOpen.set(false);
+      this.dialogService.completeSuccess();
+    } else {
+      this.downgradeConfirmError.set(result.error.message);
+    }
   }
 
   protected async confirmMockCheckout(): Promise<void> {
@@ -364,19 +416,28 @@ export class PaywallDialogComponent {
     }
 
     this.checkoutConfirming.set(true);
-    this.checkoutError.set(null);
+    this.checkoutConfirmError.set(null);
     const result = await this.billingPort.confirmCheckout(org.id);
     this.checkoutConfirming.set(false);
 
     if (result.ok) {
+      this.checkoutConfirmOpen.set(false);
       this.dialogService.completeSuccess();
     } else {
-      this.checkoutError.set(result.error.message);
+      this.checkoutConfirmError.set(result.error.message);
     }
   }
 
   protected onDialogClosed(): void {
-    if (this.checkoutConfirming()) {
+    if (this.checkoutConfirming() || this.downgradeConfirming()) {
+      return;
+    }
+    if (this.checkoutConfirmOpen()) {
+      this.closeCheckoutConfirm();
+      return;
+    }
+    if (this.downgradeConfirmOpen()) {
+      this.closeDowngradeConfirm();
       return;
     }
     this.dialogService.close();
@@ -409,18 +470,24 @@ export class PaywallDialogComponent {
     }
 
     this.plans.set(plansResult.data);
+    this.billingSummary.set(summaryResult.data);
     this.currentPlanId.set(resolveCurrentPlanId(summaryResult.data));
   }
 
   private resetState(): void {
-    this.view.set('plans');
     this.loading.set(false);
     this.loadError.set(null);
     this.plans.set([]);
+    this.billingSummary.set(null);
     this.currentPlanId.set('free');
     this.selectedPlanId.set(null);
+    this.checkoutConfirmOpen.set(false);
     this.checkoutLoading.set(false);
     this.checkoutConfirming.set(false);
-    this.checkoutError.set(null);
+    this.checkoutConfirmError.set(null);
+    this.downgradeConfirmOpen.set(false);
+    this.downgradeError.set(null);
+    this.downgradeConfirmError.set(null);
+    this.downgradeConfirming.set(false);
   }
 }

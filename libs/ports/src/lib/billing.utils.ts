@@ -1,4 +1,10 @@
-import type { BillingSummary, SubscriptionStatus, UsageMeter } from './models/billing.model';
+import type {
+  BillingPlan,
+  BillingSummary,
+  SubscriptionStatus,
+  UsageMeter,
+} from './models/billing.model';
+import type { OrganizationMember } from './models/org.model';
 
 export type CommercialPlanId = 'free' | 'pro' | 'team';
 
@@ -32,6 +38,95 @@ export function comparePlanTiers(
   b: CommercialPlanId,
 ): number {
   return COMMERCIAL_PLAN_IDS.indexOf(a) - COMMERCIAL_PLAN_IDS.indexOf(b);
+}
+
+export type PlanChangeDirection = 'upgrade' | 'downgrade' | 'same';
+
+export function getPlanChangeDirection(
+  currentPlanId: CommercialPlanId,
+  targetPlanId: CommercialPlanId,
+): PlanChangeDirection {
+  const comparison = comparePlanTiers(targetPlanId, currentPlanId);
+  if (comparison > 0) {
+    return 'upgrade';
+  }
+  if (comparison < 0) {
+    return 'downgrade';
+  }
+  return 'same';
+}
+
+/** Human-readable blocker when seatsUsed exceeds the target plan seat cap. */
+export function getDowngradeBlocker(
+  summary: BillingSummary,
+  targetPlanId: string,
+  plans?: readonly BillingPlan[],
+): string | null {
+  const newLimit = seatLimitForPlanId(targetPlanId, plans);
+  if (newLimit === null) {
+    return null;
+  }
+  if (summary.seatsUsed <= newLimit) {
+    return null;
+  }
+  const planLabel =
+    plans?.find((plan) => plan.id === targetPlanId)?.name ?? targetPlanId;
+  return `You have ${formatUsageNumber(summary.seatsUsed)} members but ${planLabel} allows ${formatUsageNumber(newLimit)}. Remove members before downgrading.`;
+}
+
+const DEFAULT_SEAT_LIMIT_BY_PLAN: Readonly<Record<string, number>> = {
+  free: 3,
+  pro: 10,
+  team: 50,
+  starter: 10,
+  professional: 50,
+};
+
+/** Seat cap from catalog features, then known plan ids (incl. legacy aliases). */
+export function seatLimitForPlanId(
+  planId: string | null | undefined,
+  plans?: readonly BillingPlan[],
+): number | null {
+  if (!planId || planId === 'free') {
+    return DEFAULT_SEAT_LIMIT_BY_PLAN['free'] ?? 3;
+  }
+
+  const catalogLimit = plans
+    ?.find((plan) => plan.id === planId)
+    ?.features.find((feature) => feature.id === 'seats')?.limit;
+  if (catalogLimit !== undefined && catalogLimit !== null) {
+    return catalogLimit;
+  }
+
+  if (planId in DEFAULT_SEAT_LIMIT_BY_PLAN) {
+    return DEFAULT_SEAT_LIMIT_BY_PLAN[planId];
+  }
+
+  const legacy = LEGACY_PLAN_ID_MAP[planId];
+  if (legacy && legacy in DEFAULT_SEAT_LIMIT_BY_PLAN) {
+    return DEFAULT_SEAT_LIMIT_BY_PLAN[legacy];
+  }
+
+  return null;
+}
+
+/** Keeps `seatsLimit` consistent with `planId` (avoids stale caps after upgrades). */
+export function alignBillingSummarySeats(
+  summary: BillingSummary,
+  plans?: readonly BillingPlan[],
+): BillingSummary {
+  return {
+    ...summary,
+    seatsLimit: seatLimitForPlanId(summary.planId, plans),
+  };
+}
+
+export function countMembersTowardSeats(
+  members: readonly Pick<OrganizationMember, 'status'>[],
+): number {
+  return members.filter(
+    (member) => member.status === 'active' || member.status === 'invited',
+  ).length;
 }
 
 export function isBillingSeatsExhausted(summary: BillingSummary): boolean {

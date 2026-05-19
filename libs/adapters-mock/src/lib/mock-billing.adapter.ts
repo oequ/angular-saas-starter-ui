@@ -1,15 +1,22 @@
 import { Injectable } from '@angular/core';
 import {
+  alignBillingSummarySeats,
   BILLING_PORT,
   type BillingPort,
   type BillingPlan,
   type BillingSummary,
   type CheckoutSession,
+  type CommercialPlanId,
   type InvoiceListPage,
   type OrganizationId,
   type PortalSession,
+  comparePlanTiers,
+  getDowngradeBlocker,
+  getPlanChangeDirection,
+  portErr,
   portOk,
   type PortResult,
+  resolveCurrentPlanId,
 } from '@oequ/ports';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
@@ -46,10 +53,13 @@ export class MockBillingAdapter implements BillingPort {
     null;
 
   private readonly summaries = new Map<string, BillingSummary>(
-    MOCK_ORGANIZATIONS.map((org) => [
-      org.id,
-      { ...mockBillingSummaryForOrg(org.id) },
-    ]),
+    MOCK_ORGANIZATIONS.map((org) => {
+      const summary = alignBillingSummarySeats(
+        { ...mockBillingSummaryForOrg(org.id) },
+        MOCK_BILLING_PLANS,
+      );
+      return [org.id, summary] as const;
+    }),
   );
 
   private readonly summarySubject = new BehaviorSubject<BillingSummary | null>(
@@ -64,7 +74,9 @@ export class MockBillingAdapter implements BillingPort {
     abortSignal?: AbortSignal,
   ): Promise<PortResult<BillingSummary>> {
     await delay(MOCK_BILLING_LATENCY_MS, abortSignal);
-    const summary = this.getOrCreateSummary(organizationId);
+    const summary = this.persistSummary(
+      this.getOrCreateSummary(organizationId),
+    );
     this.summarySubject.next(summary);
     return portOk(summary);
   }
@@ -103,11 +115,41 @@ export class MockBillingAdapter implements BillingPort {
     await delay(500);
     const pending = this.pendingCheckout;
     if (pending?.organizationId === organizationId) {
-      this.applyMockUpgrade(organizationId, pending.planId);
+      this.applyMockPlanChange(organizationId, pending.planId);
       this.pendingCheckout = null;
     }
     const summary = this.getOrCreateSummary(organizationId);
     this.summarySubject.next(summary);
+    return portOk(summary);
+  }
+
+  async changePlan(
+    organizationId: OrganizationId,
+    planId: string,
+  ): Promise<PortResult<BillingSummary>> {
+    await delay(400);
+    const current = this.getOrCreateSummary(organizationId);
+    const currentTier = resolveCurrentPlanId(current);
+    const targetTier = planId as CommercialPlanId;
+
+    if (getPlanChangeDirection(currentTier, targetTier) !== 'downgrade') {
+      return portErr({
+        code: 'VALIDATION',
+        message: 'Only downgrades are supported on this action.',
+      });
+    }
+
+    const blocker = getDowngradeBlocker(current, planId, MOCK_BILLING_PLANS);
+    if (blocker) {
+      return portErr({
+        code: 'PLAN_DOWNGRADE_BLOCKED',
+        message: blocker,
+      });
+    }
+
+    const summary = this.persistSummary(
+      this.applyMockPlanChangeSummary(organizationId, planId, current),
+    );
     return portOk(summary);
   }
 
@@ -128,18 +170,16 @@ export class MockBillingAdapter implements BillingPort {
     void reason;
     await delay(400);
     const current = this.getOrCreateSummary(organizationId);
-    const next: BillingSummary = {
+    this.persistSummary({
       ...current,
       cancelAtPeriodEnd: true,
       status: current.status === 'trialing' ? 'canceled' : current.status,
-    };
-    this.summaries.set(organizationId, next);
-    this.summarySubject.next(next);
+    });
     return portOk(undefined);
   }
 
   seedOrganization(organizationId: OrganizationId): void {
-    this.summaries.set(organizationId, {
+    this.persistSummary({
       organizationId,
       planId: 'pro',
       planName: 'Pro',
@@ -162,14 +202,13 @@ export class MockBillingAdapter implements BillingPort {
 
   adjustSeatsUsed(organizationId: OrganizationId, delta: number): void {
     const current = this.getOrCreateSummary(organizationId);
-    const next: BillingSummary = {
-      ...current,
-      seatsUsed: Math.max(0, current.seatsUsed + delta),
-    };
-    this.summaries.set(organizationId, next);
-    if (this.summarySubject.value?.organizationId === organizationId) {
-      this.summarySubject.next(next);
-    }
+    this.syncSeatsUsed(organizationId, Math.max(0, current.seatsUsed + delta));
+  }
+
+  /** Authoritative seat usage from org members (active + invited). */
+  syncSeatsUsed(organizationId: OrganizationId, seatsUsed: number): void {
+    const current = this.getOrCreateSummary(organizationId);
+    this.persistSummary({ ...current, seatsUsed });
   }
 
   /** Restores fixture billing data (E2E / screenshot runs). */
@@ -177,7 +216,7 @@ export class MockBillingAdapter implements BillingPort {
     this.pendingCheckout = null;
     this.summaries.clear();
     for (const org of MOCK_ORGANIZATIONS) {
-      this.summaries.set(org.id, { ...mockBillingSummaryForOrg(org.id) });
+      this.persistSummary({ ...mockBillingSummaryForOrg(org.id) });
     }
     this.summarySubject.next(
       this.summaries.get(MOCK_ORGANIZATIONS[0].id) ?? null,
@@ -186,30 +225,66 @@ export class MockBillingAdapter implements BillingPort {
 
   /** Called by mock checkout UI after simulated payment success. */
   applyMockUpgrade(organizationId: OrganizationId, planId: string): void {
-    const plan = MOCK_BILLING_PLANS.find((p) => p.id === planId);
     const current = this.getOrCreateSummary(organizationId);
-    const seatFeature = plan?.features.find((f) => f.id === 'seats');
-    const next: BillingSummary = {
+    this.persistSummary(
+      this.applyMockPlanChangeSummary(organizationId, planId, current),
+    );
+  }
+
+  private applyMockPlanChange(
+    organizationId: OrganizationId,
+    planId: string,
+  ): void {
+    const current = this.getOrCreateSummary(organizationId);
+    this.persistSummary(
+      this.applyMockPlanChangeSummary(organizationId, planId, current),
+    );
+  }
+
+  private applyMockPlanChangeSummary(
+    organizationId: OrganizationId,
+    planId: string,
+    current: BillingSummary,
+  ): BillingSummary {
+    void organizationId;
+    const plan = MOCK_BILLING_PLANS.find((p) => p.id === planId);
+    const targetTier = planId as CommercialPlanId;
+    const isDowngrade =
+      comparePlanTiers(targetTier, resolveCurrentPlanId(current)) < 0;
+
+    return {
       ...current,
       planId,
       planName: plan?.name ?? planId,
-      status: 'active',
+      status: isDowngrade && current.status === 'trialing' ? 'active' : current.status,
       cancelAtPeriodEnd: false,
-      seatsLimit: seatFeature?.limit ?? current.seatsLimit,
-      trialEnd: null,
+      trialEnd: isDowngrade ? null : current.trialEnd,
     };
-    this.summaries.set(organizationId, next);
-    this.summarySubject.next(next);
   }
 
   private getOrCreateSummary(organizationId: OrganizationId): BillingSummary {
     const existing = this.summaries.get(organizationId);
     if (existing) {
-      return existing;
+      return this.normalizeSummary(existing);
     }
-    const created = { ...mockBillingSummaryForOrg(organizationId) };
+    const created = this.normalizeSummary({
+      ...mockBillingSummaryForOrg(organizationId),
+    });
     this.summaries.set(organizationId, created);
     return created;
+  }
+
+  private normalizeSummary(summary: BillingSummary): BillingSummary {
+    return alignBillingSummarySeats(summary, MOCK_BILLING_PLANS);
+  }
+
+  private persistSummary(summary: BillingSummary): BillingSummary {
+    const next = this.normalizeSummary(summary);
+    this.summaries.set(summary.organizationId, next);
+    if (this.summarySubject.value?.organizationId === summary.organizationId) {
+      this.summarySubject.next(next);
+    }
+    return next;
   }
 }
 

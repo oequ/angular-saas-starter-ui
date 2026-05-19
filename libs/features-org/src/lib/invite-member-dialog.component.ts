@@ -114,11 +114,35 @@ export interface InviteMemberRoleOption {
               </hlm-select>
             </div>
 
+            @if (seatsExhausted()) {
+              <p class="text-destructive text-sm leading-relaxed" role="alert">
+                @if (seatsUsageLabel(); as usage) {
+                  All seats are in use ({{ usage }}).
+                } @else {
+                  All seats on your plan are in use.
+                }
+                <button
+                  type="button"
+                  class="text-destructive font-medium underline underline-offset-4 hover:text-destructive/90 hover:no-underline"
+                  (click)="upgradeRequested.emit()"
+                >
+                  Upgrade your plan
+                </button>
+                to invite more members.
+              </p>
+            } @else if (submitError()) {
+              <p class="text-destructive text-sm" role="alert">{{ submitError() }}</p>
+            }
+
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
                 Cancel
               </button>
-              <button hlmBtn type="submit" [disabled]="inviting()">
+              <button
+                hlmBtn
+                type="submit"
+                [disabled]="inviting() || seatsExhausted()"
+              >
                 {{ inviting() ? 'Sending…' : 'Send invite' }}
               </button>
             </hlm-dialog-footer>
@@ -131,10 +155,14 @@ export interface InviteMemberRoleOption {
 export class InviteMemberDialogComponent {
   readonly open = input(false);
   readonly inviting = input(false);
+  readonly seatsExhausted = input(false);
+  readonly seatsUsageLabel = input<string | null>(null);
+  readonly submitError = input<string | null>(null);
   readonly roleOptions = input.required<readonly InviteMemberRoleOption[]>();
 
   readonly submitted = output<InviteMemberInput>();
   readonly cancelled = output<void>();
+  readonly upgradeRequested = output<void>();
 
   protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
   protected readonly dialogFieldClass = SETTINGS_DIALOG_FIELD_CLASS;
@@ -159,6 +187,7 @@ export class InviteMemberDialogComponent {
         this.form.reset({ email: '', role: 'member' });
       }
     });
+
   }
 
   protected readonly dialogState = computed(() =>

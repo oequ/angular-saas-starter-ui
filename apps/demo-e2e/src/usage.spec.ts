@@ -24,7 +24,7 @@ test.describe('Usage (mock demo)', () => {
     const seatsRow = page
       .locator('div.flex.items-start')
       .filter({ has: page.getByText('Seats', { exact: true }) });
-    await expect(seatsRow.locator('p.font-semibold')).toHaveText(/5 \/ 5/);
+    await expect(seatsRow.locator('p.font-semibold')).toHaveText(/4 \/ 50/);
     await expect(page.getByText('12,400 / 50,000 emails')).toBeVisible();
     await expect(page.getByText('Monthly Active SSO Users')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Upgrade' })).toHaveCount(0);

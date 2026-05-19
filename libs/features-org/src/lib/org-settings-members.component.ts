@@ -12,11 +12,15 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEllipsis, lucideSearch, lucideUsers } from '@ng-icons/lucide';
 import {
+  BILLING_PORT,
+  formatSeatUsageValue,
+  isBillingSeatsExhausted,
   ORG_PORT,
   type OrganizationMember,
   type OrgRole,
   type PortError,
 } from '@oequ/ports';
+import { PaywallDialogService } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import {
@@ -247,9 +251,13 @@ type MemberRoleFilter = 'all' | OrgRole;
     <oequ-invite-member-dialog
       [open]="inviteDialogOpen()"
       [inviting]="inviting()"
+      [seatsExhausted]="inviteSeatsExhausted()"
+      [seatsUsageLabel]="inviteSeatsUsageLabel()"
+      [submitError]="inviteSubmitError()"
       [roleOptions]="inviteRoleOptions"
       (submitted)="onInviteSubmitted($event)"
       (cancelled)="closeInviteDialog()"
+      (upgradeRequested)="onInviteUpgradeRequested()"
     />
 
     <oequ-change-member-role-dialog
@@ -274,6 +282,8 @@ export class OrgSettingsMembersComponent {
   readonly organizationId = input.required<string>();
 
   private readonly orgPort = inject(ORG_PORT);
+  private readonly billingPort = inject(BILLING_PORT);
+  private readonly paywallDialog = inject(PaywallDialogService);
 
   private readonly dataRefresh = signal(0);
 
@@ -309,6 +319,31 @@ export class OrgSettingsMembersComponent {
 
   protected readonly inviteDialogOpen = signal(false);
   protected readonly inviting = signal(false);
+  protected readonly inviteSubmitError = signal<string | null>(null);
+
+  protected readonly billingResource = resource({
+    params: () => ({
+      orgId: this.organizationId(),
+      refresh: this.dataRefresh(),
+    }),
+    loader: async ({ params }) => {
+      const result = await this.billingPort.getSummary(params.orgId);
+      if (!result.ok) {
+        throw new Error(result.error.message);
+      }
+      return result.data;
+    },
+  });
+
+  protected readonly inviteSeatsExhausted = computed(() => {
+    const summary = this.billingResource.value();
+    return summary ? isBillingSeatsExhausted(summary) : false;
+  });
+
+  protected readonly inviteSeatsUsageLabel = computed(() => {
+    const summary = this.billingResource.value();
+    return summary ? formatSeatUsageValue(summary) : null;
+  });
 
   protected readonly changeRoleDialogOpen = signal(false);
   protected readonly changeRoleTarget = signal<OrganizationMember | null>(null);
@@ -413,11 +448,23 @@ export class OrgSettingsMembersComponent {
   }
 
   protected openInviteDialog(): void {
+    this.inviteSubmitError.set(null);
     this.inviteDialogOpen.set(true);
   }
 
   protected closeInviteDialog(): void {
     this.inviteDialogOpen.set(false);
+    this.inviteSubmitError.set(null);
+  }
+
+  protected async onInviteUpgradeRequested(): Promise<void> {
+    this.closeInviteDialog();
+    const result = await this.paywallDialog.requestOpen({ suggestedPlanId: 'team' });
+    if (result === 'success') {
+      this.billingResource.reload();
+      this.dataRefresh.update((value) => value + 1);
+      toast.success('Plan upgraded. You can invite more members.');
+    }
   }
 
   protected async onInviteSubmitted(input: InviteMemberInput): Promise<void> {
@@ -433,7 +480,7 @@ export class OrgSettingsMembersComponent {
     this.inviting.set(false);
 
     if (!result.ok) {
-      toast.error(this.portErrorMessage(result.error));
+      this.inviteSubmitError.set(this.portErrorMessage(result.error));
       return;
     }
 

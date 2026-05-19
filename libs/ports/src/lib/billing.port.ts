@@ -45,6 +45,12 @@ export interface BillingPort {
     organizationId: OrganizationId,
   ): Promise<PortResult<BillingSummary>>;
 
+  /** Immediate plan change (mock downgrade; v1.0: Stripe subscription update). */
+  changePlan(
+    organizationId: OrganizationId,
+    planId: string,
+  ): Promise<PortResult<BillingSummary>>;
+
   createPortalSession(
     organizationId: OrganizationId,
     returnUrl: string,

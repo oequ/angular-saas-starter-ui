@@ -25,6 +25,10 @@ export const SETTINGS_DIALOG_CONTENT_CLASS = 'sm:!max-w-[380px]';
 export const PAYWALL_DIALOG_CONTENT_CLASS =
   '!flex max-h-[min(90dvh,calc(100vh-2rem))] !flex-col gap-4 overflow-hidden sm:!max-w-5xl';
 
+/** Paywall checkout / downgrade confirm — same width as settings dialogs. */
+export const PAYWALL_CONFIRM_DIALOG_CONTENT_CLASS =
+  '!flex max-h-[min(90dvh,calc(100vh-2rem))] !flex-col gap-4 overflow-hidden sm:!max-w-[420px]';
+
 /** Scrollable plan/checkout body inside the paywall dialog. */
 export const PAYWALL_DIALOG_BODY_CLASS =
   'min-h-0 flex-1 overflow-y-auto overscroll-contain';
