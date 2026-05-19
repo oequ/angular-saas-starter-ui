@@ -151,19 +151,28 @@ export const LEGAL_DOCUMENTS = {
     id: 'cookies',
     title: 'Cookie Policy',
     description: 'How cookies and similar technologies are used in the demo.',
-    lastUpdated: 'May 16, 2026',
+    lastUpdated: 'May 19, 2026',
     sections: [
       {
-        heading: '1. What we use',
+        heading: '1. Categories',
         paragraphs: [
-          'Strictly necessary cookies maintain your session and security preferences (for example, authentication tokens and CSRF protection where applicable).',
-          'Analytics or marketing cookies are not enabled in the default demo build.',
+          'Strictly necessary — session, security, and UI preferences required to run the app (always active).',
+          'Analytics — optional usage measurement (only after consent).',
+          'Marketing — optional campaign and outreach measurement (only after consent; disabled in the default demo scripts).',
         ],
       },
       {
-        heading: '2. Managing preferences',
+        heading: '2. Your choices',
         paragraphs: [
-          'You can clear cookies via browser settings. Signing out invalidates the application session. Production apps may require a consent banner where local law mandates it.',
+          'On first visit, a banner lets you Reject all, Accept all, or Manage preferences. Reject and Accept are equally prominent; optional categories are off by default.',
+          'You can reopen Cookie preferences from the user menu at any time. Withdrawal is as easy as giving consent.',
+          'Consent is stored locally in your browser (`oequ-cookie-consent`). Clearing site data or cookies resets your choice.',
+        ],
+      },
+      {
+        heading: '3. Retention',
+        paragraphs: [
+          'Session cookies expire when you sign out or when the session ends. Preference cookies follow the durations set in your browser and our app configuration (for example, sidebar state: 7 days).',
         ],
       },
     ],

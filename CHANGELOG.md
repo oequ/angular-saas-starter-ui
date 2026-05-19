@@ -15,7 +15,8 @@ Billing payment methods, paywall UX, settings polish, PWA docs, and README align
 - Paywall: stacked **Upgrade checkout** and **Downgrade confirm** dialogs over the plan picker
 - Workspace General: workspace icon upload/remove; profile save toasts
 - Demo PWA: web manifest, Angular service worker (production / GitHub Pages builds), icon generator script
-- Playwright E2E: add payment method on Lumen
+- GDPR-style cookie consent banner (reject / accept / manage preferences) and user-menu **Cookie preferences**
+- Playwright E2E: add payment method on Lumen; cookie consent banner
 
 ### Changed
 

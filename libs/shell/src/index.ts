@@ -12,3 +12,7 @@ export * from './lib/paywall/paywall-dialog.component';
 export * from './lib/billing-status-banner.component';
 export * from './lib/help/help-panel.component';
 export * from './lib/help/help-panel.service';
+export * from './lib/cookie-consent/cookie-consent.model';
+export * from './lib/cookie-consent/cookie-consent.service';
+export * from './lib/cookie-consent/cookie-consent-banner.component';
+export * from './lib/cookie-consent/cookie-consent-preferences-dialog.component';

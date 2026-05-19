@@ -13,6 +13,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideChevronsUpDown,
   lucideCircleHelp,
+  lucideCookie,
   lucideLogOut,
   lucideMoon,
   lucideRocket,
@@ -24,6 +25,7 @@ import {
   HlmDropdownMenuImports,
   provideHlmDropdownMenuConfig,
 } from '@spartan-ng/helm/dropdown-menu';
+import { CookieConsentService } from './cookie-consent/cookie-consent.service';
 import { HelpPanelService } from './help/help-panel.service';
 import { SHELL_SIDEBAR_SELECT_TRIGGER_CLASS } from './settings-layout.tokens';
 import { ThemeService } from './theme.service';
@@ -38,6 +40,7 @@ import { ThemeService } from './theme.service';
       lucideUser,
       lucideRocket,
       lucideCircleHelp,
+      lucideCookie,
       lucideMoon,
       lucideSun,
       lucideLogOut,
@@ -121,6 +124,19 @@ import { ThemeService } from './theme.service';
           type="button"
           hlmDropdownMenuItem
           class="gap-2"
+          (triggered)="openCookiePreferences()"
+        >
+          <ng-icon
+            name="lucideCookie"
+            class="size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span>Cookie preferences</span>
+        </button>
+        <button
+          type="button"
+          hlmDropdownMenuItem
+          class="gap-2"
           (triggered)="toggleTheme()"
         >
           <ng-icon
@@ -156,6 +172,7 @@ export class UserMenuComponent {
   private readonly orgPort = inject(ORG_PORT);
   private readonly router = inject(Router);
   private readonly helpPanel = inject(HelpPanelService);
+  private readonly cookieConsent = inject(CookieConsentService);
   protected readonly themeService = inject(ThemeService);
 
   private readonly currentUrl = toSignal(
@@ -227,5 +244,9 @@ export class UserMenuComponent {
 
   protected openHelp(): void {
     this.helpPanel.open();
+  }
+
+  protected openCookiePreferences(): void {
+    this.cookieConsent.openPreferences();
   }
 }
