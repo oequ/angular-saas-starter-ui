@@ -20,6 +20,7 @@ import {
   PointElement,
   Tooltip,
   type ChartConfiguration,
+  type Plugin,
 } from 'chart.js';
 import { formatMetricsChartDate } from '@oequ/ports';
 import { ThemeService } from '@oequ/shell';
@@ -36,15 +37,44 @@ Chart.register(
 
 export type MetricsChartTickFormat = 'count' | 'percent';
 
+const crosshairPlugin: Plugin<'line'> = {
+  id: 'metricsCrosshair',
+  afterDraw(chart) {
+    const active = chart.tooltip?.getActiveElements();
+    if (!active?.length) {
+      return;
+    }
+    const { ctx, chartArea } = chart;
+    const x = active[0].element.x;
+    if (x === undefined || !chartArea) {
+      return;
+    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x, chartArea.top);
+    ctx.lineTo(x, chartArea.bottom);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = withAlpha(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue('--muted-foreground')
+        .trim() || '#888',
+      0.45,
+    );
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.restore();
+  },
+};
+
 @Component({
   selector: 'oequ-metrics-line-chart',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="relative h-[220px] w-full">
+    <div class="relative w-full" [style.height.px]="height()">
       <canvas #canvas class="size-full" role="img" [attr.aria-label]="ariaLabel()"></canvas>
       @if (riskThresholdPercent() !== null) {
         <div
-          class="pointer-events-none absolute inset-x-0 border-t border-dashed border-amber-500/80"
+          class="pointer-events-none absolute inset-x-0 border-t border-dashed border-amber-500/70"
           [style.bottom.%]="riskLineBottomPercent()"
         >
           <span
@@ -71,6 +101,7 @@ export class MetricsLineChartComponent implements AfterViewInit {
   readonly fillArea = input(false);
   readonly riskThresholdPercent = input<number | null>(null);
   readonly ariaLabel = input('Metrics chart');
+  readonly height = input(220);
 
   private readonly canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly destroyRef = inject(DestroyRef);
@@ -108,7 +139,8 @@ export class MetricsLineChartComponent implements AfterViewInit {
       this.tickFormat();
       this.lineColor();
       this.fillArea();
-      this.rebuildChart();
+      this.height();
+      this.rebuildChart(true);
     });
 
     this.destroyRef.onDestroy(() => {
@@ -118,34 +150,38 @@ export class MetricsLineChartComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.rebuildChart();
+    this.rebuildChart(false);
   }
 
-  private rebuildChart(): void {
+  private rebuildChart(animate: boolean): void {
     const canvas = this.canvasRef()?.nativeElement;
     if (!canvas) {
       return;
     }
 
     const colors = this.readThemeColors();
-    const config = this.buildConfig(colors);
+    const config = this.buildConfig(colors, animate);
 
     if (this.chart) {
       this.chart.data = config.data!;
       if (config.options) {
         this.chart.options = config.options;
       }
-      this.chart.update();
+      this.chart.update(animate ? 'active' : 'none');
       return;
     }
 
     this.chart = new Chart(canvas, config);
   }
 
-  private buildConfig(colors: ChartThemeColors): ChartConfiguration<'line'> {
+  private buildConfig(
+    colors: ChartThemeColors,
+    animate: boolean,
+  ): ChartConfiguration<'line'> {
     const formattedLabels = this.labels().map((iso) =>
       formatMetricsChartDate(iso),
     );
+    const lineColor = this.lineColor();
 
     return {
       type: 'line',
@@ -154,13 +190,17 @@ export class MetricsLineChartComponent implements AfterViewInit {
         datasets: [
           {
             data: [...this.values()],
-            borderColor: this.lineColor(),
-            backgroundColor: this.fillArea()
-              ? this.withAlpha(this.lineColor(), 0.12)
-              : 'transparent',
+            borderColor: lineColor,
+            backgroundColor: (context) =>
+              this.fillArea()
+                ? this.areaGradient(context.chart, lineColor)
+                : 'transparent',
             borderWidth: 2,
             pointRadius: 0,
-            pointHoverRadius: 4,
+            pointHoverRadius: 5,
+            pointHoverBorderWidth: 2,
+            pointHoverBackgroundColor: lineColor,
+            pointHoverBorderColor: colors.tooltipBg,
             tension: 0.35,
             fill: this.fillArea(),
           },
@@ -169,7 +209,7 @@ export class MetricsLineChartComponent implements AfterViewInit {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: false,
+        animation: animate ? { duration: 380, easing: 'easeOutQuad' } : false,
         interaction: {
           intersect: false,
           mode: 'index',
@@ -183,6 +223,8 @@ export class MetricsLineChartComponent implements AfterViewInit {
             bodyColor: colors.tooltipText,
             borderColor: colors.border,
             borderWidth: 1,
+            padding: 10,
+            displayColors: false,
             callbacks: {
               label: (ctx) => this.formatTick(Number(ctx.parsed.y)),
             },
@@ -205,8 +247,9 @@ export class MetricsLineChartComponent implements AfterViewInit {
             min: 0,
             max: this.resolvedYMax(),
             grid: {
-              color: colors.grid,
+              color: withAlpha(colors.grid, 0.65),
               drawTicks: false,
+              tickLength: 0,
             },
             border: { display: false },
             ticks: {
@@ -218,7 +261,25 @@ export class MetricsLineChartComponent implements AfterViewInit {
           },
         },
       },
+      plugins: [crosshairPlugin],
     };
+  }
+
+  private areaGradient(chart: Chart, lineColor: string): string | CanvasGradient {
+    const { ctx, chartArea } = chart;
+    if (!chartArea) {
+      return withAlpha(lineColor, 0.15);
+    }
+    const gradient = ctx.createLinearGradient(
+      0,
+      chartArea.top,
+      0,
+      chartArea.bottom,
+    );
+    gradient.addColorStop(0, withAlpha(lineColor, 0.35));
+    gradient.addColorStop(0.55, withAlpha(lineColor, 0.08));
+    gradient.addColorStop(1, withAlpha(lineColor, 0));
+    return gradient;
   }
 
   private formatTick(value: number): string {
@@ -239,13 +300,19 @@ export class MetricsLineChartComponent implements AfterViewInit {
       tooltipText: style.getPropertyValue('--popover-foreground').trim() || '#fff',
     };
   }
+}
 
-  private withAlpha(color: string, alpha: number): string {
-    if (color.startsWith('oklch(')) {
-      return color.replace(/\)$/, ` / ${alpha})`);
-    }
-    return color;
+function withAlpha(color: string, alpha: number): string {
+  if (color.startsWith('oklch(')) {
+    return color.replace(/\)$/, ` / ${alpha})`);
   }
+  if (color.startsWith('#') && color.length === 7) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return color;
 }
 
 interface ChartThemeColors {

@@ -14,34 +14,19 @@ import { MetricsLineChartComponent } from './metrics-line-chart.component';
   imports: [HlmCardImports, HlmSelectImports, MetricsLineChartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section hlmCard class="border-input gap-0 overflow-hidden rounded-[5px] py-0">
+    <section
+      hlmCard
+      class="ring-border/60 gap-0 overflow-hidden rounded-xl border-0 py-0 shadow-sm ring-1 ring-inset"
+    >
       <div hlmCardContent class="!p-5">
-        <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div class="flex flex-wrap gap-8">
-            <div>
-              <p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                Emails
-              </p>
-              <p class="mt-1 text-3xl font-semibold tracking-tight">
-                {{ formatMetricsCount(dashboard().summary.emailsSent) }}
-              </p>
-            </div>
-            <div>
-              <p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                Deliverability rate
-              </p>
-              <p class="mt-1 text-3xl font-semibold tracking-tight">
-                {{
-                  formatMetricsPercent(dashboard().summary.deliverabilityRate, {
-                    decimals: 0,
-                  })
-                }}
-              </p>
-            </div>
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-sm font-medium">Email volume</h2>
+            <p class="text-muted-foreground text-xs">Sent over the selected period</p>
           </div>
 
           <hlm-select class="w-full sm:w-40" value="all_events">
-            <hlm-select-trigger class="h-9 w-full shadow-none">
+            <hlm-select-trigger class="border-input h-9 w-full rounded-lg shadow-none">
               <span class="truncate">All Events</span>
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal class="w-[var(--brn-select-width)]">
@@ -57,21 +42,26 @@ import { MetricsLineChartComponent } from './metrics-line-chart.component';
           tickFormat="count"
           lineColor="oklch(0.62 0.17 145)"
           [fillArea]="true"
+          [height]="240"
           ariaLabel="Emails sent over time"
         />
 
         @if (primaryDomain(); as domain) {
-          <div class="mt-4 flex items-center justify-between gap-3 text-sm">
-            <div class="flex min-w-0 items-center gap-2">
+          <div class="mt-4 flex items-center justify-between gap-3">
+            <span
+              class="bg-muted/50 text-foreground inline-flex max-w-full min-w-0 items-center gap-2 rounded-full px-3 py-1 text-xs"
+            >
               <span class="size-2 shrink-0 rounded-full bg-emerald-500"></span>
-              <span class="truncate">
-                {{ domain.domain }} ({{ formatMetricsCount(domain.count) }})
-              </span>
-            </div>
-            <span class="text-muted-foreground shrink-0 tabular-nums">
+              <span class="truncate font-medium">{{ domain.domain }}</span>
+              <span class="text-muted-foreground tabular-nums"
+                >{{ formatMetricsCount(domain.count) }}</span
+              >
+            </span>
+            <span class="text-muted-foreground shrink-0 text-xs tabular-nums">
               {{
                 formatMetricsPercent(domain.deliverabilityRate, { decimals: 0 })
               }}
+              deliverability
             </span>
           </div>
         }

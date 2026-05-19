@@ -30,7 +30,14 @@ export class WorkspaceSettingsLayoutComponent {
     { initialValue: this.router.url },
   );
 
-  protected readonly showWorkspaceSettingsHeading = computed(
-    () => !(this.currentUrl() ?? '').startsWith('/workspace/settings/billing'),
-  );
+  protected readonly showWorkspaceSettingsHeading = computed(() => {
+    const url = this.currentUrl() ?? '';
+    if (url.startsWith('/workspace/settings/billing')) {
+      return false;
+    }
+    if (url.startsWith('/workspace/settings/members')) {
+      return false;
+    }
+    return true;
+  });
 }

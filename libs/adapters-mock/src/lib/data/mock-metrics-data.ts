@@ -75,6 +75,13 @@ export function buildMockMetricsDashboard(
       emailsSent: Math.round(emailsSent * domainMultiplier),
       deliverabilityRate: emailsSent > 0 ? 100 : 0,
     },
+    comparison: {
+      emailsSentPercent:
+        filters.period === '90d' ? 8 : filters.period === '30d' ? 14 : 22,
+      deliverabilityRatePoints: 0,
+      bounceRatePoints: 0,
+      complainRatePoints: 0,
+    },
     emailsSeries,
     domainBreakdown: [
       {

@@ -7,9 +7,10 @@ import {
   resource,
   signal,
 } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideGlobe } from '@ng-icons/lucide';
 import {
   METRICS_PORT,
-  metricsPeriodLabel,
   type MetricsDomainId,
   type MetricsEventFilter,
   type MetricsFilters,
@@ -19,6 +20,9 @@ import {
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 
 import { MetricsEmailsCardComponent } from './metrics/metrics-emails-card.component';
+import { MetricsKpiRowComponent } from './metrics/metrics-kpi-row.component';
+import { MetricsPageSkeletonComponent } from './metrics/metrics-page-skeleton.component';
+import { MetricsPeriodSegmentComponent } from './metrics/metrics-period-segment.component';
 import {
   MetricsStatCardComponent,
   bounceLegendItems,
@@ -28,23 +32,49 @@ import {
 @Component({
   selector: 'oequ-org-metrics',
   imports: [
+    NgIcon,
     HlmSelectImports,
+    MetricsPeriodSegmentComponent,
+    MetricsKpiRowComponent,
+    MetricsPageSkeletonComponent,
     MetricsEmailsCardComponent,
     MetricsStatCardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [provideIcons({ lucideGlobe })],
   template: `
     <div class="flex flex-col gap-6">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 class="text-2xl font-semibold tracking-tight">Metrics</h1>
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div class="flex flex-col gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold tracking-tight">Metrics</h1>
+          <p class="text-muted-foreground mt-1 text-sm">
+            Email delivery performance for your workspace
+            @if (metrics(); as data) {
+              <span class="text-muted-foreground/80">
+                · Updated {{ formatMetricsLastUpdated(data.lastUpdatedAt) }}
+              </span>
+            }
+          </p>
+        </div>
+
+        <div
+          class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
+        >
+          <oequ-metrics-period-segment
+            [value]="periodFilter()"
+            (periodChange)="periodFilter.set($event)"
+          />
+
           <hlm-select
-            class="w-full sm:w-44"
+            class="w-full sm:w-48"
             [value]="domainFilter()"
             (valueChange)="onDomainChange($event)"
           >
-            <hlm-select-trigger class="h-9 w-full shadow-none">
-              <span class="truncate">{{ selectedDomainLabel() }}</span>
+            <hlm-select-trigger class="border-input h-9 w-full rounded-lg shadow-none">
+              <span class="flex min-w-0 items-center gap-2">
+                <ng-icon name="lucideGlobe" class="size-4 shrink-0 opacity-70" />
+                <span class="truncate">{{ selectedDomainLabel() }}</span>
+              </span>
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal class="w-[var(--brn-select-width)]">
               @for (domain of domainOptions(); track domain.id) {
@@ -52,68 +82,61 @@ import {
               }
             </hlm-select-content>
           </hlm-select>
-
-          <hlm-select
-            class="w-full sm:w-44"
-            [value]="periodFilter()"
-            (valueChange)="onPeriodChange($event)"
-          >
-            <hlm-select-trigger class="h-9 w-full shadow-none">
-              <span class="truncate">{{ metricsPeriodLabel(periodFilter()) }}</span>
-            </hlm-select-trigger>
-            <hlm-select-content *hlmSelectPortal class="w-[var(--brn-select-width)]">
-              <hlm-select-item value="15d">Last 15 days</hlm-select-item>
-              <hlm-select-item value="30d">Last 30 days</hlm-select-item>
-              <hlm-select-item value="90d">Last 90 days</hlm-select-item>
-            </hlm-select-content>
-          </hlm-select>
         </div>
       </div>
 
-      @if (metricsLoading()) {
+      @if (metricsLoading() && !metrics()) {
+        <oequ-metrics-page-skeleton />
+      } @else if (metricsError() && !metrics()) {
         <div
-          class="border-input text-muted-foreground flex min-h-[420px] items-center justify-center rounded-[5px] border text-sm"
-        >
-          Loading metrics…
-        </div>
-      } @else if (metricsError()) {
-        <div
-          class="border-input text-destructive flex min-h-[420px] items-center justify-center rounded-[5px] border text-sm"
+          class="border-input text-destructive flex min-h-[420px] items-center justify-center rounded-xl border text-sm"
         >
           {{ metricsError() }}
         </div>
       } @else if (metrics(); as data) {
-        <oequ-metrics-emails-card [dashboard]="data" />
+        <div class="relative flex flex-col gap-5">
+          @if (metricsLoading()) {
+            <div
+              class="bg-background/60 absolute inset-0 z-10 flex items-center justify-center rounded-xl backdrop-blur-[1px]"
+              aria-hidden="true"
+            >
+              <span class="text-muted-foreground text-sm">Updating…</span>
+            </div>
+          }
 
-        <div class="grid gap-4 lg:grid-cols-2">
-          <oequ-metrics-stat-card
-            title="Bounce rate"
-            [rate]="data.bounce.rate"
-            tooltip="Percentage of emails that bounced."
-            [series]="data.bounce.series"
-            [yMax]="10"
-            lineColor="oklch(0.577 0.245 27.325)"
-            [riskThresholdPercent]="data.bounce.riskThresholdPercent"
-            [legendItems]="bounceLegendItems(data.bounce.breakdown)"
-          />
+          <oequ-metrics-kpi-row [dashboard]="data" />
 
-          <oequ-metrics-stat-card
-            title="Complain rate"
-            [rate]="data.complain.rate"
-            [rateDecimals]="2"
-            tooltip="Percentage of emails marked as spam."
-            [series]="data.complain.series"
-            [yMax]="0.2"
-            lineColor="oklch(0.75 0.15 85)"
-            [riskThresholdPercent]="data.complain.riskThresholdPercent"
-            [legendItems]="complainLegendItems()"
-          />
+          <oequ-metrics-emails-card [dashboard]="data" />
+
+          <div class="grid gap-4 lg:grid-cols-2">
+            <oequ-metrics-stat-card
+              title="Bounce rate"
+              [rate]="data.bounce.rate"
+              tooltip="Percentage of emails that bounced."
+              [series]="data.bounce.series"
+              [yMax]="10"
+              lineColor="oklch(0.577 0.245 27.325)"
+              [riskThresholdPercent]="data.bounce.riskThresholdPercent"
+              [legendItems]="bounceLegendItems(data.bounce.breakdown)"
+            />
+
+            <oequ-metrics-stat-card
+              title="Complain rate"
+              [rate]="data.complain.rate"
+              [rateDecimals]="2"
+              tooltip="Percentage of emails marked as spam."
+              [series]="data.complain.series"
+              [yMax]="0.2"
+              lineColor="oklch(0.75 0.15 85)"
+              [riskThresholdPercent]="data.complain.riskThresholdPercent"
+              [legendItems]="complainLegendItems()"
+            />
+          </div>
+
+          <p class="text-muted-foreground text-sm">
+            Data is updated every 15 minutes.
+          </p>
         </div>
-
-        <p class="text-muted-foreground text-sm">
-          Data is updated every 15 minutes. Last updated
-          {{ formatMetricsLastUpdated(data.lastUpdatedAt) }}.
-        </p>
       }
     </div>
   `,
@@ -133,13 +156,10 @@ export class OrgMetricsComponent {
     eventFilter: this.eventFilter(),
   }));
 
-  private readonly dataRefresh = signal(0);
-
   protected readonly metricsResource = resource({
     params: () => ({
       orgId: this.organizationId(),
       filters: this.filters(),
-      refresh: this.dataRefresh(),
     }),
     loader: async ({ params, abortSignal }) => {
       const result = await this.metricsPort.getMetrics(
@@ -175,7 +195,6 @@ export class OrgMetricsComponent {
     );
   });
 
-  protected readonly metricsPeriodLabel = metricsPeriodLabel;
   protected readonly formatMetricsLastUpdated = formatMetricsLastUpdated;
   protected readonly bounceLegendItems = bounceLegendItems;
 
@@ -198,13 +217,6 @@ export class OrgMetricsComponent {
     const next = Array.isArray(value) ? value[0] : value;
     if (next) {
       this.domainFilter.set(next);
-    }
-  }
-
-  protected onPeriodChange(value: string | string[] | null | undefined): void {
-    const next = Array.isArray(value) ? value[0] : value;
-    if (next === '15d' || next === '30d' || next === '90d') {
-      this.periodFilter.set(next);
     }
   }
 }

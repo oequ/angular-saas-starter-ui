@@ -6,6 +6,7 @@ import {
   type BounceBreakdownItem,
   type MetricsTimeSeries,
 } from '@oequ/ports';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 
@@ -22,6 +23,7 @@ export interface MetricsLegendItem {
   selector: 'oequ-metrics-stat-card',
   imports: [
     NgIcon,
+    HlmBadgeImports,
     HlmCardImports,
     HlmTooltipImports,
     MetricsLineChartComponent,
@@ -29,14 +31,20 @@ export interface MetricsLegendItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ lucideCircleHelp })],
   template: `
-    <section hlmCard class="border-input gap-0 overflow-hidden rounded-[5px] py-0">
+    <section
+      hlmCard
+      class="ring-border/60 gap-0 overflow-hidden rounded-xl border-0 py-0 ring-1 ring-inset"
+    >
       <div hlmCardContent class="!p-5">
         <div class="mb-4 flex items-start justify-between gap-3">
           <div>
-            <p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-              {{ title() }}
-            </p>
-            <p class="mt-1 text-3xl font-semibold tracking-tight">
+            <div class="flex flex-wrap items-center gap-2">
+              <p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                {{ title() }}
+              </p>
+              <span hlmBadge [variant]="healthBadgeVariant()">{{ healthLabel() }}</span>
+            </div>
+            <p class="mt-1 text-2xl font-semibold tracking-tight tabular-nums">
               {{ formatMetricsPercent(rate(), { decimals: rateDecimals() }) }}
             </p>
           </div>
@@ -57,12 +65,15 @@ export interface MetricsLegendItem {
           tickFormat="percent"
           [lineColor]="lineColor()"
           [riskThresholdPercent]="riskThresholdPercent()"
+          [height]="160"
           [attr.aria-label]="title() + ' chart'"
         />
 
-        <ul class="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs">
+        <ul class="mt-4 flex flex-wrap gap-2 text-xs">
           @for (item of legendItems(); track item.label) {
-            <li class="text-muted-foreground flex items-center gap-2">
+            <li
+              class="bg-muted/40 text-muted-foreground inline-flex items-center gap-2 rounded-full px-2.5 py-1"
+            >
               <span class="size-2 shrink-0 rounded-full" [class]="item.dotClass"></span>
               <span>{{ item.label }}</span>
               <span class="text-foreground tabular-nums"
@@ -96,6 +107,24 @@ export class MetricsStatCardComponent {
   protected readonly seriesValues = computed(() =>
     this.series().points.map((point) => point.value),
   );
+
+  protected readonly healthLabel = computed(() => {
+    const rate = this.rate();
+    const risk = this.riskThresholdPercent();
+    if (rate === 0) {
+      return 'Healthy';
+    }
+    return rate >= risk ? 'Above risk' : 'Healthy';
+  });
+
+  protected readonly healthBadgeVariant = computed(() => {
+    const rate = this.rate();
+    const risk = this.riskThresholdPercent();
+    if (rate >= risk) {
+      return 'destructive' as const;
+    }
+    return 'secondary' as const;
+  });
 }
 
 export function bounceLegendItems(

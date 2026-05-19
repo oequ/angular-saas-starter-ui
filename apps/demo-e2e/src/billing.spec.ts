@@ -53,7 +53,7 @@ test.describe('Billing v0.3 (mock demo)', () => {
       page.getByRole('link', { name: 'upgrade your plan' }),
     ).toHaveAttribute('href', /\/workspace\/settings\/billing\/overview/);
 
-    const inviteButton = page.getByRole('button', { name: 'Invite member' });
+    const inviteButton = page.getByRole('button', { name: '+ Invite member' });
     await expect(inviteButton).toBeDisabled();
   });
 

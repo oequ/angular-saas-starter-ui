@@ -9,10 +9,11 @@ test.describe('metrics', () => {
 
     await expect(page.getByRole('heading', { name: 'Metrics' })).toBeVisible();
     await expect(page.getByText('All domains')).toBeVisible();
-    await expect(page.getByText('Last 15 days')).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Time period' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '15d', pressed: true })).toBeVisible();
 
-    await expect(page.getByText('Emails', { exact: true })).toBeVisible();
-    await expect(page.getByText('Deliverability rate', { exact: true })).toBeVisible();
+    await expect(page.getByText('Emails sent', { exact: true })).toBeVisible();
+    await expect(page.getByText('Deliverability', { exact: true })).toBeVisible();
     await expect(page.getByText('Bounce rate', { exact: true })).toBeVisible();
     await expect(page.getByText('Complain rate', { exact: true })).toBeVisible();
 

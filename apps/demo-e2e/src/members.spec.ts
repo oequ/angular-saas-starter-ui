@@ -17,7 +17,7 @@ test.describe('members', () => {
     await waitForMembersPageLoaded(page);
     await expect(page.getByText('2 / 10 used')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Invite member' }).click();
+    await page.getByRole('button', { name: '+ Invite member' }).click();
     await page.getByLabel('Email address').fill('new.teammate@example.com');
     await page.getByRole('button', { name: 'Send invite' }).click();
 

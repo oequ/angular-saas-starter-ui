@@ -57,9 +57,18 @@ export interface MetricsSummary {
   readonly deliverabilityRate: number;
 }
 
+/** Change vs the previous period of the same length (demo / API). */
+export interface MetricsKpiComparison {
+  readonly emailsSentPercent: number;
+  readonly deliverabilityRatePoints: number;
+  readonly bounceRatePoints: number;
+  readonly complainRatePoints: number;
+}
+
 export interface MetricsDashboard {
   readonly domains: readonly MetricsDomainOption[];
   readonly summary: MetricsSummary;
+  readonly comparison: MetricsKpiComparison;
   readonly emailsSeries: MetricsTimeSeries;
   readonly domainBreakdown: readonly MetricsDomainBreakdown[];
   readonly bounce: BounceMetrics;

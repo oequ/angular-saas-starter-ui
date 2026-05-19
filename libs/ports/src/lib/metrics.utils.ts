@@ -33,6 +33,23 @@ export function formatMetricsChartDate(isoDate: string): string {
   }).format(date);
 }
 
+export function formatMetricsDeltaPercent(value: number): string {
+  if (value === 0) {
+    return 'No change';
+  }
+  const arrow = value > 0 ? '↑' : '↓';
+  return `${arrow} ${Math.abs(value)}%`;
+}
+
+export function formatMetricsDeltaPoints(value: number): string {
+  if (value === 0) {
+    return 'No change';
+  }
+  const arrow = value > 0 ? '↑' : '↓';
+  const suffix = Math.abs(value) === 1 ? 'pt' : 'pts';
+  return `${arrow} ${Math.abs(value)} ${suffix}`;
+}
+
 export function formatMetricsLastUpdated(isoDate: string): string {
   const date = new Date(isoDate);
   return new Intl.DateTimeFormat(undefined, {
