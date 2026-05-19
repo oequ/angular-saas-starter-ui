@@ -141,6 +141,14 @@ export const appRoutes: Route[] = [
             data: { title: 'API keys' },
           },
           {
+            path: 'integrations',
+            loadComponent: () =>
+              import('@oequ/features-org').then(
+                (m) => m.WorkspaceIntegrationsPageComponent,
+              ),
+            data: { title: 'Integrations' },
+          },
+          {
             path: 'settings',
             loadComponent: () =>
               import('@oequ/features-org').then(

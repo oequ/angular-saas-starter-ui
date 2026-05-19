@@ -15,6 +15,7 @@ import {
   lucideCreditCard,
   lucideGauge,
   lucideKeyRound,
+  lucidePuzzle,
   lucideRocket,
   lucideUser,
   lucideUsers,
@@ -35,6 +36,7 @@ import { HelpPanelService } from './help-panel.service';
 const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
   metrics: 'lucideBarChart2',
   'api-keys': 'lucideKeyRound',
+  integrations: 'lucidePuzzle',
   members: 'lucideUsers',
   billing: 'lucideCreditCard',
   usage: 'lucideGauge',
@@ -58,6 +60,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
       lucideArrowLeft,
       lucideBarChart2,
       lucideKeyRound,
+      lucidePuzzle,
       lucideUsers,
       lucideCreditCard,
       lucideGauge,

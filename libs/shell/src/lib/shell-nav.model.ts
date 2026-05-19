@@ -39,6 +39,13 @@ export const WORKSPACE_SHELL_NAV: readonly ShellNavLink[] = [
   },
   {
     kind: 'link',
+    label: 'Integrations',
+    path: '/workspace/integrations',
+    icon: 'lucidePuzzle',
+    exact: true,
+  },
+  {
+    kind: 'link',
     label: 'General',
     path: '/workspace/settings/general',
     icon: 'lucideSettings',

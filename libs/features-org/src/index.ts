@@ -13,4 +13,6 @@ export * from './lib/org-settings-billing.component';
 export * from './lib/org-settings-usage.component';
 export * from './lib/org-api-keys.component';
 export * from './lib/workspace-api-keys-page.component';
+export * from './lib/org-integrations.component';
+export * from './lib/workspace-integrations-page.component';
 export * from './lib/workspace-metrics-page.component';

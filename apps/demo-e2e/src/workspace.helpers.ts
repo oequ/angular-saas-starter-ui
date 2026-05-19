@@ -62,6 +62,13 @@ export async function waitForUsageLoaded(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Usage Summary' })).toBeVisible();
 }
 
+export async function waitForIntegrationsLoaded(page: Page): Promise<void> {
+  await expect(
+    page.getByRole('heading', { name: 'Integrations', level: 1 }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Supabase', level: 2 })).toBeVisible();
+}
+
 export async function waitForMembersPageLoaded(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();

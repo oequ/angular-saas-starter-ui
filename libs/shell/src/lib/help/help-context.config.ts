@@ -1,6 +1,7 @@
 export type HelpTopicCategory =
   | 'metrics'
   | 'api-keys'
+  | 'integrations'
   | 'members'
   | 'billing'
   | 'usage'
@@ -75,6 +76,30 @@ const API_KEYS_TOPICS: readonly HelpTopic[] = [
       'Create a replacement key first, update your services, then revoke the old key from the row actions menu.',
       'Revoked keys stop working instantly. Active integrations using them will receive 401 responses.',
       'Use search and permission filters to audit keys across large teams.',
+    ],
+  },
+];
+
+const INTEGRATIONS_TOPICS: readonly HelpTopic[] = [
+  {
+    id: 'integrations-connect',
+    title: 'Connecting an integration',
+    summary: 'Authorize third-party tools for your workspace.',
+    category: 'integrations',
+    paragraphs: [
+      'Browse the catalog and choose Connect on the integration you need. Authorize access in the dialog to complete the mock OAuth flow.',
+      'Connected integrations show a green status indicator with a Disconnect option.',
+    ],
+  },
+  {
+    id: 'integrations-disconnect',
+    title: 'Disconnecting safely',
+    summary: 'Remove access without affecting other workspaces.',
+    category: 'integrations',
+    paragraphs: [
+      'Hover a connected card and open the actions menu to disconnect. Confirm in the dialog to revoke access immediately.',
+      'Disconnect stops new events from flowing to the integration. Reconnect anytime from the same card.',
+      'If a production integration fails, disconnect and reconnect to refresh credentials in your real deployment.',
     ],
   },
 ];
@@ -232,6 +257,7 @@ const ROUTE_TOPIC_ENTRIES: readonly {
 }[] = [
   { prefix: '/workspace/metrics', topics: METRICS_TOPICS },
   { prefix: '/workspace/api-keys', topics: API_KEYS_TOPICS },
+  { prefix: '/workspace/integrations', topics: INTEGRATIONS_TOPICS },
   { prefix: '/workspace/settings/members', topics: MEMBERS_TOPICS },
   { prefix: '/workspace/settings/billing', topics: BILLING_TOPICS },
   { prefix: '/workspace/settings/usage', topics: USAGE_TOPICS },
@@ -257,6 +283,7 @@ export function findHelpTopicById(id: string): HelpTopic | null {
     ...HELP_BROWSE_TOPICS,
     ...METRICS_TOPICS,
     ...API_KEYS_TOPICS,
+    ...INTEGRATIONS_TOPICS,
     ...MEMBERS_TOPICS,
     ...BILLING_TOPICS,
     ...USAGE_TOPICS,

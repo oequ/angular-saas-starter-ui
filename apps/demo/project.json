@@ -23,6 +23,7 @@
       },
       "configurations": {
         "production": {
+          "serviceWorker": "apps/demo/ngsw-config.json",
           "budgets": [
             {
               "type": "initial",
@@ -39,6 +40,7 @@
         },
         "github-pages": {
           "baseHref": "/angular-saas-starter-ui/",
+          "serviceWorker": "apps/demo/ngsw-config.json",
           "budgets": [
             {
               "type": "initial",

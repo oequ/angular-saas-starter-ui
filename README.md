@@ -27,6 +27,8 @@ After enabling **Pages → Source: GitHub Actions** in the repo settings:
 
 **https://oequ.github.io/angular-saas-starter-ui/**
 
+On Android (Chrome), you can install the demo as an app: open the site over HTTPS, then use the browser menu (**Install app** / **Add to Home screen**). PWA icons use the [Lucide](https://lucide.dev/icons/layers) **layers** glyph (ISC); regenerate with `node apps/demo/scripts/generate-pwa-icons.mjs` (devDependency `@resvg/resvg-js`).
+
 ## Preview
 
 Screenshots live in [`docs/assets/`](./docs/assets/). Regenerate with `UPDATE_SCREENSHOTS=1 npm run screenshots` or drop in your own PNGs (see [docs/assets/README.md](./docs/assets/README.md)).
