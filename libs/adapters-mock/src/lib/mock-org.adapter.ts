@@ -10,7 +10,6 @@ import {
   type OrganizationId,
   type OrganizationMember,
   type OrgPort,
-  portErr,
   portOk,
   type PortResult,
   type UpdateOrganizationInput,
@@ -26,6 +25,7 @@ import { MockAuthAdapter, orgClaimForOrganization } from './mock-auth.adapter';
 import { MockActivationAdapter } from './mock-activation.adapter';
 import { MockApiKeysAdapter } from './mock-api-keys.adapter';
 import { MockBillingAdapter } from './mock-billing.adapter';
+import { mockErr, mockErrFrom } from './mock-port-error';
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -241,10 +241,7 @@ export class MockOrgAdapter implements OrgPort {
   async getBySlug(slug: string): Promise<PortResult<Organization>> {
     const org = this.organizationsSubject.value.find((o) => o.slug === slug);
     if (!org) {
-      return portErr({
-        code: 'NOT_FOUND',
-        message: `Organization not found: ${slug}`,
-      });
+      return mockErr('NOT_FOUND', 'orgNotFoundBySlug', { slug });
     }
     return portOk(org);
   }
@@ -254,7 +251,7 @@ export class MockOrgAdapter implements OrgPort {
   ): Promise<PortResult<readonly OrganizationMember[]>> {
     const session = await this.authAdapter.getClaims();
     if (!session.ok || !session.data) {
-      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
     }
 
     return portOk(this.membersByOrgId.get(organizationId) ?? []);
@@ -266,35 +263,26 @@ export class MockOrgAdapter implements OrgPort {
   ): Promise<PortResult<OrganizationMember>> {
     const session = await this.authAdapter.getClaims();
     if (!session.ok || !session.data) {
-      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
     }
 
     const email = normalizeInviteEmail(input.email);
     if (!EMAIL_PATTERN.test(email)) {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'Enter a valid email address.',
-      });
+      return mockErr('VALIDATION', 'invalidInviteEmail');
     }
 
     const members = this.membersByOrgId.get(organizationId) ?? [];
     if (members.some((member) => member.email.toLowerCase() === email)) {
-      return portErr({
-        code: 'CONFLICT',
-        message: 'This email is already a member or has a pending invite.',
-      });
+      return mockErr('CONFLICT', 'inviteConflict');
     }
 
     const billing = await this.billingAdapter.getSummary(organizationId);
     if (!billing.ok) {
-      return portErr(billing.error);
+      return mockErrFrom(billing.error);
     }
     const { seatsUsed, seatsLimit } = billing.data;
     if (seatsLimit !== null && seatsUsed >= seatsLimit) {
-      return portErr({
-        code: 'SEATS_EXHAUSTED',
-        message: 'No seats available. Upgrade your plan.',
-      });
+      return mockErr('SEATS_EXHAUSTED', 'seatsExhausted');
     }
 
     await delay(300);
@@ -324,21 +312,18 @@ export class MockOrgAdapter implements OrgPort {
   ): Promise<PortResult<void>> {
     const session = await this.authAdapter.getClaims();
     if (!session.ok || !session.data) {
-      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
     }
 
     const members = this.membersByOrgId.get(organizationId) ?? [];
     const index = members.findIndex((member) => member.userId === userId);
     if (index === -1) {
-      return portErr({ code: 'NOT_FOUND', message: 'Member not found.' });
+      return mockErr('NOT_FOUND', 'memberNotFound');
     }
 
     const target = members[index];
     if (target.role === 'owner') {
-      return portErr({
-        code: 'FORBIDDEN',
-        message: 'The workspace owner cannot be removed.',
-      });
+      return mockErr('FORBIDDEN', 'ownerCannotRemove');
     }
 
     await delay(300);
@@ -357,28 +342,22 @@ export class MockOrgAdapter implements OrgPort {
   ): Promise<PortResult<OrganizationMember>> {
     const session = await this.authAdapter.getClaims();
     if (!session.ok || !session.data) {
-      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
     }
 
     if (input.role !== 'admin' && input.role !== 'member') {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'Role must be admin or member.',
-      });
+      return mockErr('VALIDATION', 'invalidMemberRole');
     }
 
     const members = this.membersByOrgId.get(organizationId) ?? [];
     const index = members.findIndex((member) => member.userId === userId);
     if (index === -1) {
-      return portErr({ code: 'NOT_FOUND', message: 'Member not found.' });
+      return mockErr('NOT_FOUND', 'memberNotFound');
     }
 
     const target = members[index];
     if (target.role === 'owner') {
-      return portErr({
-        code: 'FORBIDDEN',
-        message: 'The workspace owner role cannot be changed.',
-      });
+      return mockErr('FORBIDDEN', 'ownerRoleCannotChange');
     }
 
     await delay(300);
@@ -398,7 +377,7 @@ export class MockOrgAdapter implements OrgPort {
     const orgs = this.organizationsSubject.value;
     const index = orgs.findIndex((o) => o.id === organizationId);
     if (index === -1) {
-      return portErr({ code: 'NOT_FOUND', message: 'Organization not found' });
+      return mockErr('NOT_FOUND', 'orgNotFound');
     }
 
     const updated: Organization = {
@@ -428,25 +407,15 @@ export class MockOrgAdapter implements OrgPort {
     const slug = input.slug.trim().toLowerCase();
 
     if (name.length < 2 || name.length > 64) {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'Name must be between 2 and 64 characters.',
-      });
+      return mockErr('VALIDATION', 'workspaceNameInvalid');
     }
 
     if (!isValidOrganizationSlug(slug)) {
-      return portErr({
-        code: 'VALIDATION',
-        message:
-          'Slug must be 2–48 characters: lowercase letters, numbers, and hyphens.',
-      });
+      return mockErr('VALIDATION', 'workspaceSlugInvalid');
     }
 
     if (this.organizationsSubject.value.some((o) => o.slug === slug)) {
-      return portErr({
-        code: 'CONFLICT',
-        message: 'This workspace URL is already taken.',
-      });
+      return mockErr('CONFLICT', 'workspaceSlugTaken');
     }
 
     await delay(400);
@@ -481,7 +450,7 @@ export class MockOrgAdapter implements OrgPort {
     const orgs = this.organizationsSubject.value;
     const org = orgs.find((o) => o.id === organizationId);
     if (!org) {
-      return portErr({ code: 'NOT_FOUND', message: 'Organization not found' });
+      return mockErr('NOT_FOUND', 'orgNotFound');
     }
 
     await delay(400);

@@ -10,9 +10,13 @@ import {
 import {
   INTEGRATIONS_PORT,
   type IntegrationCatalogItem,
-  type PortError,
 } from '@oequ/ports';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+  translatePortError,
+} from '@oequ/i18n';
 import { toast } from '@spartan-ng/brain/sonner';
 
 import { ConnectIntegrationDialogComponent } from './connect-integration-dialog.component';
@@ -96,10 +100,10 @@ export class OrgIntegrationsComponent {
       ]);
 
       if (!catalogResult.ok) {
-        throw new Error(catalogResult.error.message);
+        throw portErrorToError(catalogResult.error, this.transloco);
       }
       if (!connectedResult.ok) {
-        throw new Error(connectedResult.error.message);
+        throw portErrorToError(connectedResult.error, this.transloco);
       }
 
       return {
@@ -181,7 +185,7 @@ export class OrgIntegrationsComponent {
     this.connecting.set(false);
 
     if (!result.ok) {
-      toast.error(this.portErrorMessage(result.error));
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
 
@@ -209,7 +213,7 @@ export class OrgIntegrationsComponent {
     this.disconnecting.set(false);
 
     if (!result.ok) {
-      toast.error(this.portErrorMessage(result.error));
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
 
@@ -221,17 +225,5 @@ export class OrgIntegrationsComponent {
         name: item.name,
       }),
     );
-  }
-
-  private portErrorMessage(error: PortError): string {
-    switch (error.code) {
-      case 'CONFLICT':
-      case 'NOT_FOUND':
-        return error.message;
-      default:
-        return (
-          error.message || this.transloco.translate('common.errorGeneric')
-        );
-    }
   }
 }

@@ -481,38 +481,46 @@ export function parseCardExpiryInput(
   return { expMonth, expYear };
 }
 
-/** Demo validation aligned with Stripe test cards (4242…). */
+export interface MockPaymentMethodValidationError {
+  readonly reason: string;
+  readonly params?: Record<string, unknown>;
+}
+
+/** Demo validation aligned with Stripe test cards (4242…). Returns i18n reason keys. */
 export function validateMockPaymentMethodInput(
   input: AddPaymentMethodInput,
-): string | null {
+): MockPaymentMethodValidationError | null {
   const name = input.cardholderName.trim();
   if (!name) {
-    return 'Enter the name on the card.';
+    return { reason: 'paymentCardholderRequired' };
   }
 
   const digits = normalizeCardNumber(input.number);
   if (digits.length < 13 || digits.length > 19) {
-    return 'Enter a valid card number.';
+    return { reason: 'paymentCardNumberInvalid' };
   }
   if (!digits.startsWith('4242') && !digits.startsWith('5555')) {
-    return 'Use test card 4242 4242 4242 4242 or 5555 5555 5555 4444.';
+    return { reason: 'paymentTestCardRequired' };
   }
 
   if (input.expMonth < 1 || input.expMonth > 12) {
-    return 'Enter a valid expiry date (MM/YY).';
+    return { reason: 'paymentExpiryInvalid' };
   }
 
   const now = new Date();
   const expiryEnd = new Date(input.expYear, input.expMonth, 0, 23, 59, 59);
   if (expiryEnd < now) {
-    return 'This card has expired.';
+    return { reason: 'paymentCardExpired' };
   }
 
   const cvc = input.cvc.replace(/\D/g, '');
   const brand = detectCardBrandFromNumber(digits);
   const cvcLength = brand === 'amex' ? 4 : 3;
   if (cvc.length !== cvcLength) {
-    return `Enter a valid ${cvcLength}-digit security code.`;
+    return {
+      reason: 'paymentCvcInvalid',
+      params: { digits: cvcLength },
+    };
   }
 
   return null;

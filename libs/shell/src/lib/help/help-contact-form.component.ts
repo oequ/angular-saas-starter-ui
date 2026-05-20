@@ -12,7 +12,11 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { SUPPORT_PORT, type SupportImpact } from '@oequ/ports';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -197,7 +201,9 @@ export class HelpContactFormComponent {
     this.submitting.set(false);
 
     if (!result.ok) {
-      this.errorMessage.set(result.error.message);
+      this.errorMessage.set(
+        translatePortError(result.error, this.transloco),
+      );
       return;
     }
 

@@ -24,7 +24,11 @@ import {
   type BillingSummary,
   type UsageMeter,
 } from '@oequ/ports';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+} from '@oequ/i18n';
 import { PaywallDialogService } from '@oequ/shell';
 import { provideBrnTooltipDefaultOptions, BrnTooltip } from '@spartan-ng/brain/tooltip';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -272,7 +276,7 @@ export class OrgSettingsUsageComponent {
         abortSignal,
       );
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },

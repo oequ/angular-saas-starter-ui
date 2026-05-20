@@ -4,10 +4,11 @@ import {
   type SupportPort,
   type SupportTicketInput,
   type SupportTicketResult,
-  portErr,
   portOk,
   type PortResult,
 } from '@oequ/ports';
+
+import { mockErr } from './mock-port-error';
 
 const MOCK_LATENCY_MS = 400;
 
@@ -31,17 +32,11 @@ export class MockSupportAdapter implements SupportPort {
     const message = input.message.trim();
 
     if (subject.length < 1) {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'Subject is required.',
-      });
+      return mockErr('VALIDATION', 'supportSubjectRequired');
     }
 
     if (message.length < 20) {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'Message must be at least 20 characters.',
-      });
+      return mockErr('VALIDATION', 'supportMessageMinLength');
     }
 
     return portOk({ ticketId: randomTicketId() });

@@ -24,6 +24,7 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmIcon } from '@spartan-ng/helm/icon';
+import { TranslocoService, portErrorToError } from '@oequ/i18n';
 
 import {
   type GettingStartedStepId,
@@ -212,6 +213,7 @@ export class WorkspaceHomePageComponent {
   private readonly orgPort = inject(ORG_PORT);
   private readonly billingPort = inject(BILLING_PORT);
   private readonly gettingStarted = inject(WorkspaceGettingStartedStore);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly formatPlanLabel = formatPlanLabel;
 
@@ -243,7 +245,7 @@ export class WorkspaceHomePageComponent {
     loader: async ({ params, abortSignal }) => {
       const result = await this.billingPort.getSummary(params.orgId, abortSignal);
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },

@@ -20,7 +20,11 @@ import {
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { TranslocoPipe } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { ACTIVATION_ONBOARDING_CONFIG } from './activation-ui.model';
 import {
   OnboardingRetrospectiveDialogComponent,
@@ -178,6 +182,7 @@ import { OnboardingMemberImpersonationDialogComponent } from './onboarding-membe
   `,
 })
 export class OnboardingActivationComponent {
+  private readonly transloco = inject(TranslocoService);
   private readonly configToken = inject(ACTIVATION_ONBOARDING_CONFIG);
   private readonly activationPort = inject(ACTIVATION_PORT);
   private readonly orgPort = inject(ORG_PORT);
@@ -280,7 +285,7 @@ export class OnboardingActivationComponent {
     });
 
     if (!result.ok) {
-      toast.error(result.error.message);
+      toast.error(translatePortError(result.error, this.transloco));
       this.memberImpersonationSubmitting.set(false);
       return;
     }

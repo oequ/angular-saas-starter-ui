@@ -18,9 +18,13 @@ import {
   ORG_PORT,
   type OrganizationMember,
   type OrgRole,
-  type PortError,
 } from '@oequ/ports';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+  translatePortError,
+} from '@oequ/i18n';
 import { PaywallDialogService } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -314,7 +318,7 @@ export class OrgSettingsMembersComponent {
     loader: async ({ params }) => {
       const result = await this.orgPort.getMembers(params.orgId);
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },
@@ -348,7 +352,7 @@ export class OrgSettingsMembersComponent {
     loader: async ({ params }) => {
       const result = await this.billingPort.getSummary(params.orgId);
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },
@@ -505,7 +509,9 @@ export class OrgSettingsMembersComponent {
     this.inviting.set(false);
 
     if (!result.ok) {
-      this.inviteSubmitError.set(this.portErrorMessage(result.error));
+      this.inviteSubmitError.set(
+        translatePortError(result.error, this.transloco),
+      );
       return;
     }
 
@@ -546,7 +552,7 @@ export class OrgSettingsMembersComponent {
     this.changingRole.set(false);
 
     if (!result.ok) {
-      toast.error(this.portErrorMessage(result.error));
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
 
@@ -592,7 +598,7 @@ export class OrgSettingsMembersComponent {
     this.removing.set(false);
 
     if (!result.ok) {
-      toast.error(this.portErrorMessage(result.error));
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
 
@@ -605,20 +611,5 @@ export class OrgSettingsMembersComponent {
         name: label,
       }),
     );
-  }
-
-  private portErrorMessage(error: PortError): string {
-    switch (error.code) {
-      case 'SEATS_EXHAUSTED':
-        return this.transloco.translate('org.members.errors.seatsExhausted');
-      case 'CONFLICT':
-        return this.transloco.translate('org.members.errors.conflict');
-      case 'FORBIDDEN':
-        return error.message.includes('role')
-          ? this.transloco.translate('org.members.errors.ownerRoleChange')
-          : this.transloco.translate('org.members.errors.ownerRemove');
-      default:
-        return error.message || this.transloco.translate('common.errorGeneric');
-    }
   }
 }

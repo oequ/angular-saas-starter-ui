@@ -27,7 +27,11 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 
 import {
@@ -370,7 +374,7 @@ export class PaywallDialogComponent {
     this.checkoutLoading.set(false);
 
     if (!result.ok) {
-      this.checkoutConfirmError.set(result.error.message);
+      this.checkoutConfirmError.set(translatePortError(result.error, this.transloco));
     }
   }
 
@@ -437,7 +441,7 @@ export class PaywallDialogComponent {
       this.downgradeConfirmOpen.set(false);
       this.dialogService.completeSuccess();
     } else {
-      this.downgradeConfirmError.set(result.error.message);
+      this.downgradeConfirmError.set(translatePortError(result.error, this.transloco));
     }
   }
 
@@ -456,7 +460,7 @@ export class PaywallDialogComponent {
       this.checkoutConfirmOpen.set(false);
       this.dialogService.completeSuccess();
     } else {
-      this.checkoutConfirmError.set(result.error.message);
+      this.checkoutConfirmError.set(translatePortError(result.error, this.transloco));
     }
   }
 
@@ -495,11 +499,11 @@ export class PaywallDialogComponent {
     this.loading.set(false);
 
     if (!plansResult.ok) {
-      this.loadError.set(plansResult.error.message);
+      this.loadError.set(translatePortError(plansResult.error, this.transloco));
       return;
     }
     if (!summaryResult.ok) {
-      this.loadError.set(summaryResult.error.message);
+      this.loadError.set(translatePortError(summaryResult.error, this.transloco));
       return;
     }
 

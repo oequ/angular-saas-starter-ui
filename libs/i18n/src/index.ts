@@ -8,6 +8,10 @@ export {
 } from './lib/supported-locales';
 export { translateKey } from './lib/translate-in-ts';
 export {
+  translatePortError,
+  portErrorToError,
+} from './lib/translate-port-error';
+export {
   TranslocoDirective,
   TranslocoPipe,
   TranslocoService,

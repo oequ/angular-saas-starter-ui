@@ -6,7 +6,6 @@ import {
   emailPeriodCutoffIso,
   type OutboundEmail,
   type OrganizationId,
-  portErr,
   portOk,
   type PortResult,
   resolveCurrentPlanId,
@@ -18,6 +17,7 @@ import {
 import { MockApiKeysAdapter } from './mock-api-keys.adapter';
 import { MockAuthAdapter } from './mock-auth.adapter';
 import { MockBillingAdapter } from './mock-billing.adapter';
+import { mockErr, mockErrFrom } from './mock-port-error';
 import {
   billableOutboundCount,
   countBillableEmailsToday,
@@ -145,7 +145,7 @@ export class MockEmailsAdapter implements EmailsPort {
     await delay(200, abortSignal);
     const session = await this.authAdapter.getClaims();
     if (!session.ok || !session.data) {
-      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
     }
 
     const emails = this.getEmails(organizationId)
@@ -162,12 +162,12 @@ export class MockEmailsAdapter implements EmailsPort {
     await delay(input?.records?.length ? 80 : 500);
     const session = await this.authAdapter.getClaims();
     if (!session.ok || !session.data) {
-      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
     }
 
     const billing = await this.billingAdapter.getSummary(organizationId);
     if (!billing.ok) {
-      return portErr(billing.error);
+      return mockErrFrom(billing.error);
     }
 
     const meter = billing.data.meters.find((m) => m.metricId === 'emails_sent');
@@ -204,15 +204,12 @@ export class MockEmailsAdapter implements EmailsPort {
     );
 
     if (allowedRecords.length === 0) {
-      return portErr({
-        code: 'RATE_LIMITED',
-        message: this.quotaExceededMessage(
-          monthlyCount,
-          todayCount,
-          monthlyLimit,
-          dailyLimit,
-        ),
-      });
+      return this.quotaExceededErr(
+        monthlyCount,
+        todayCount,
+        monthlyLimit,
+        dailyLimit,
+      );
     }
 
     const created: OutboundEmail[] = [];
@@ -306,19 +303,25 @@ export class MockEmailsAdapter implements EmailsPort {
     };
   }
 
-  private quotaExceededMessage(
+  private quotaExceededErr(
     monthlyCount: number,
     todayCount: number,
     monthlyLimit: number | null,
     dailyLimit: number | null,
-  ): string {
+  ): PortResult<SimulateOutboundEmailsResult> {
     if (monthlyLimit !== null && monthlyCount >= monthlyLimit) {
-      return `Monthly email quota exceeded (${monthlyCount} / ${monthlyLimit}). Upgrade on Usage or Billing.`;
+      return mockErr('RATE_LIMITED', 'emailQuotaMonthly', {
+        monthlyCount,
+        monthlyLimit,
+      });
     }
     if (dailyLimit !== null && todayCount >= dailyLimit) {
-      return `Daily email limit exceeded (${todayCount} / ${dailyLimit} today).`;
+      return mockErr('RATE_LIMITED', 'emailQuotaDaily', {
+        todayCount,
+        dailyLimit,
+      });
     }
-    return 'Email quota exceeded for your plan.';
+    return mockErr('RATE_LIMITED', 'emailQuotaExceeded');
   }
 
   private getEmails(organizationId: OrganizationId): OutboundEmail[] {

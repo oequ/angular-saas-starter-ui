@@ -21,6 +21,7 @@ const SCOPES = [
   'org-general',
   'help',
   'legal',
+  'errors',
 ] as const;
 
 function orgScopeSegment(scope: string): string | null {

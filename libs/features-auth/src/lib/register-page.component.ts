@@ -13,7 +13,11 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { TranslocoPipe } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { AUTH_PORT } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -215,6 +219,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 export class RegisterPageComponent {
   private readonly authPort = inject(AUTH_PORT);
   private readonly router = inject(Router);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly inputClass = AUTH_INPUT_CLASS;
   protected readonly signingUp = signal(false);
@@ -267,7 +272,9 @@ export class RegisterPageComponent {
     this.signingUp.set(false);
 
     if (!result.ok) {
-      this.errorMessage.set(result.error.message);
+      this.errorMessage.set(
+        translatePortError(result.error, this.transloco),
+      );
       return;
     }
 

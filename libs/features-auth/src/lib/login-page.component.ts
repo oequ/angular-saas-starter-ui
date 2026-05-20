@@ -11,7 +11,11 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslocoPipe } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { AUTH_PORT, DEMO_AUTH_EMAIL, DEMO_AUTH_PASSWORD } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -154,6 +158,7 @@ export class LoginPageComponent {
   private readonly authPort = inject(AUTH_PORT);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly inputClass = AUTH_INPUT_CLASS;
   protected readonly signingIn = signal(false);
@@ -185,7 +190,9 @@ export class LoginPageComponent {
     this.signingIn.set(false);
 
     if (!result.ok) {
-      this.errorMessage.set(result.error.message);
+      this.errorMessage.set(
+        translatePortError(result.error, this.transloco),
+      );
       return;
     }
 

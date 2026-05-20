@@ -13,7 +13,11 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
 import { AUTH_PORT } from '@oequ/ports';
 import { toast } from '@spartan-ng/brain/sonner';
@@ -141,7 +145,7 @@ export class AccountProfilePageComponent {
         this.displayNameStateVersion.update((v) => v + 1);
         toast.success(this.transloco.translate('account.profile.toastUpdated'));
       } else {
-        toast.error(result.error.message);
+        toast.error(translatePortError(result.error, this.transloco));
       }
     } catch {
       toast.error(this.transloco.translate('common.errorGeneric'));

@@ -17,7 +17,12 @@ import {
   lucideKeyRound,
   lucideSearch,
 } from '@ng-icons/lucide';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+  translatePortError,
+} from '@oequ/i18n';
 import {
   API_KEYS_PORT,
   type ApiKey,
@@ -339,7 +344,7 @@ export class OrgApiKeysComponent {
     loader: async ({ params }) => {
       const result = await this.apiKeysPort.listKeys(params.orgId);
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },
@@ -459,7 +464,7 @@ export class OrgApiKeysComponent {
     this.creating.set(false);
 
     if (!result.ok) {
-      toast.error(result.error.message);
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
 
@@ -484,7 +489,7 @@ export class OrgApiKeysComponent {
     this.revoking.set(false);
 
     if (!result.ok) {
-      toast.error(result.error.message);
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
 

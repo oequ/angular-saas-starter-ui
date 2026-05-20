@@ -8,6 +8,7 @@ import {
   retrospectivePeriodToMetricsPeriod,
   type MetricsPeriod,
 } from '@oequ/ports';
+import { TranslocoService, translatePortError } from '@oequ/i18n';
 import { toast } from '@spartan-ng/brain/sonner';
 
 export interface MetricsRetrospectiveSimulationRequest {
@@ -19,6 +20,7 @@ export interface MetricsRetrospectiveSimulationRequest {
 @Injectable({ providedIn: 'root' })
 export class MetricsRetrospectiveSimulationService {
   private readonly emailsPort = inject(EMAILS_PORT);
+  private readonly transloco = inject(TranslocoService);
 
   private readonly pending =
     signal<MetricsRetrospectiveSimulationRequest | null>(null);
@@ -70,7 +72,7 @@ export class MetricsRetrospectiveSimulationService {
 
         if (!result.ok) {
           hitLimit = true;
-          toast.warning(result.error.message);
+          toast.warning(translatePortError(result.error, this.transloco));
         } else {
           totalCreated = result.data.created.length;
           if (result.data.capped) {

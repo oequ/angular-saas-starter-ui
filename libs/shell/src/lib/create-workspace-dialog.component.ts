@@ -17,7 +17,11 @@ import {
   ORG_PORT,
   slugifyOrganizationName,
 } from '@oequ/ports';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -149,13 +153,17 @@ export class CreateWorkspaceDialogComponent {
     this.creating.set(false);
 
     if (!result.ok) {
-      this.errorMessage.set(result.error.message);
+      this.errorMessage.set(
+        translatePortError(result.error, this.transloco),
+      );
       return;
     }
 
     const selectResult = await this.orgPort.selectOrganization(result.data.slug);
     if (!selectResult.ok) {
-      this.errorMessage.set(selectResult.error.message);
+      this.errorMessage.set(
+        translatePortError(selectResult.error, this.transloco),
+      );
       return;
     }
 

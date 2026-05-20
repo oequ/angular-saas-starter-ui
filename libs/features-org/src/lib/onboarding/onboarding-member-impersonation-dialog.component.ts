@@ -21,7 +21,11 @@ import {
   formatOrgRole,
   type OrganizationMember,
 } from '@oequ/ports';
-import { TranslocoPipe } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+} from '@oequ/i18n';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -173,6 +177,7 @@ import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 })
 export class OnboardingMemberImpersonationDialogComponent {
   private readonly orgPort = inject(ORG_PORT);
+  private readonly transloco = inject(TranslocoService);
 
   readonly open = input(false);
   readonly organizationId = input<string | null>(null);
@@ -201,7 +206,7 @@ export class OnboardingMemberImpersonationDialogComponent {
       }
       const result = await this.orgPort.getMembers(params.orgId);
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },

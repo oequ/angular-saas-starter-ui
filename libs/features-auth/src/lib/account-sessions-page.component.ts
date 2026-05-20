@@ -4,7 +4,11 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { AUTH_PORT, type AuthSessionDevice } from '@oequ/ports';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -183,7 +187,9 @@ export class AccountSessionsPageComponent {
           this.transloco.translate('account.sessions.revoked'),
         );
       } else {
-        this.statusMessage.set(result.error.message);
+        this.statusMessage.set(
+          translatePortError(result.error, this.transloco),
+        );
       }
     } catch {
       this.statusMessage.set(this.transloco.translate('common.errorGeneric'));
@@ -204,7 +210,9 @@ export class AccountSessionsPageComponent {
           this.transloco.translate('account.sessions.signedOutOthers'),
         );
       } else {
-        this.statusMessage.set(result.error.message);
+        this.statusMessage.set(
+          translatePortError(result.error, this.transloco),
+        );
       }
     } catch {
       this.statusMessage.set(this.transloco.translate('common.errorGeneric'));

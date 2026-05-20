@@ -4,7 +4,6 @@ import {
   type IntegrationCatalogItem,
   type IntegrationsPort,
   type OrganizationId,
-  portErr,
   portOk,
   type PortResult,
   type WorkspaceIntegration,
@@ -15,6 +14,7 @@ import {
   MOCK_INTEGRATIONS_CATALOG,
 } from './data/mock-integrations-data';
 import { MOCK_DEMO_EMAIL } from './data/mock-data';
+import { mockErr } from './mock-port-error';
 
 const DEMO_INTEGRATIONS_SNAPSHOT_KEY = 'oequ-demo-integrations';
 const MOCK_LATENCY_MS = 250;
@@ -88,17 +88,13 @@ export class MockIntegrationsAdapter implements IntegrationsPort {
       (item) => item.id === integrationId,
     );
     if (!catalogItem) {
-      return portErr({
-        code: 'NOT_FOUND',
-        message: 'Integration not found.',
-      });
+      return mockErr('NOT_FOUND', 'integrationNotFound');
     }
 
     const existing = this.connectedByOrg.get(organizationId) ?? [];
     if (existing.some((item) => item.integrationId === integrationId)) {
-      return portErr({
-        code: 'CONFLICT',
-        message: `${catalogItem.name} is already connected.`,
+      return mockErr('CONFLICT', 'integrationAlreadyConnected', {
+        name: catalogItem.name,
       });
     }
 
@@ -123,10 +119,7 @@ export class MockIntegrationsAdapter implements IntegrationsPort {
     const existing = this.connectedByOrg.get(organizationId) ?? [];
     const next = existing.filter((item) => item.integrationId !== integrationId);
     if (next.length === existing.length) {
-      return portErr({
-        code: 'NOT_FOUND',
-        message: 'Integration is not connected.',
-      });
+      return mockErr('NOT_FOUND', 'integrationNotConnected');
     }
 
     this.connectedByOrg.set(organizationId, next);

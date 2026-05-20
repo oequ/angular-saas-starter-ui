@@ -20,7 +20,11 @@ import {
   lucideMail,
   lucideSearch,
 } from '@ng-icons/lucide';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+} from '@oequ/i18n';
 import {
   API_KEYS_PORT,
   EMAILS_PORT,
@@ -353,7 +357,7 @@ export class OrgEmailsComponent {
     loader: async ({ params }) => {
       const result = await this.apiKeysPort.listKeys(params.orgId);
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },
@@ -379,7 +383,7 @@ export class OrgEmailsComponent {
         apiKeyId: params.apiKeyId,
       });
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },

@@ -23,7 +23,12 @@ import {
   type PaymentMethod,
   type SubscriptionStatus,
 } from '@oequ/ports';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+  translatePortError,
+} from '@oequ/i18n';
 import { PaywallDialogService } from '@oequ/shell';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCreditCard, lucideReceipt } from '@ng-icons/lucide';
@@ -384,7 +389,7 @@ export class OrgSettingsBillingComponent {
         abortSignal,
       );
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },
@@ -399,7 +404,7 @@ export class OrgSettingsBillingComponent {
         abortSignal,
       );
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data.items;
     },
@@ -419,7 +424,7 @@ export class OrgSettingsBillingComponent {
         abortSignal,
       );
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },
@@ -483,7 +488,9 @@ export class OrgSettingsBillingComponent {
     );
     this.addPaymentSaving.set(false);
     if (!result.ok) {
-      this.addPaymentError.set(result.error.message);
+      this.addPaymentError.set(
+        translatePortError(result.error, this.transloco),
+      );
       return;
     }
     this.paymentMethodsResource.reload();
@@ -503,7 +510,7 @@ export class OrgSettingsBillingComponent {
     );
     this.paymentMethodActionId.set(null);
     if (!result.ok) {
-      toast.error(result.error.message);
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
     this.paymentMethodsResource.reload();
@@ -520,7 +527,7 @@ export class OrgSettingsBillingComponent {
     );
     this.paymentMethodActionId.set(null);
     if (!result.ok) {
-      toast.error(result.error.message);
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
     this.paymentMethodsResource.reload();

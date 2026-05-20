@@ -9,10 +9,11 @@ import {
   type EmailPasswordCredentials,
   type OrgContextClaim,
   type RegisterCredentials,
-  portErr,
   portOk,
   type PortResult,
 } from '@oequ/ports';
+
+import { mockErr } from './mock-port-error';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
 import type { DemoWorkspaceMemberImpersonationInput } from '@oequ/ports';
@@ -159,10 +160,7 @@ export class MockAuthAdapter implements AuthPort {
     const password = credentials.password;
 
     if (email !== MOCK_DEMO_EMAIL || password !== MOCK_DEMO_PASSWORD) {
-      return portErr({
-        code: 'UNAUTHENTICATED',
-        message: 'Invalid email or password.',
-      });
+      return mockErr('UNAUTHENTICATED', 'invalidCredentials');
     }
 
     clearImpersonationSession();
@@ -209,24 +207,15 @@ export class MockAuthAdapter implements AuthPort {
     const password = credentials.password;
 
     if (!credentials.acceptTerms || !credentials.acceptPrivacy) {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'You must accept the Terms of Service and Privacy Policy.',
-      });
+      return mockErr('VALIDATION', 'termsRequired');
     }
 
     if (password.length < 8) {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'Password must be at least 8 characters.',
-      });
+      return mockErr('VALIDATION', 'passwordTooShort');
     }
 
     if (email === MOCK_DEMO_EMAIL) {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'An account with this email already exists.',
-      });
+      return mockErr('VALIDATION', 'emailExists');
     }
 
     clearImpersonationSession();
@@ -270,7 +259,7 @@ export class MockAuthAdapter implements AuthPort {
   }): Promise<PortResult<AuthUser>> {
     const current = this.sessionSubject.value;
     if (!current) {
-      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
     }
 
     const user: AuthUser = {
@@ -288,7 +277,7 @@ export class MockAuthAdapter implements AuthPort {
     PortResult<readonly AuthSessionDevice[]>
   > {
     if (!this.sessionSubject.value) {
-      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
     }
     return portOk(this.sessions);
   }
@@ -296,10 +285,7 @@ export class MockAuthAdapter implements AuthPort {
   async revokeSession(sessionId: string): Promise<PortResult<void>> {
     const current = this.sessions.find((s) => s.current);
     if (current?.id === sessionId) {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'You cannot revoke your current session.',
-      });
+      return mockErr('VALIDATION', 'cannotRevokeCurrentSession');
     }
     this.sessions = this.sessions.filter((s) => s.id !== sessionId);
     return portOk(undefined);

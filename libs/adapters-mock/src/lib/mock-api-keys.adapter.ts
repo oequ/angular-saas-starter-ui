@@ -6,12 +6,12 @@ import {
   type CreateApiKeyInput,
   type CreatedApiKey,
   type OrganizationId,
-  portErr,
   portOk,
   type PortResult,
 } from '@oequ/ports';
 
 import { cloneMockApiKeysSeed } from './data/mock-api-keys-data';
+import { mockErr } from './mock-port-error';
 
 const DEMO_API_KEYS_SNAPSHOT_KEY = 'oequ-demo-api-keys';
 const MOCK_LATENCY_MS = 200;
@@ -96,7 +96,7 @@ export class MockApiKeysAdapter implements ApiKeysPort {
   ): Promise<PortResult<CreatedApiKey>> {
     const name = input.name.trim();
     if (!name) {
-      return portErr({ code: 'VALIDATION', message: 'Name is required' });
+      return mockErr('VALIDATION', 'apiKeyNameRequired');
     }
 
     await delay(MOCK_LATENCY_MS);
@@ -129,7 +129,7 @@ export class MockApiKeysAdapter implements ApiKeysPort {
     const list = this.keysByOrg.get(organizationId) ?? [];
     const next = list.filter((key) => key.id !== keyId);
     if (next.length === list.length) {
-      return portErr({ code: 'NOT_FOUND', message: 'API key not found' });
+      return mockErr('NOT_FOUND', 'apiKeyNotFound');
     }
 
     this.keysByOrg.set(organizationId, next);

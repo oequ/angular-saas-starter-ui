@@ -14,7 +14,11 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 import { ORG_PORT } from '@oequ/ports';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
@@ -191,7 +195,7 @@ export class WorkspaceSettingsGeneralPageComponent {
         );
       } else {
         this.logoPreviewUrl.set(null);
-        toast.error(result.error.message);
+        toast.error(translatePortError(result.error, this.transloco));
       }
     } catch {
       this.logoPreviewUrl.set(null);
@@ -221,7 +225,7 @@ export class WorkspaceSettingsGeneralPageComponent {
     this.deleteDialogOpen.set(false);
 
     if (!result.ok) {
-      toast.error(result.error.message);
+      toast.error(translatePortError(result.error, this.transloco));
       return;
     }
 
@@ -269,7 +273,7 @@ export class WorkspaceSettingsGeneralPageComponent {
           this.transloco.translate('org.general.toast.nameUpdated'),
         );
       } else {
-        toast.error(result.error.message);
+        toast.error(translatePortError(result.error, this.transloco));
       }
     } catch {
       toast.error(this.transloco.translate('common.errorGeneric'));

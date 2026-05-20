@@ -13,7 +13,11 @@ export type PortErrorCode =
 
 export interface PortError {
   readonly code: PortErrorCode;
+  /** Fallback for logs and adapters without i18n; not shown when `reason` resolves. */
   readonly message: string;
+  /** Stable key under `errors.reasons.*` in Transloco. */
+  readonly reason?: string;
+  readonly params?: Record<string, unknown>;
   readonly cause?: unknown;
 }
 
@@ -35,4 +39,19 @@ export function portError(
   cause?: unknown,
 ): PortError {
   return { code, message, cause };
+}
+
+/** Prefer in adapters: UI resolves `reason` via `translatePortError`. */
+export function portErrorReason(
+  code: PortErrorCode,
+  reason: string,
+  params?: Record<string, unknown>,
+  message?: string,
+): PortError {
+  return {
+    code,
+    reason,
+    params,
+    message: message ?? reason,
+  };
 }

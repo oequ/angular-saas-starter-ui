@@ -17,12 +17,12 @@ import {
   getDowngradeBlocker,
   getPlanChangeDirection,
   normalizeCardNumber,
-  portErr,
   portOk,
   type PortResult,
   resolveCurrentPlanId,
   validateMockPaymentMethodInput,
 } from '@oequ/ports';
+import { mockErr } from './mock-port-error';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
 import {
@@ -184,19 +184,12 @@ export class MockBillingAdapter implements BillingPort {
     const targetTier = planId as CommercialPlanId;
 
     if (getPlanChangeDirection(currentTier, targetTier) !== 'downgrade') {
-      return portErr({
-        code: 'VALIDATION',
-        message: 'Only downgrades are supported on this action.',
-      });
+      return mockErr('VALIDATION', 'billingDowngradeOnly');
     }
 
     const blocker = getDowngradeBlocker(current, planId, MOCK_BILLING_PLANS);
     if (blocker) {
-      return portErr({
-        code: 'PLAN_DOWNGRADE_BLOCKED',
-        message:
-          'Too many members for the target plan. Remove members before downgrading.',
-      });
+      return mockErr('PLAN_DOWNGRADE_BLOCKED', 'billingPlanDowngradeBlocked');
     }
 
     const summary = this.persistSummary(
@@ -230,7 +223,11 @@ export class MockBillingAdapter implements BillingPort {
     await delay(400);
     const validationError = validateMockPaymentMethodInput(input);
     if (validationError) {
-      return portErr({ code: 'VALIDATION', message: validationError });
+      return mockErr(
+        'VALIDATION',
+        validationError.reason,
+        validationError.params,
+      );
     }
 
     const digits = normalizeCardNumber(input.number);
@@ -261,10 +258,7 @@ export class MockBillingAdapter implements BillingPort {
     const methods = this.getPaymentMethodsMutable(organizationId);
     const target = methods.find((m) => m.id === paymentMethodId);
     if (!target) {
-      return portErr({
-        code: 'NOT_FOUND',
-        message: 'Payment method not found.',
-      });
+      return mockErr('NOT_FOUND', 'paymentMethodNotFound');
     }
     const next = methods.map((method) => ({
       ...method,
@@ -282,10 +276,7 @@ export class MockBillingAdapter implements BillingPort {
     const methods = this.getPaymentMethodsMutable(organizationId);
     const index = methods.findIndex((m) => m.id === paymentMethodId);
     if (index < 0) {
-      return portErr({
-        code: 'NOT_FOUND',
-        message: 'Payment method not found.',
-      });
+      return mockErr('NOT_FOUND', 'paymentMethodNotFound');
     }
     const removed = methods[index];
     let next = methods.filter((m) => m.id !== paymentMethodId);

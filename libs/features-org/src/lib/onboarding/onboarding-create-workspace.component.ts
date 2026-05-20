@@ -18,6 +18,10 @@ import {
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
+import {
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
 
 @Component({
   selector: 'oequ-onboarding-create-workspace',
@@ -81,6 +85,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
 })
 export class OnboardingCreateWorkspaceComponent {
   private readonly orgPort = inject(ORG_PORT);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly creating = signal(false);
   protected readonly submitAttempted = signal(false);
@@ -119,7 +124,9 @@ export class OnboardingCreateWorkspaceComponent {
     const result = await this.orgPort.createOrganization({ name, slug });
     if (!result.ok) {
       this.creating.set(false);
-      this.errorMessage.set(result.error.message);
+      this.errorMessage.set(
+        translatePortError(result.error, this.transloco),
+      );
       return;
     }
 
@@ -127,7 +134,9 @@ export class OnboardingCreateWorkspaceComponent {
     this.creating.set(false);
 
     if (!selectResult.ok) {
-      this.errorMessage.set(selectResult.error.message);
+      this.errorMessage.set(
+        translatePortError(selectResult.error, this.transloco),
+      );
     }
   }
 }

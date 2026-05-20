@@ -18,7 +18,11 @@ import {
   type MetricsPeriod,
   formatMetricsLastUpdated,
 } from '@oequ/ports';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+} from '@oequ/i18n';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 
 import { MetricsEmailsCardComponent } from './metrics/metrics-emails-card.component';
@@ -236,7 +240,7 @@ export class OrgMetricsComponent {
         abortSignal,
       );
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },

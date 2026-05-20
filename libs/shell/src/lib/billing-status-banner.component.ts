@@ -6,7 +6,11 @@ import {
   resource,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  portErrorToError,
+} from '@oequ/i18n';
 import { BILLING_PORT, billingStatusBanner, ORG_PORT } from '@oequ/ports';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -48,7 +52,7 @@ export class BillingStatusBannerComponent {
     loader: async ({ params, abortSignal }) => {
       const result = await this.billingPort.getSummary(params.orgId, abortSignal);
       if (!result.ok) {
-        throw new Error(result.error.message);
+        throw portErrorToError(result.error, this.transloco);
       }
       return result.data;
     },
