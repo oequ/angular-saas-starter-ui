@@ -5,29 +5,33 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TranslocoPipe } from '@oequ/i18n';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 @Component({
   selector: 'oequ-revoke-api-key-dialog',
-  imports: [HlmButtonImports, HlmDialogImports],
+  imports: [HlmButtonImports, HlmDialogImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle class="text-destructive">Revoke API key</h3>
+            <h3 hlmDialogTitle class="text-destructive">
+              {{ 'org.apiKeys.revokeDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              Revoke <strong>{{ keyName() }}</strong>? Requests using this key
-              will stop working immediately.
+              {{ 'org.apiKeys.revokeDialog.descriptionPrefix' | transloco }}
+              <strong>{{ keyName() }}</strong>
+              {{ 'org.apiKeys.revokeDialog.descriptionSuffix' | transloco }}
             </p>
           </hlm-dialog-header>
 
           <hlm-dialog-footer>
             <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-              Cancel
+              {{ 'common.cancel' | transloco }}
             </button>
             <button
               hlmBtn
@@ -36,7 +40,11 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
               [disabled]="revoking()"
               (click)="confirm()"
             >
-              {{ revoking() ? 'Revoking…' : 'Revoke key' }}
+              {{
+                revoking()
+                  ? ('org.apiKeys.revokeDialog.revoking' | transloco)
+                  : ('org.apiKeys.revokeDialog.submit' | transloco)
+              }}
             </button>
           </hlm-dialog-footer>
         </hlm-dialog-content>

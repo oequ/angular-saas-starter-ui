@@ -14,6 +14,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { ORG_PORT } from '@oequ/ports';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
@@ -31,6 +32,7 @@ import { DeleteWorkspaceDialogComponent } from './delete-workspace-dialog.compon
     HlmButtonImports,
     HlmInput,
     DeleteWorkspaceDialogComponent,
+    TranslocoPipe,
   ],
   templateUrl: './workspace-settings-general-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +42,7 @@ export class WorkspaceSettingsGeneralPageComponent {
 
   private readonly orgPort = inject(ORG_PORT);
   private readonly router = inject(Router);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly activeOrganization = toSignal(
     this.orgPort.activeOrganization$,
@@ -132,13 +135,13 @@ export class WorkspaceSettingsGeneralPageComponent {
     const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
     const hasAllowedExtension = /\.(png|jpe?g|webp)$/i.test(file.name);
     if (!allowedTypes.includes(file.type) && !hasAllowedExtension) {
-      toast.error('Use a PNG, JPG, or WebP image.');
+      toast.error(this.transloco.translate('org.general.toast.invalidImageType'));
       return;
     }
 
     const maxBytes = 2 * 1024 * 1024;
     if (file.size > maxBytes) {
-      toast.error('Image must be 2 MB or smaller.');
+      toast.error(this.transloco.translate('org.general.toast.imageTooLarge'));
       return;
     }
 
@@ -147,7 +150,7 @@ export class WorkspaceSettingsGeneralPageComponent {
       void this.uploadLogo(org.id, reader.result as string);
     };
     reader.onerror = () => {
-      toast.error('Could not read the image. Please try again.');
+      toast.error(this.transloco.translate('org.general.toast.readImageFailed'));
     };
     reader.readAsDataURL(file);
   }
@@ -180,7 +183,11 @@ export class WorkspaceSettingsGeneralPageComponent {
       if (result.ok) {
         this.logoPreviewUrl.set(null);
         toast.success(
-          logoUrl === null ? 'Workspace icon removed.' : 'Workspace icon updated.',
+          this.transloco.translate(
+            logoUrl === null
+              ? 'org.general.toast.iconRemoved'
+              : 'org.general.toast.iconUpdated',
+          ),
         );
       } else {
         this.logoPreviewUrl.set(null);
@@ -188,7 +195,7 @@ export class WorkspaceSettingsGeneralPageComponent {
       }
     } catch {
       this.logoPreviewUrl.set(null);
-      toast.error('Something went wrong. Please try again.');
+      toast.error(this.transloco.translate('common.errorGeneric'));
     } finally {
       this.logoUploading.set(false);
     }
@@ -258,12 +265,14 @@ export class WorkspaceSettingsGeneralPageComponent {
         this.generalForm.patchValue({ name }, { emitEvent: false });
         this.generalForm.markAsPristine();
         this.nameStateVersion.update((v) => v + 1);
-        toast.success('Workspace name updated.');
+        toast.success(
+          this.transloco.translate('org.general.toast.nameUpdated'),
+        );
       } else {
         toast.error(result.error.message);
       }
     } catch {
-      toast.error('Something went wrong. Please try again.');
+      toast.error(this.transloco.translate('common.errorGeneric'));
     } finally {
       this.saving.set(false);
     }

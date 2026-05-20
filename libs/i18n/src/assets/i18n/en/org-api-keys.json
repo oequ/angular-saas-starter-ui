@@ -1,0 +1,73 @@
+{
+  "title": "API keys",
+  "createButton": "+ Create API key",
+  "loading": "Loading API keys…",
+  "emptyTitle": "No API keys yet",
+  "emptyDescription": "Generate an API key to authenticate requests and send emails through the API.",
+  "noFilterMatch": "No keys match your filters.",
+  "columnName": "Name",
+  "columnToken": "Token",
+  "columnPermission": "Permission",
+  "columnLastUsed": "Last used",
+  "columnCreated": "Created",
+  "actionsFor": "Actions for {{name}}",
+  "revoke": "Revoke",
+  "pagination": "Page 1 – {{shown}} of {{total}} keys",
+  "permissionFilter": {
+    "all": "All permissions",
+    "full_access": "Full access",
+    "sending_access": "Sending access"
+  },
+  "permissions": {
+    "full_access": "Full access",
+    "sending_access": "Sending access"
+  },
+  "domainScope": {
+    "all_domains": "All domains"
+  },
+  "lastUsed": {
+    "none": "No activity",
+    "justNow": "just now"
+  },
+  "createDialog": {
+    "title": "Add API Key",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your API Key name",
+    "nameRequired": "Enter a name.",
+    "permissionLabel": "Permission",
+    "domainLabel": "Domain",
+    "adding": "Adding…",
+    "add": "Add"
+  },
+  "revokeDialog": {
+    "title": "Revoke API key",
+    "descriptionPrefix": "Revoke",
+    "descriptionSuffix": "? Requests using this key will stop working immediately.",
+    "revoking": "Revoking…",
+    "submit": "Revoke key"
+  },
+  "secretDialog": {
+    "title": "API key created",
+    "description": "Copy your API key now. You will not be able to see it again.",
+    "copy": "Copy",
+    "done": "Done",
+    "copyFailed": "Could not copy to clipboard.",
+    "copySuccess": "API key copied to clipboard."
+  },
+  "docs": {
+    "triggerAria": "View API documentation",
+    "title": "API documentation",
+    "description": "Authenticate requests with a workspace API key. Keys are scoped to this organization and can be revoked at any time.",
+    "authenticationTitle": "Authentication",
+    "authenticationLead": "Pass your secret key in the Authorization header as a Bearer token. Never expose keys in client-side code or public repositories.",
+    "sendEmailTitle": "Send an email",
+    "sendEmailLead": "Example request using an API key with sending access.",
+    "nodeTitle": "Node.js SDK",
+    "nodeLead": "Use the official SDK in server-side applications.",
+    "close": "Close"
+  },
+  "toast": {
+    "created": "API key created.",
+    "revoked": "API key revoked."
+  }
+}

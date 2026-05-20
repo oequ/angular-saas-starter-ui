@@ -5,28 +5,34 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TranslocoPipe } from '@oequ/i18n';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 @Component({
   selector: 'oequ-disconnect-integration-dialog',
-  imports: [HlmButtonImports, HlmDialogImports],
+  imports: [HlmButtonImports, HlmDialogImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Disconnect {{ integrationName() }}</h3>
+            <h3 hlmDialogTitle>
+              {{
+                'org.integrations.disconnectDialog.title'
+                  | transloco: { name: integrationName() }
+              }}
+            </h3>
             <p hlmDialogDescription>
-              This removes the simulated connection for this workspace.
+              {{ 'org.integrations.disconnectDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
           <hlm-dialog-footer>
             <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-              Cancel
+              {{ 'common.cancel' | transloco }}
             </button>
             <button
               hlmBtn
@@ -35,7 +41,12 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
               [disabled]="disconnecting()"
               (click)="confirm()"
             >
-              {{ disconnecting() ? 'Disconnecting…' : 'Disconnect' }}
+              {{
+                disconnecting()
+                  ? ('org.integrations.disconnectDialog.disconnecting'
+                    | transloco)
+                  : ('org.integrations.disconnect' | transloco)
+              }}
             </button>
           </hlm-dialog-footer>
         </hlm-dialog-content>

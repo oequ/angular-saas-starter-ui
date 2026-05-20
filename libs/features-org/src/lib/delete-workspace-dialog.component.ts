@@ -16,6 +16,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe } from '@oequ/i18n';
 import {
   SETTINGS_DIALOG_CONTENT_CLASS,
   SETTINGS_DIALOG_FIELD_CLASS,
@@ -31,6 +32,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
     HlmButtonImports,
     HlmDialogImports,
     HlmInput,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -38,23 +40,29 @@ import { HlmInput } from '@spartan-ng/helm/input';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle class="text-destructive">Delete workspace</h3>
+            <h3 hlmDialogTitle class="text-destructive">
+              {{ 'org.general.deleteDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              This permanently deletes <strong>{{ workspaceName() }}</strong> and
-              its data in this demo. Type the workspace URL to confirm.
+              {{ 'org.general.deleteDialog.descriptionPrefix' | transloco }}
+              <strong>{{ workspaceName() }}</strong>
+              {{ 'org.general.deleteDialog.descriptionSuffix' | transloco }}
             </p>
           </hlm-dialog-header>
 
           <form class="space-y-4" [formGroup]="form" (ngSubmit)="confirm()">
             <div [class]="fieldClass">
               <label for="delete-workspace-slug" class="mb-1.5 block text-sm font-medium">
-                Type <span class="font-mono">{{ expectedSlug() }}</span> to confirm
+                {{
+                  'org.general.deleteDialog.slugHint'
+                    | transloco: { slug: expectedSlug() }
+                }}
               </label>
               <input
                 id="delete-workspace-slug"
                 hlmInput
                 type="text"
-                class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+                class="border-input bg-background h-9 w-full rounded-[5px] shadow-none font-mono"
                 [attr.placeholder]="expectedSlug()"
                 formControlName="slug"
                 spellcheck="false"
@@ -62,14 +70,14 @@ import { HlmInput } from '@spartan-ng/helm/input';
               />
               @if (submitAttempted() && !canConfirm()) {
                 <p class="text-destructive mt-1.5 text-sm">
-                  Enter the workspace URL exactly as shown.
+                  {{ 'org.general.deleteDialog.slugInvalid' | transloco }}
                 </p>
               }
             </div>
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button
                 hlmBtn
@@ -77,7 +85,11 @@ import { HlmInput } from '@spartan-ng/helm/input';
                 class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
                 [disabled]="deleting()"
               >
-                {{ deleting() ? 'Deleting…' : 'Delete workspace' }}
+                {{
+                  deleting()
+                    ? ('org.general.deleteDialog.deleting' | transloco)
+                    : ('org.general.deleteDialog.submit' | transloco)
+                }}
               </button>
             </hlm-dialog-footer>
           </form>

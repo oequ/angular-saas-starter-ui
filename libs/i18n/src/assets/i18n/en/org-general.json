@@ -1,0 +1,40 @@
+{
+  "name": {
+    "title": "Workspace name",
+    "lead": "Shown in the sidebar, breadcrumbs, and workspace switcher.",
+    "maxLength": "Please use 64 characters at maximum.",
+    "minLength": "Please enter at least 2 characters.",
+    "hint": "Please use 64 characters at maximum.",
+    "save": "Save"
+  },
+  "icon": {
+    "title": "Workspace icon",
+    "lead": "Shown in the sidebar and workspace switcher. PNG, JPG, or WebP up to 2 MB.",
+    "remove": "Remove icon",
+    "uploadAria": "Upload workspace icon",
+    "uploadingAria": "Uploading icon",
+    "footer": "Click the icon to upload or replace it."
+  },
+  "danger": {
+    "title": "Danger zone",
+    "lead": "Permanently remove this workspace and all of its data. This action is not reversible, so please continue with caution.",
+    "deleteButton": "Delete workspace"
+  },
+  "deleteDialog": {
+    "title": "Delete workspace",
+    "descriptionPrefix": "This permanently deletes",
+    "descriptionSuffix": "and its data in this demo. Type the workspace URL to confirm.",
+    "slugHint": "Type {{slug}} to confirm",
+    "slugInvalid": "Enter the workspace URL exactly as shown.",
+    "deleting": "Deleting…",
+    "submit": "Delete workspace"
+  },
+  "toast": {
+    "invalidImageType": "Use a PNG, JPG, or WebP image.",
+    "imageTooLarge": "Image must be 2 MB or smaller.",
+    "readImageFailed": "Could not read the image. Please try again.",
+    "iconRemoved": "Workspace icon removed.",
+    "iconUpdated": "Workspace icon updated.",
+    "nameUpdated": "Workspace name updated."
+  }
+}

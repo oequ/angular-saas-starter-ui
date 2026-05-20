@@ -1,0 +1,32 @@
+{
+  "title": "Emails",
+  "exportAria": "Export",
+  "period": {
+    "15d": "Last 15 days",
+    "30d": "Last 30 days",
+    "90d": "Last 90 days"
+  },
+  "statusFilter": {
+    "all": "All Statuses",
+    "delivered": "Delivered",
+    "queued": "Queued",
+    "bounced": "Bounced",
+    "failed": "Failed"
+  },
+  "allApiKeys": "All API keys",
+  "apiKeyFallback": "API key",
+  "emptyTitle": "No outbound emails yet",
+  "emptyDescription": "Complete onboarding to simulate your first sends, or add an API key and send from your app.",
+  "goToOnboarding": "Go to onboarding",
+  "columnTo": "To",
+  "columnStatus": "Status",
+  "columnSubject": "Subject",
+  "columnSent": "Sent",
+  "rowActionsAria": "Row actions",
+  "noFilterMatch": "No emails match your filters.",
+  "paginationEmpty": "0 emails",
+  "paginationRange": "{{start}}–{{end}} of {{total}} emails",
+  "previous": "Previous",
+  "next": "Next",
+  "pageOf": "Page {{current}} of {{total}}"
+}

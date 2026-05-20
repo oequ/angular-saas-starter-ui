@@ -17,15 +17,15 @@ import {
   lucideKeyRound,
   lucideSearch,
 } from '@ng-icons/lucide';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import {
   API_KEYS_PORT,
   type ApiKey,
+  type ApiKeyPermission,
+  type ApiKeyPermissionFilter,
   type CreateApiKeyInput,
-  apiKeyPermissionFilterLabel,
-  apiKeyPermissionLabel,
   formatCreatedRelativeTime,
   formatRelativeTime,
-  type ApiKeyPermissionFilter,
 } from '@oequ/ports';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -62,6 +62,7 @@ const API_KEYS_PAGE_SIZE = 10;
     CreateApiKeyDialogComponent,
     RevokeApiKeyDialogComponent,
     ApiKeySecretDialogComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -74,7 +75,9 @@ const API_KEYS_PAGE_SIZE = 10;
   ],
   template: `
     <div class="flex flex-col gap-6">
-      <h1 class="text-2xl font-semibold tracking-tight">API keys</h1>
+      <h1 class="text-2xl font-semibold tracking-tight">
+        {{ 'org.apiKeys.title' | transloco }}
+      </h1>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div class="relative min-w-0 flex-1 sm:max-w-xs">
@@ -86,7 +89,7 @@ const API_KEYS_PAGE_SIZE = 10;
           <input
             hlmInput
             type="search"
-            placeholder="Search…"
+            [placeholder]="'common.searchPlaceholder' | transloco"
             class="border-input bg-background h-9 w-full rounded-[5px] ps-9 shadow-none"
             [formControl]="searchControl"
           />
@@ -100,15 +103,21 @@ const API_KEYS_PAGE_SIZE = 10;
             <span class="truncate">{{ permissionFilterLabel() }}</span>
           </hlm-select-trigger>
           <hlm-select-content *hlmSelectPortal class="w-[var(--brn-select-width)]">
-            <hlm-select-item value="all">All permissions</hlm-select-item>
-            <hlm-select-item value="full_access">Full access</hlm-select-item>
-            <hlm-select-item value="sending_access">Sending access</hlm-select-item>
+            <hlm-select-item value="all">{{
+              'org.apiKeys.permissionFilter.all' | transloco
+            }}</hlm-select-item>
+            <hlm-select-item value="full_access">{{
+              'org.apiKeys.permissionFilter.full_access' | transloco
+            }}</hlm-select-item>
+            <hlm-select-item value="sending_access">{{
+              'org.apiKeys.permissionFilter.sending_access' | transloco
+            }}</hlm-select-item>
           </hlm-select-content>
         </hlm-select>
         <div class="flex shrink-0 items-center gap-2 sm:ms-auto">
           <oequ-api-keys-docs-sheet />
           <button hlmBtn type="button" (click)="openCreateDialog()">
-            + Create API key
+            {{ 'org.apiKeys.createButton' | transloco }}
           </button>
         </div>
       </div>
@@ -117,7 +126,7 @@ const API_KEYS_PAGE_SIZE = 10;
         <div
           class="border-input text-muted-foreground flex min-h-[280px] items-center justify-center rounded-[5px] border text-sm"
         >
-          Loading API keys…
+          {{ 'org.apiKeys.loading' | transloco }}
         </div>
       } @else if (allKeys().length === 0) {
         <hlm-empty class="border-input min-h-[280px]">
@@ -125,126 +134,143 @@ const API_KEYS_PAGE_SIZE = 10;
             <hlm-empty-media variant="icon">
               <ng-icon name="lucideKeyRound" aria-hidden="true" />
             </hlm-empty-media>
-            <h2 hlmEmptyTitle>No API keys yet</h2>
+            <h2 hlmEmptyTitle>{{ 'org.apiKeys.emptyTitle' | transloco }}</h2>
             <p hlmEmptyDescription>
-              Generate an API key to authenticate requests and send emails through
-              the API.
+              {{ 'org.apiKeys.emptyDescription' | transloco }}
             </p>
           </hlm-empty-header>
           <hlm-empty-content>
             <button hlmBtn type="button" (click)="openCreateDialog()">
-              + Create API key
+              {{ 'org.apiKeys.createButton' | transloco }}
             </button>
           </hlm-empty-content>
         </hlm-empty>
       } @else {
-      <div hlmTableContainer class="border-input rounded-[5px] border">
-        <table hlmTable>
-          <thead hlmTHead>
-            <tr hlmTr class="text-muted-foreground border-b text-xs">
-              <th hlmTh class="px-4">Name</th>
-              <th hlmTh class="px-4">Token</th>
-              <th hlmTh class="hidden px-4 md:table-cell">Permission</th>
-              <th hlmTh class="hidden px-4 lg:table-cell">Last used</th>
-              <th hlmTh class="hidden px-4 sm:table-cell">Created</th>
-              <th hlmTh class="w-12 px-2 text-end">
-                <span class="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody hlmTBody>
-            @if (filteredKeys().length === 0) {
-              <tr hlmTr>
-                <td
-                  hlmTd
-                  colspan="6"
-                  class="text-muted-foreground px-4 py-10 text-center whitespace-normal"
-                >
-                  No keys match your filters.
-                </td>
+        <div hlmTableContainer class="border-input rounded-[5px] border">
+          <table hlmTable>
+            <thead hlmTHead>
+              <tr hlmTr class="text-muted-foreground border-b text-xs">
+                <th hlmTh class="px-4">
+                  {{ 'org.apiKeys.columnName' | transloco }}
+                </th>
+                <th hlmTh class="px-4">
+                  {{ 'org.apiKeys.columnToken' | transloco }}
+                </th>
+                <th hlmTh class="hidden px-4 md:table-cell">
+                  {{ 'org.apiKeys.columnPermission' | transloco }}
+                </th>
+                <th hlmTh class="hidden px-4 lg:table-cell">
+                  {{ 'org.apiKeys.columnLastUsed' | transloco }}
+                </th>
+                <th hlmTh class="hidden px-4 sm:table-cell">
+                  {{ 'org.apiKeys.columnCreated' | transloco }}
+                </th>
+                <th hlmTh class="w-12 px-2 text-end">
+                  <span class="sr-only">{{ 'common.actions' | transloco }}</span>
+                </th>
               </tr>
-            } @else {
-              @for (key of filteredKeys(); track key.id) {
+            </thead>
+            <tbody hlmTBody>
+              @if (filteredKeys().length === 0) {
                 <tr hlmTr>
-                  <td hlmTd class="px-4 py-3 whitespace-normal">
-                    <div class="flex items-center gap-2">
-                      <span
-                        class="bg-primary/10 text-primary grid size-7 shrink-0 place-content-center rounded-md"
-                      >
-                        <ng-icon
-                          name="lucideKeyRound"
-                          class="size-3.5"
-                          aria-hidden="true"
-                        />
-                      </span>
-                      <span class="font-medium">{{ key.name }}</span>
-                    </div>
-                  </td>
-                  <td hlmTd class="px-4 py-3">
-                    <code
-                      class="bg-muted text-muted-foreground rounded px-2 py-0.5 font-mono text-xs"
-                    >
-                      {{ key.tokenPrefix }}
-                    </code>
-                  </td>
                   <td
                     hlmTd
-                    class="text-muted-foreground hidden px-4 py-3 md:table-cell"
+                    colspan="6"
+                    class="text-muted-foreground px-4 py-10 text-center whitespace-normal"
                   >
-                    {{ permissionLabel(key.permission) }}
-                  </td>
-                  <td
-                    hlmTd
-                    class="text-muted-foreground hidden px-4 py-3 lg:table-cell"
-                  >
-                    {{ formatLastUsed(key.lastUsedAt) }}
-                  </td>
-                  <td
-                    hlmTd
-                    class="text-muted-foreground hidden px-4 py-3 sm:table-cell"
-                  >
-                    {{ formatCreated(key.createdAt) }}
-                  </td>
-                  <td hlmTd class="px-2 py-3 text-end">
-                    <button
-                      type="button"
-                      hlmBtn
-                      variant="ghost"
-                      size="icon"
-                      class="size-8"
-                      [hlmDropdownMenuTrigger]="keyActionsMenu"
-                      [attr.aria-label]="'Actions for ' + key.name"
-                    >
-                      <ng-icon
-                        name="lucideEllipsis"
-                        class="size-4"
-                        aria-hidden="true"
-                      />
-                    </button>
-                    <ng-template #keyActionsMenu>
-                      <div hlmDropdownMenu class="min-w-40 p-1">
-                        <button
-                          type="button"
-                          hlmDropdownMenuItem
-                          variant="destructive"
-                          (triggered)="openRevokeDialog(key)"
-                        >
-                          Revoke
-                        </button>
-                      </div>
-                    </ng-template>
+                    {{ 'org.apiKeys.noFilterMatch' | transloco }}
                   </td>
                 </tr>
+              } @else {
+                @for (key of filteredKeys(); track key.id) {
+                  <tr hlmTr>
+                    <td hlmTd class="px-4 py-3 whitespace-normal">
+                      <div class="flex items-center gap-2">
+                        <span
+                          class="bg-primary/10 text-primary grid size-7 shrink-0 place-content-center rounded-md"
+                        >
+                          <ng-icon
+                            name="lucideKeyRound"
+                            class="size-3.5"
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <span class="font-medium">{{ key.name }}</span>
+                      </div>
+                    </td>
+                    <td hlmTd class="px-4 py-3">
+                      <code
+                        class="bg-muted text-muted-foreground rounded px-2 py-0.5 font-mono text-xs"
+                      >
+                        {{ key.tokenPrefix }}
+                      </code>
+                    </td>
+                    <td
+                      hlmTd
+                      class="text-muted-foreground hidden px-4 py-3 md:table-cell"
+                    >
+                      {{ permissionLabel(key.permission) }}
+                    </td>
+                    <td
+                      hlmTd
+                      class="text-muted-foreground hidden px-4 py-3 lg:table-cell"
+                    >
+                      {{ formatLastUsed(key.lastUsedAt) }}
+                    </td>
+                    <td
+                      hlmTd
+                      class="text-muted-foreground hidden px-4 py-3 sm:table-cell"
+                    >
+                      {{ formatCreated(key.createdAt) }}
+                    </td>
+                    <td hlmTd class="px-2 py-3 text-end">
+                      <button
+                        type="button"
+                        hlmBtn
+                        variant="ghost"
+                        size="icon"
+                        class="size-8"
+                        [hlmDropdownMenuTrigger]="keyActionsMenu"
+                        [attr.aria-label]="
+                          ('org.apiKeys.actionsFor' | transloco: { name: key.name })
+                        "
+                      >
+                        <ng-icon
+                          name="lucideEllipsis"
+                          class="size-4"
+                          aria-hidden="true"
+                        />
+                      </button>
+                      <ng-template #keyActionsMenu>
+                        <div hlmDropdownMenu class="min-w-40 p-1">
+                          <button
+                            type="button"
+                            hlmDropdownMenuItem
+                            variant="destructive"
+                            (triggered)="openRevokeDialog(key)"
+                          >
+                            {{ 'org.apiKeys.revoke' | transloco }}
+                          </button>
+                        </div>
+                      </ng-template>
+                    </td>
+                  </tr>
+                }
               }
-            }
-          </tbody>
-        </table>
-      </div>
+            </tbody>
+          </table>
+        </div>
       }
 
       @if (showPaginationFooter()) {
         <p class="text-muted-foreground text-sm">
-          Page 1 – {{ filteredKeys().length }} of {{ allKeys().length }} keys
+          {{
+            'org.apiKeys.pagination'
+              | transloco: {
+                  shown: filteredKeys().length,
+                  total: allKeys().length,
+                }
+          }}
         </p>
       }
     </div>
@@ -277,6 +303,7 @@ export class OrgApiKeysComponent {
   private readonly apiKeysPort = inject(API_KEYS_PORT);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   private readonly searchQuery = toSignal(
@@ -286,9 +313,14 @@ export class OrgApiKeysComponent {
 
   protected readonly permissionFilter = signal<ApiKeyPermissionFilter>('all');
 
-  protected readonly permissionFilterLabel = computed(() =>
-    apiKeyPermissionFilterLabel(this.permissionFilter()),
-  );
+  protected readonly permissionFilterLabel = computed(() => {
+    const filter = this.permissionFilter();
+    if (filter === 'all') {
+      return this.transloco.translate('org.apiKeys.permissionFilter.all');
+    }
+    return this.permissionLabel(filter);
+  });
+
   protected readonly createDialogOpen = signal(false);
   protected readonly creating = signal(false);
   protected readonly revokeDialogOpen = signal(false);
@@ -361,9 +393,25 @@ export class OrgApiKeysComponent {
     });
   }
 
-  protected readonly permissionLabel = apiKeyPermissionLabel;
-  protected readonly formatLastUsed = formatRelativeTime;
-  protected readonly formatCreated = formatCreatedRelativeTime;
+  protected permissionLabel(permission: ApiKeyPermission): string {
+    return this.transloco.translate(`org.apiKeys.permissions.${permission}`);
+  }
+
+  protected formatLastUsed(iso: string | null): string {
+    const label = formatRelativeTime(iso);
+    if (label === 'No activity') {
+      return this.transloco.translate('org.apiKeys.lastUsed.none');
+    }
+    return label;
+  }
+
+  protected formatCreated(iso: string): string {
+    const label = formatCreatedRelativeTime(iso);
+    if (label === 'just now') {
+      return this.transloco.translate('org.apiKeys.lastUsed.justNow');
+    }
+    return label;
+  }
 
   protected onPermissionFilterChange(
     value: string | string[] | null | undefined,
@@ -419,7 +467,7 @@ export class OrgApiKeysComponent {
     this.createdSecret.set(result.data.secret);
     this.secretDialogOpen.set(true);
     this.dataRefresh.update((n) => n + 1);
-    toast.success('API key created.');
+    toast.success(this.transloco.translate('org.apiKeys.toast.created'));
   }
 
   protected async confirmRevoke(): Promise<void> {
@@ -442,6 +490,6 @@ export class OrgApiKeysComponent {
 
     this.closeRevokeDialog();
     this.dataRefresh.update((n) => n + 1);
-    toast.success('API key revoked.');
+    toast.success(this.transloco.translate('org.apiKeys.toast.revoked'));
   }
 }

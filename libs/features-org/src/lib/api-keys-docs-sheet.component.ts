@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCodeXml } from '@ng-icons/lucide';
+import { TranslocoPipe } from '@oequ/i18n';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 
@@ -36,6 +37,7 @@ await client.send({
     HlmButtonImports,
     HlmSheetImports,
     OnboardingCodeBlockComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ lucideCodeXml })],
@@ -48,7 +50,7 @@ await client.send({
         variant="outline"
         size="icon"
         class="size-9 shrink-0"
-        aria-label="View API documentation"
+        [attr.aria-label]="'org.apiKeys.docs.triggerAria' | transloco"
       >
         <ng-icon name="lucideCodeXml" class="size-4" aria-hidden="true" />
       </button>
@@ -58,30 +60,28 @@ await client.send({
         class="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-xl"
       >
         <hlm-sheet-header class="text-start">
-          <h2 hlmSheetTitle>API documentation</h2>
+          <h2 hlmSheetTitle>{{ 'org.apiKeys.docs.title' | transloco }}</h2>
           <p hlmSheetDescription>
-            Authenticate requests with a workspace API key. Keys are scoped to
-            this organization and can be revoked at any time.
+            {{ 'org.apiKeys.docs.description' | transloco }}
           </p>
         </hlm-sheet-header>
 
         <div class="flex flex-1 flex-col gap-6 px-4 pb-4">
           <section class="space-y-2">
-            <h3 class="text-sm font-medium">Authentication</h3>
+            <h3 class="text-sm font-medium">
+              {{ 'org.apiKeys.docs.authenticationTitle' | transloco }}
+            </h3>
             <p class="text-muted-foreground text-sm leading-6">
-              Pass your secret key in the
-              <code class="bg-muted rounded px-1 py-0.5 font-mono text-xs"
-                >Authorization</code
-              >
-              header as a Bearer token. Never expose keys in client-side code or
-              public repositories.
+              {{ 'org.apiKeys.docs.authenticationLead' | transloco }}
             </p>
           </section>
 
           <section class="space-y-2">
-            <h3 class="text-sm font-medium">Send an email</h3>
+            <h3 class="text-sm font-medium">
+              {{ 'org.apiKeys.docs.sendEmailTitle' | transloco }}
+            </h3>
             <p class="text-muted-foreground text-sm leading-6">
-              Example request using an API key with sending access.
+              {{ 'org.apiKeys.docs.sendEmailLead' | transloco }}
             </p>
             <oequ-onboarding-code-block
               languageLabel="cURL"
@@ -90,9 +90,11 @@ await client.send({
           </section>
 
           <section class="space-y-2">
-            <h3 class="text-sm font-medium">Node.js SDK</h3>
+            <h3 class="text-sm font-medium">
+              {{ 'org.apiKeys.docs.nodeTitle' | transloco }}
+            </h3>
             <p class="text-muted-foreground text-sm leading-6">
-              Use the official SDK in server-side applications.
+              {{ 'org.apiKeys.docs.nodeLead' | transloco }}
             </p>
             <oequ-onboarding-code-block
               languageLabel="Node.js"
@@ -103,7 +105,7 @@ await client.send({
 
         <hlm-sheet-footer class="flex-row justify-end border-t">
           <button hlmBtn type="button" variant="secondary" hlmSheetClose>
-            Close
+            {{ 'org.apiKeys.docs.close' | transloco }}
           </button>
         </hlm-sheet-footer>
       </hlm-sheet-content>

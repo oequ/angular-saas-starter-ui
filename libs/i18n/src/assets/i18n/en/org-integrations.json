@@ -1,0 +1,33 @@
+{
+  "title": "Integrations",
+  "subtitle": "Connect tools your workspace uses every day.",
+  "connected": "Connected",
+  "notConnected": "Not connected",
+  "connect": "Connect",
+  "disconnect": "Disconnect",
+  "connectDialog": {
+    "title": "Connect {{name}}",
+    "description": "Simulated OAuth for the demo. No real account is linked.",
+    "connecting": "Connecting…"
+  },
+  "disconnectDialog": {
+    "title": "Disconnect {{name}}",
+    "description": "This removes the simulated connection for this workspace.",
+    "disconnecting": "Disconnecting…"
+  },
+  "toast": {
+    "connected": "{{name}} connected.",
+    "disconnected": "{{name}} disconnected."
+  },
+  "catalog": {
+    "supabase": {
+      "description": "Postgres, auth, storage, and edge functions for your workspace."
+    },
+    "vercel": {
+      "description": "Deploy previews and production builds from your repository."
+    },
+    "slack": {
+      "description": "Send workspace notifications and alerts to your team channels."
+    }
+  }
+}

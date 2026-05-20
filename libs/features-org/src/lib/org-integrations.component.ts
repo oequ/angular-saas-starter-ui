@@ -12,6 +12,7 @@ import {
   type IntegrationCatalogItem,
   type PortError,
 } from '@oequ/ports';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { toast } from '@spartan-ng/brain/sonner';
 
 import { ConnectIntegrationDialogComponent } from './connect-integration-dialog.component';
@@ -26,14 +27,17 @@ import { IntegrationsPageSkeletonComponent } from './integrations-page-skeleton.
     IntegrationsPageSkeletonComponent,
     ConnectIntegrationDialogComponent,
     DisconnectIntegrationDialogComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col gap-6">
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight">Integrations</h1>
+        <h1 class="text-2xl font-semibold tracking-tight">
+          {{ 'org.integrations.title' | transloco }}
+        </h1>
         <p class="text-muted-foreground mt-1 text-sm">
-          Connect tools your workspace uses every day.
+          {{ 'org.integrations.subtitle' | transloco }}
         </p>
       </div>
 
@@ -76,6 +80,7 @@ export class OrgIntegrationsComponent {
   readonly organizationId = input.required<string>();
 
   private readonly integrationsPort = inject(INTEGRATIONS_PORT);
+  private readonly transloco = inject(TranslocoService);
 
   private readonly dataRefresh = signal(0);
 
@@ -183,7 +188,11 @@ export class OrgIntegrationsComponent {
     this.connectDialogOpen.set(false);
     this.dialogTarget.set(null);
     this.dataRefresh.update((value) => value + 1);
-    toast.success(`${item.name} connected.`);
+    toast.success(
+      this.transloco.translate('org.integrations.toast.connected', {
+        name: item.name,
+      }),
+    );
   }
 
   protected async confirmDisconnect(): Promise<void> {
@@ -207,17 +216,22 @@ export class OrgIntegrationsComponent {
     this.disconnectDialogOpen.set(false);
     this.dialogTarget.set(null);
     this.dataRefresh.update((value) => value + 1);
-    toast.success(`${item.name} disconnected.`);
+    toast.success(
+      this.transloco.translate('org.integrations.toast.disconnected', {
+        name: item.name,
+      }),
+    );
   }
 
   private portErrorMessage(error: PortError): string {
     switch (error.code) {
       case 'CONFLICT':
-        return error.message;
       case 'NOT_FOUND':
         return error.message;
       default:
-        return error.message || 'Something went wrong.';
+        return (
+          error.message || this.transloco.translate('common.errorGeneric')
+        );
     }
   }
 }

@@ -2,9 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   output,
 } from '@angular/core';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -12,16 +14,16 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 @Component({
   selector: 'oequ-api-key-secret-dialog',
-  imports: [HlmButtonImports, HlmDialogImports],
+  imports: [HlmButtonImports, HlmDialogImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>API key created</h3>
+            <h3 hlmDialogTitle>{{ 'org.apiKeys.secretDialog.title' | transloco }}</h3>
             <p hlmDialogDescription>
-              Copy your API key now. You will not be able to see it again.
+              {{ 'org.apiKeys.secretDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
@@ -36,12 +38,14 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
               size="sm"
               (click)="copySecret()"
             >
-              Copy
+              {{ 'org.apiKeys.secretDialog.copy' | transloco }}
             </button>
           </div>
 
           <hlm-dialog-footer>
-            <button hlmBtn type="button" hlmDialogClose>Done</button>
+            <button hlmBtn type="button" hlmDialogClose>
+              {{ 'org.apiKeys.secretDialog.done' | transloco }}
+            </button>
           </hlm-dialog-footer>
         </hlm-dialog-content>
       </ng-template>
@@ -54,6 +58,8 @@ export class ApiKeySecretDialogComponent {
 
   readonly closed = output<void>();
 
+  private readonly transloco = inject(TranslocoService);
+
   protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
 
   protected readonly dialogState = computed(() =>
@@ -63,12 +69,20 @@ export class ApiKeySecretDialogComponent {
   protected copySecret(): void {
     const value = this.secret();
     if (!value || typeof navigator === 'undefined' || !navigator.clipboard) {
-      toast.error('Could not copy to clipboard.');
+      toast.error(
+        this.transloco.translate('org.apiKeys.secretDialog.copyFailed'),
+      );
       return;
     }
     void navigator.clipboard.writeText(value).then(
-      () => toast.success('API key copied to clipboard.'),
-      () => toast.error('Could not copy to clipboard.'),
+      () =>
+        toast.success(
+          this.transloco.translate('org.apiKeys.secretDialog.copySuccess'),
+        ),
+      () =>
+        toast.error(
+          this.transloco.translate('org.apiKeys.secretDialog.copyFailed'),
+        ),
     );
   }
 

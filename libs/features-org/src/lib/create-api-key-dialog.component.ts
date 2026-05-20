@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   output,
   signal,
@@ -12,9 +13,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import {
-  API_KEY_DOMAIN_SCOPE_LABEL,
-  apiKeyPermissionLabel,
   type ApiKeyPermission,
   type CreateApiKeyInput,
 } from '@oequ/ports';
@@ -35,6 +35,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
     HlmDialogImports,
     HlmInput,
     HlmSelectImports,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -42,26 +43,28 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Add API Key</h3>
+            <h3 hlmDialogTitle>{{ 'org.apiKeys.createDialog.title' | transloco }}</h3>
           </hlm-dialog-header>
 
           <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
             <div class="w-full min-w-0">
               <label for="api-key-name" class="mb-1.5 block text-sm font-medium">
-                Name
+                {{ 'org.apiKeys.createDialog.nameLabel' | transloco }}
               </label>
               <input
                 id="api-key-name"
                 hlmInput
                 type="text"
-                placeholder="Your API Key name"
+                [placeholder]="'org.apiKeys.createDialog.namePlaceholder' | transloco"
                 [class]="dialogFieldClass"
                 class="border-input bg-background h-9 rounded-[5px] shadow-none"
                 [formControl]="form.controls.name"
                 autocomplete="off"
               />
               @if (submitAttempted() && form.controls.name.invalid) {
-                <p class="text-destructive mt-1.5 text-sm">Enter a name.</p>
+                <p class="text-destructive mt-1.5 text-sm">
+                  {{ 'org.apiKeys.createDialog.nameRequired' | transloco }}
+                </p>
               }
             </div>
 
@@ -70,7 +73,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
                 for="api-key-permission-trigger"
                 class="mb-1.5 block text-sm font-medium"
               >
-                Permission
+                {{ 'org.apiKeys.createDialog.permissionLabel' | transloco }}
               </label>
               <hlm-select
                 class="block w-full"
@@ -92,7 +95,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
                 >
                   @for (option of permissionOptions; track option.value) {
                     <hlm-select-item [value]="option.value">
-                      {{ option.label }}
+                      {{ permissionLabel(option.value) }}
                     </hlm-select-item>
                   }
                 </hlm-select-content>
@@ -104,7 +107,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
                 for="api-key-domain-trigger"
                 class="mb-1.5 block text-sm font-medium"
               >
-                Domain
+                {{ 'org.apiKeys.createDialog.domainLabel' | transloco }}
               </label>
               <hlm-select
                 class="block w-full"
@@ -116,23 +119,29 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
                   [class]="dialogFieldClass"
                   class="w-full max-w-full shadow-none"
                 >
-                  <span class="truncate">{{ domainScopeLabel }}</span>
+                  <span class="truncate">{{ domainScopeLabel() }}</span>
                 </hlm-select-trigger>
                 <hlm-select-content
                   *hlmSelectPortal
                   class="w-[var(--brn-select-width)]"
                 >
-                  <hlm-select-item value="all_domains">All domains</hlm-select-item>
+                  <hlm-select-item value="all_domains">{{
+                    'org.apiKeys.domainScope.all_domains' | transloco
+                  }}</hlm-select-item>
                 </hlm-select-content>
               </hlm-select>
             </div>
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button hlmBtn type="submit" [disabled]="creating()">
-                {{ creating() ? 'Adding…' : 'Add' }}
+                {{
+                  creating()
+                    ? ('org.apiKeys.createDialog.adding' | transloco)
+                    : ('org.apiKeys.createDialog.add' | transloco)
+                }}
               </button>
             </hlm-dialog-footer>
           </form>
@@ -148,6 +157,8 @@ export class CreateApiKeyDialogComponent {
   readonly submitted = output<CreateApiKeyInput>();
   readonly cancelled = output<void>();
 
+  private readonly transloco = inject(TranslocoService);
+
   protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
   protected readonly dialogFieldClass = SETTINGS_DIALOG_FIELD_CLASS;
 
@@ -155,14 +166,7 @@ export class CreateApiKeyDialogComponent {
 
   protected readonly permissionOptions: ReadonlyArray<{
     value: ApiKeyPermission;
-    label: string;
-  }> = [
-    { value: 'full_access', label: 'Full access' },
-    { value: 'sending_access', label: 'Sending access' },
-  ];
-
-  protected readonly permissionLabel = apiKeyPermissionLabel;
-  protected readonly domainScopeLabel = API_KEY_DOMAIN_SCOPE_LABEL;
+  }> = [{ value: 'full_access' }, { value: 'sending_access' }];
 
   protected readonly form = new FormGroup({
     name: new FormControl('', {
@@ -181,7 +185,15 @@ export class CreateApiKeyDialogComponent {
     this.open() ? 'open' : 'closed',
   );
 
+  protected readonly domainScopeLabel = computed(() =>
+    this.transloco.translate('org.apiKeys.domainScope.all_domains'),
+  );
+
   private confirming = false;
+
+  protected permissionLabel(permission: ApiKeyPermission): string {
+    return this.transloco.translate(`org.apiKeys.permissions.${permission}`);
+  }
 
   protected onPermissionChange(
     value: string | string[] | null | undefined,

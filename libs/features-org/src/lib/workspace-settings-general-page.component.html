@@ -10,10 +10,10 @@
           id="org-name-title"
           class="text-xl leading-8 font-semibold tracking-tight"
         >
-          Workspace name
+          {{ 'org.general.name.title' | transloco }}
         </h2>
         <p class="text-muted-foreground my-3 text-sm leading-6">
-          Shown in the sidebar, breadcrumbs, and workspace switcher.
+          {{ 'org.general.name.lead' | transloco }}
         </p>
         <div [class]="fieldClass">
           <input
@@ -28,9 +28,9 @@
           @if (submitAttempted() && generalForm.controls.name.invalid) {
             <p class="text-destructive mt-2 text-sm">
               @if (generalForm.controls.name.hasError('maxlength')) {
-                Please use 64 characters at maximum.
+                {{ 'org.general.name.maxLength' | transloco }}
               } @else {
-                Please enter at least 2 characters.
+                {{ 'org.general.name.minLength' | transloco }}
               }
             </p>
           }
@@ -42,14 +42,20 @@
       hlmCardFooter
       class="border-border text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
     >
-      <p class="text-muted-foreground">Please use 64 characters at maximum.</p>
+      <p class="text-muted-foreground">
+        {{ 'org.general.name.hint' | transloco }}
+      </p>
       <button
         hlmBtn
         type="button"
         [disabled]="!canSaveGeneral()"
         (click)="onSaveClick()"
       >
-        {{ saving() ? 'Saving…' : 'Save' }}
+        {{
+          saving()
+            ? ('common.saving' | transloco)
+            : ('org.general.name.save' | transloco)
+        }}
       </button>
     </div>
   </section>
@@ -59,11 +65,10 @@
       <div class="flex items-start justify-between gap-6">
         <div class="min-w-0 flex-1">
           <h2 class="text-xl leading-8 font-semibold tracking-tight">
-            Workspace icon
+            {{ 'org.general.icon.title' | transloco }}
           </h2>
           <p class="text-muted-foreground mt-3 text-sm leading-6">
-            Shown in the sidebar and workspace switcher. PNG, JPG, or WebP up to
-            2&nbsp;MB.
+            {{ 'org.general.icon.lead' | transloco }}
           </p>
           @if (logoDisplayUrl()) {
             <button
@@ -72,7 +77,7 @@
               [disabled]="logoUploading()"
               (click)="removeLogo()"
             >
-              Remove icon
+              {{ 'org.general.icon.remove' | transloco }}
             </button>
           }
         </div>
@@ -92,7 +97,9 @@
           [class.to-muted]="!logoDisplayUrl()"
           [class.bg-gradient-to-br]="!logoDisplayUrl()"
           [attr.aria-label]="
-            logoUploading() ? 'Uploading icon' : 'Upload workspace icon'
+            logoUploading()
+              ? ('org.general.icon.uploadingAria' | transloco)
+              : ('org.general.icon.uploadAria' | transloco)
           "
           [attr.aria-busy]="logoUploading()"
           [disabled]="logoUploading()"
@@ -118,7 +125,7 @@
       class="border-border text-foreground flex min-h-[57px] items-center border-t !py-3 text-sm leading-relaxed"
     >
       <p class="text-muted-foreground">
-        Click the icon to upload or replace it.
+        {{ 'org.general.icon.footer' | transloco }}
       </p>
     </div>
   </section>
@@ -126,11 +133,10 @@
   <section hlmCard variant="outline" class="gap-0 overflow-hidden border-destructive/40 py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-destructive text-xl leading-8 font-semibold tracking-tight">
-        Danger zone
+        {{ 'org.general.danger.title' | transloco }}
       </h2>
       <p class="text-muted-foreground my-3 text-sm leading-6">
-        Permanently remove this workspace and all of its data. This action is
-        not reversible, so please continue with caution.
+        {{ 'org.general.danger.lead' | transloco }}
       </p>
     </div>
     <div
@@ -143,7 +149,7 @@
         class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
         (click)="openDeleteDialog()"
       >
-        Delete workspace
+        {{ 'org.general.danger.deleteButton' | transloco }}
       </button>
     </div>
   </section>

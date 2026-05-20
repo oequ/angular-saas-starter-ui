@@ -5,28 +5,34 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TranslocoPipe } from '@oequ/i18n';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 @Component({
   selector: 'oequ-connect-integration-dialog',
-  imports: [HlmButtonImports, HlmDialogImports],
+  imports: [HlmButtonImports, HlmDialogImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Connect {{ integrationName() }}</h3>
+            <h3 hlmDialogTitle>
+              {{
+                'org.integrations.connectDialog.title'
+                  | transloco: { name: integrationName() }
+              }}
+            </h3>
             <p hlmDialogDescription>
-              Simulated OAuth for the demo. No real account is linked.
+              {{ 'org.integrations.connectDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
           <hlm-dialog-footer>
             <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-              Cancel
+              {{ 'common.cancel' | transloco }}
             </button>
             <button
               hlmBtn
@@ -34,7 +40,11 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
               [disabled]="connecting()"
               (click)="confirm()"
             >
-              {{ connecting() ? 'Connecting…' : 'Connect' }}
+              {{
+                connecting()
+                  ? ('org.integrations.connectDialog.connecting' | transloco)
+                  : ('org.integrations.connect' | transloco)
+              }}
             </button>
           </hlm-dialog-footer>
         </hlm-dialog-content>

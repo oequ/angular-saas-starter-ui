@@ -2,11 +2,13 @@ import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   output,
 } from '@angular/core';
 import type { IntegrationCatalogItem } from '@oequ/ports';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 
 import { resolvePublicAssetUrl } from './resolve-public-asset-url';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -14,7 +16,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 
 @Component({
   selector: 'oequ-integration-card',
-  imports: [HlmButtonImports, HlmCardImports],
+  imports: [HlmButtonImports, HlmCardImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <article hlmCard variant="outline" class="flex h-full flex-col gap-4 !p-5">
@@ -50,7 +52,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
         <div class="min-w-0 flex-1">
           <h2 class="text-base font-semibold leading-tight">{{ item().name }}</h2>
           <p class="text-muted-foreground mt-1 text-sm leading-relaxed">
-            {{ item().description }}
+            {{ description() }}
           </p>
         </div>
       </div>
@@ -60,7 +62,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
           <span
             class="border-emerald-500/25 bg-emerald-500/10 text-emerald-700 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium dark:text-emerald-400"
           >
-            Connected
+            {{ 'org.integrations.connected' | transloco }}
           </span>
           <button
             hlmBtn
@@ -69,12 +71,14 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
             size="sm"
             (click)="disconnectClicked.emit()"
           >
-            Disconnect
+            {{ 'org.integrations.disconnect' | transloco }}
           </button>
         } @else {
-          <span class="text-muted-foreground text-xs">Not connected</span>
+          <span class="text-muted-foreground text-xs">{{
+            'org.integrations.notConnected' | transloco
+          }}</span>
           <button hlmBtn type="button" size="sm" (click)="connectClicked.emit()">
-            Connect
+            {{ 'org.integrations.connect' | transloco }}
           </button>
         }
       </div>
@@ -83,12 +87,20 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 })
 export class IntegrationCardComponent {
   private readonly document = inject(DOCUMENT);
+  private readonly transloco = inject(TranslocoService);
 
   readonly item = input.required<IntegrationCatalogItem>();
   readonly connected = input(false);
 
   readonly connectClicked = output<void>();
   readonly disconnectClicked = output<void>();
+
+  protected readonly description = computed(() => {
+    const id = this.item().id;
+    const key = `org.integrations.catalog.${id}.description`;
+    const translated = this.transloco.translate(key);
+    return translated === key ? this.item().description : translated;
+  });
 
   protected logoSrc(assetPath: string): string {
     return resolvePublicAssetUrl(this.document, assetPath);
