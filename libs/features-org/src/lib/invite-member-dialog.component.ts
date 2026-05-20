@@ -13,6 +13,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe } from '@oequ/i18n';
 import type { OrgRole } from '@oequ/ports';
 import {
   SETTINGS_DIALOG_CONTENT_CLASS,
@@ -30,8 +31,8 @@ export interface InviteMemberInput {
 
 export interface InviteMemberRoleOption {
   readonly value: OrgRole;
-  readonly label: string;
-  readonly description: string;
+  readonly labelKey: string;
+  readonly descriptionKey: string;
 }
 
 @Component({
@@ -42,6 +43,7 @@ export interface InviteMemberRoleOption {
     HlmDialogImports,
     HlmInput,
     HlmSelectImports,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -49,22 +51,24 @@ export interface InviteMemberRoleOption {
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Invite member</h3>
+            <h3 hlmDialogTitle>
+              {{ 'org.members.inviteDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              Send an invitation to join this workspace.
+              {{ 'org.members.inviteDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
           <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
             <div class="w-full min-w-0">
               <label for="invite-email" class="mb-1.5 block text-sm font-medium">
-                Email address
+                {{ 'org.members.inviteDialog.emailLabel' | transloco }}
               </label>
               <input
                 id="invite-email"
                 hlmInput
                 type="email"
-                placeholder="colleague@company.com"
+                [placeholder]="'org.members.inviteDialog.emailPlaceholder' | transloco"
                 [class]="dialogFieldClass"
                 class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
                 [formControl]="form.controls.email"
@@ -72,7 +76,7 @@ export interface InviteMemberRoleOption {
               />
               @if (submitAttempted() && form.controls.email.invalid) {
                 <p class="text-destructive mt-1.5 text-sm">
-                  Enter a valid email address.
+                  {{ 'org.members.inviteDialog.emailInvalid' | transloco }}
                 </p>
               }
             </div>
@@ -82,7 +86,7 @@ export interface InviteMemberRoleOption {
                 for="invite-role-trigger"
                 class="mb-1.5 block text-sm font-medium"
               >
-                Role
+                {{ 'common.role' | transloco }}
               </label>
               <hlm-select
                 class="block w-full"
@@ -94,7 +98,10 @@ export interface InviteMemberRoleOption {
                   [class]="dialogFieldClass"
                   class="w-full max-w-full shadow-none"
                 >
-                  <span hlmSelectValue placeholder="Select a role"></span>
+                  <span
+                    hlmSelectValue
+                    [placeholder]="'common.selectRole' | transloco"
+                  ></span>
                 </hlm-select-trigger>
                 <hlm-select-content
                   *hlmSelectPortal
@@ -102,11 +109,13 @@ export interface InviteMemberRoleOption {
                 >
                   @for (option of roleOptions(); track option.value) {
                     <hlm-select-item [value]="option.value">
-                      <span class="font-medium">{{ option.label }}</span>
+                      <span class="font-medium">{{
+                        option.labelKey | transloco
+                      }}</span>
                       <span
                         class="text-muted-foreground block text-xs font-normal"
                       >
-                        {{ option.description }}
+                        {{ option.descriptionKey | transloco }}
                       </span>
                     </hlm-select-item>
                   }
@@ -117,18 +126,18 @@ export interface InviteMemberRoleOption {
             @if (seatsExhausted()) {
               <p class="text-destructive text-sm leading-relaxed" role="alert">
                 @if (seatsUsageLabel(); as usage) {
-                  All seats are in use ({{ usage }}).
+                  {{ 'org.members.inviteDialog.seatsExhaustedWithUsage' | transloco: { usage } }}
                 } @else {
-                  All seats on your plan are in use.
+                  {{ 'org.members.inviteDialog.seatsExhausted' | transloco }}
                 }
                 <button
                   type="button"
                   class="text-destructive font-medium underline underline-offset-4 hover:text-destructive/90 hover:no-underline"
                   (click)="upgradeRequested.emit()"
                 >
-                  Upgrade your plan
+                  {{ 'org.members.inviteDialog.upgradePlan' | transloco }}
                 </button>
-                to invite more members.
+                {{ 'org.members.inviteDialog.upgradeSuffix' | transloco }}
               </p>
             } @else if (submitError()) {
               <p class="text-destructive text-sm" role="alert">{{ submitError() }}</p>
@@ -136,14 +145,18 @@ export interface InviteMemberRoleOption {
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button
                 hlmBtn
                 type="submit"
                 [disabled]="inviting() || seatsExhausted()"
               >
-                {{ inviting() ? 'Sending…' : 'Send invite' }}
+                {{
+                  inviting()
+                    ? ('org.members.inviteDialog.sending' | transloco)
+                    : ('org.members.inviteDialog.sendInvite' | transloco)
+                }}
               </button>
             </hlm-dialog-footer>
           </form>

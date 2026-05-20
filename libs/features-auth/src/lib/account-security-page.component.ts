@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -12,6 +13,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -26,11 +28,14 @@ import { HlmInput } from '@spartan-ng/helm/input';
     HlmButtonImports,
     HlmBadgeImports,
     HlmInput,
+    TranslocoPipe,
   ],
   templateUrl: './account-security-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountSecurityPageComponent {
+  private readonly transloco = inject(TranslocoService);
+
   protected readonly fieldClass = SETTINGS_FORM_FIELD_CLASS;
 
   protected readonly passwordForm = new FormGroup({
@@ -93,13 +98,15 @@ export class AccountSecurityPageComponent {
     this.statusMessage.set(null);
 
     if (newPassword !== confirmPassword) {
-      this.statusMessage.set('New passwords do not match.');
+      this.statusMessage.set(
+        this.transloco.translate('account.security.passwordMismatch'),
+      );
       this.saving.set(false);
       return;
     }
 
     this.statusMessage.set(
-      'Password change will be available in v0.3.',
+      this.transloco.translate('account.security.passwordChangeSoon'),
     );
     this.passwordForm.reset();
     this.submitAttempted.set(false);
@@ -107,6 +114,8 @@ export class AccountSecurityPageComponent {
   }
 
   protected enableTwoFactor(): void {
-    this.statusMessage.set('TOTP setup will be available in v0.3.');
+    this.statusMessage.set(
+      this.transloco.translate('account.security.twoFactorSoon'),
+    );
   }
 }

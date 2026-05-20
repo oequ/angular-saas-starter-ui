@@ -20,6 +20,7 @@ import {
   type OrgRole,
   type PortError,
 } from '@oequ/ports';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { PaywallDialogService } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -58,6 +59,7 @@ type MemberRoleFilter = 'all' | OrgRole;
     InviteMemberDialogComponent,
     ChangeMemberRoleDialogComponent,
     RemoveMemberDialogComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -66,7 +68,9 @@ type MemberRoleFilter = 'all' | OrgRole;
   ],
   template: `
     <div class="flex flex-col gap-6">
-      <h1 class="text-2xl font-semibold tracking-tight">Members</h1>
+      <h1 class="text-2xl font-semibold tracking-tight">
+        {{ 'org.members.title' | transloco }}
+      </h1>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div class="relative min-w-0 flex-1 sm:max-w-xs">
@@ -78,7 +82,7 @@ type MemberRoleFilter = 'all' | OrgRole;
           <input
             hlmInput
             type="search"
-            placeholder="Search…"
+            [placeholder]="'common.searchPlaceholder' | transloco"
             class="border-input bg-background h-9 w-full rounded-[5px] ps-9 shadow-none"
             [formControl]="searchControl"
           />
@@ -93,16 +97,24 @@ type MemberRoleFilter = 'all' | OrgRole;
             <span class="truncate">{{ roleFilterLabel() }}</span>
           </hlm-select-trigger>
           <hlm-select-content *hlmSelectPortal class="w-[var(--brn-select-width)]">
-            <hlm-select-item value="all">All roles</hlm-select-item>
-            <hlm-select-item value="owner">Owner</hlm-select-item>
-            <hlm-select-item value="admin">Admin</hlm-select-item>
-            <hlm-select-item value="member">Member</hlm-select-item>
+            <hlm-select-item value="all">{{
+              'org.members.filters.allRoles' | transloco
+            }}</hlm-select-item>
+            <hlm-select-item value="owner">{{
+              'org.members.filters.owner' | transloco
+            }}</hlm-select-item>
+            <hlm-select-item value="admin">{{
+              'org.members.filters.admin' | transloco
+            }}</hlm-select-item>
+            <hlm-select-item value="member">{{
+              'org.members.filters.member' | transloco
+            }}</hlm-select-item>
           </hlm-select-content>
         </hlm-select>
 
         <div class="flex shrink-0 items-center gap-2 sm:ms-auto">
           <button hlmBtn type="button" (click)="openInviteDialog()">
-            + Invite member
+            {{ 'org.members.inviteButton' | transloco }}
           </button>
         </div>
       </div>
@@ -111,7 +123,7 @@ type MemberRoleFilter = 'all' | OrgRole;
         <div
           class="border-input text-muted-foreground flex min-h-[280px] items-center justify-center rounded-[5px] border text-sm"
         >
-          Loading members…
+          {{ 'org.members.loading' | transloco }}
         </div>
       } @else if (members().length === 0) {
         <hlm-empty class="border-input min-h-[280px]">
@@ -119,15 +131,14 @@ type MemberRoleFilter = 'all' | OrgRole;
             <hlm-empty-media variant="icon">
               <ng-icon name="lucideUsers" aria-hidden="true" />
             </hlm-empty-media>
-            <h2 hlmEmptyTitle>No members yet</h2>
+            <h2 hlmEmptyTitle>{{ 'org.members.emptyTitle' | transloco }}</h2>
             <p hlmEmptyDescription>
-              Invite teammates by email. They receive a link to join this
-              workspace.
+              {{ 'org.members.emptyDescription' | transloco }}
             </p>
           </hlm-empty-header>
           <hlm-empty-content>
             <button hlmBtn type="button" (click)="openInviteDialog()">
-              + Invite member
+              {{ 'org.members.inviteButton' | transloco }}
             </button>
           </hlm-empty-content>
         </hlm-empty>
@@ -136,11 +147,17 @@ type MemberRoleFilter = 'all' | OrgRole;
           <table hlmTable>
             <thead hlmTHead>
               <tr hlmTr class="text-muted-foreground border-b text-xs">
-                <th hlmTh class="px-4">Member</th>
-                <th hlmTh class="hidden px-4 sm:table-cell">Role</th>
-                <th hlmTh class="px-4">Status</th>
+                <th hlmTh class="px-4">
+                  {{ 'org.members.columnMember' | transloco }}
+                </th>
+                <th hlmTh class="hidden px-4 sm:table-cell">
+                  {{ 'org.members.columnRole' | transloco }}
+                </th>
+                <th hlmTh class="px-4">
+                  {{ 'org.members.columnStatus' | transloco }}
+                </th>
                 <th hlmTh class="w-12 px-2 text-end">
-                  <span class="sr-only">Actions</span>
+                  <span class="sr-only">{{ 'common.actions' | transloco }}</span>
                 </th>
               </tr>
             </thead>
@@ -152,7 +169,7 @@ type MemberRoleFilter = 'all' | OrgRole;
                     colspan="4"
                     class="text-muted-foreground px-4 py-10 text-center whitespace-normal"
                   >
-                    No members match your filters.
+                    {{ 'org.members.noFilterMatch' | transloco }}
                   </td>
                 </tr>
               } @else {
@@ -185,7 +202,7 @@ type MemberRoleFilter = 'all' | OrgRole;
                       hlmTd
                       class="text-muted-foreground hidden px-4 py-3 capitalize sm:table-cell"
                     >
-                      {{ member.role }}
+                      {{ roleLabel(member.role) | transloco }}
                     </td>
                     <td hlmTd class="px-4 py-3">
                       @let statusBadge = memberStatusBadge(member.status);
@@ -194,7 +211,7 @@ type MemberRoleFilter = 'all' | OrgRole;
                         [variant]="statusBadge.variant"
                         [class]="statusBadge.class"
                       >
-                        {{ member.status }}
+                        {{ memberStatusLabel(member.status) | transloco }}
                       </span>
                     </td>
                     <td hlmTd class="px-2 py-3 text-end">
@@ -207,8 +224,9 @@ type MemberRoleFilter = 'all' | OrgRole;
                           class="size-8"
                           [hlmDropdownMenuTrigger]="memberActionsMenu"
                           [attr.aria-label]="
-                            'Actions for ' +
-                            (member.displayName ?? member.email)
+                            ('org.members.actionsFor' | transloco: {
+                              name: member.displayName ?? member.email,
+                            })
                           "
                         >
                           <ng-icon
@@ -224,7 +242,7 @@ type MemberRoleFilter = 'all' | OrgRole;
                               hlmDropdownMenuItem
                               (triggered)="openChangeRoleDialog(member)"
                             >
-                              Change role
+                              {{ 'org.members.changeRole' | transloco }}
                             </button>
                             <div hlmDropdownMenuSeparator></div>
                             <button
@@ -233,7 +251,7 @@ type MemberRoleFilter = 'all' | OrgRole;
                               variant="destructive"
                               (triggered)="openRemoveDialog(member)"
                             >
-                              Remove
+                              {{ 'org.members.remove' | transloco }}
                             </button>
                           </div>
                         </ng-template>
@@ -284,6 +302,7 @@ export class OrgSettingsMembersComponent {
   private readonly orgPort = inject(ORG_PORT);
   private readonly billingPort = inject(BILLING_PORT);
   private readonly paywallDialog = inject(PaywallDialogService);
+  private readonly transloco = inject(TranslocoService);
 
   private readonly dataRefresh = signal(0);
 
@@ -307,13 +326,13 @@ export class OrgSettingsMembersComponent {
   protected readonly inviteRoleOptions = [
     {
       value: 'member' as const,
-      label: 'Member',
-      description: 'Can access workspace apps and data.',
+      labelKey: 'org.members.roles.member.label',
+      descriptionKey: 'org.members.roles.member.description',
     },
     {
       value: 'admin' as const,
-      label: 'Admin',
-      description: 'Can manage settings, members, and billing.',
+      labelKey: 'org.members.roles.admin.label',
+      descriptionKey: 'org.members.roles.admin.description',
     },
   ];
 
@@ -379,18 +398,22 @@ export class OrgSettingsMembersComponent {
   );
 
   protected readonly roleFilterLabel = computed(() => {
-    switch (this.roleFilter()) {
-      case 'owner':
-        return 'Owner';
-      case 'admin':
-        return 'Admin';
-      case 'member':
-        return 'Member';
-      case 'all':
-      default:
-        return 'All roles';
-    }
+    const key =
+      this.roleFilter() === 'all'
+        ? 'org.members.filters.allRoles'
+        : `org.members.filters.${this.roleFilter()}`;
+    return this.transloco.translate(key);
   });
+
+  protected roleLabel(role: OrgRole): string {
+    return `org.members.filters.${role}`;
+  }
+
+  protected memberStatusLabel(
+    status: OrganizationMember['status'],
+  ): string {
+    return `org.members.status.${status}`;
+  }
 
   protected readonly filteredMembers = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
@@ -463,7 +486,9 @@ export class OrgSettingsMembersComponent {
     if (result === 'success') {
       this.billingResource.reload();
       this.dataRefresh.update((value) => value + 1);
-      toast.success('Plan upgraded. You can invite more members.');
+      toast.success(
+        this.transloco.translate('org.members.toast.planUpgraded'),
+      );
     }
   }
 
@@ -486,7 +511,11 @@ export class OrgSettingsMembersComponent {
 
     this.closeInviteDialog();
     this.dataRefresh.update((value) => value + 1);
-    toast.success(`Invitation sent to ${input.email}.`);
+    toast.success(
+      this.transloco.translate('org.members.toast.inviteSent', {
+        email: input.email,
+      }),
+    );
   }
 
   protected openChangeRoleDialog(member: OrganizationMember): void {
@@ -522,12 +551,18 @@ export class OrgSettingsMembersComponent {
     }
 
     const label = member.displayName ?? member.email;
-    const roleLabel =
-      this.inviteRoleOptions.find((o) => o.value === role)?.label ?? role;
+    const roleKey =
+      this.inviteRoleOptions.find((o) => o.value === role)?.labelKey ??
+      `org.members.filters.${role}`;
     this.changeRoleDialogOpen.set(false);
     this.changeRoleTarget.set(null);
     this.dataRefresh.update((value) => value + 1);
-    toast.success(`${label} is now ${roleLabel}.`);
+    toast.success(
+      this.transloco.translate('org.members.toast.roleChanged', {
+        name: label,
+        role: this.transloco.translate(roleKey),
+      }),
+    );
   }
 
   protected openRemoveDialog(member: OrganizationMember): void {
@@ -565,21 +600,25 @@ export class OrgSettingsMembersComponent {
     this.removeDialogOpen.set(false);
     this.removeTarget.set(null);
     this.dataRefresh.update((value) => value + 1);
-    toast.success(`${label} was removed from the workspace.`);
+    toast.success(
+      this.transloco.translate('org.members.toast.memberRemoved', {
+        name: label,
+      }),
+    );
   }
 
   private portErrorMessage(error: PortError): string {
     switch (error.code) {
       case 'SEATS_EXHAUSTED':
-        return 'No seats available. Upgrade your plan.';
+        return this.transloco.translate('org.members.errors.seatsExhausted');
       case 'CONFLICT':
-        return 'This email is already a member or has a pending invite.';
+        return this.transloco.translate('org.members.errors.conflict');
       case 'FORBIDDEN':
         return error.message.includes('role')
-          ? 'The workspace owner role cannot be changed.'
-          : 'The workspace owner cannot be removed.';
+          ? this.transloco.translate('org.members.errors.ownerRoleChange')
+          : this.transloco.translate('org.members.errors.ownerRemove');
       default:
-        return error.message || 'Something went wrong.';
+        return error.message || this.transloco.translate('common.errorGeneric');
     }
   }
 }

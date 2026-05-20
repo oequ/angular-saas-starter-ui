@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { TranslocoPipe } from '@oequ/i18n';
 import {
   formatMetricsCount,
   formatMetricsPercent,
@@ -11,7 +12,12 @@ import { MetricsLineChartComponent } from './metrics-line-chart.component';
 
 @Component({
   selector: 'oequ-metrics-emails-card',
-  imports: [HlmCardImports, HlmSelectImports, MetricsLineChartComponent],
+  imports: [
+    HlmCardImports,
+    HlmSelectImports,
+    MetricsLineChartComponent,
+    TranslocoPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section
@@ -22,16 +28,24 @@ import { MetricsLineChartComponent } from './metrics-line-chart.component';
       <div hlmCardContent class="!p-5">
         <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 class="text-sm font-medium">Email volume</h2>
-            <p class="text-muted-foreground text-xs">Sent over the selected period</p>
+            <h2 class="text-sm font-medium">
+              {{ 'org.metrics.emailsCard.title' | transloco }}
+            </h2>
+            <p class="text-muted-foreground text-xs">
+              {{ 'org.metrics.emailsCard.subtitle' | transloco }}
+            </p>
           </div>
 
           <hlm-select class="w-full sm:w-40" value="all_events">
             <hlm-select-trigger class="border-input h-9 w-full rounded-lg shadow-none">
-              <span class="truncate">All Events</span>
+              <span class="truncate">{{
+                'org.metrics.emailsCard.allEvents' | transloco
+              }}</span>
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal class="w-[var(--brn-select-width)]">
-              <hlm-select-item value="all_events">All Events</hlm-select-item>
+              <hlm-select-item value="all_events">{{
+                'org.metrics.emailsCard.allEvents' | transloco
+              }}</hlm-select-item>
             </hlm-select-content>
           </hlm-select>
         </div>
@@ -44,7 +58,7 @@ import { MetricsLineChartComponent } from './metrics-line-chart.component';
           lineColor="oklch(0.62 0.17 145)"
           [fillArea]="true"
           [height]="240"
-          ariaLabel="Emails sent over time"
+          [attr.aria-label]="'org.metrics.emailsCard.chartAria' | transloco"
         />
 
         @if (primaryDomain(); as domain) {
@@ -62,7 +76,7 @@ import { MetricsLineChartComponent } from './metrics-line-chart.component';
               {{
                 formatMetricsPercent(domain.deliverabilityRate, { decimals: 0 })
               }}
-              deliverability
+              {{ 'org.metrics.emailsCard.deliverability' | transloco }}
             </span>
           </div>
         }

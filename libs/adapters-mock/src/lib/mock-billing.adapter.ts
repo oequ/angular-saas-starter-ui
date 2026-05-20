@@ -194,7 +194,8 @@ export class MockBillingAdapter implements BillingPort {
     if (blocker) {
       return portErr({
         code: 'PLAN_DOWNGRADE_BLOCKED',
-        message: blocker,
+        message:
+          'Too many members for the target plan. Remove members before downgrading.',
       });
     }
 

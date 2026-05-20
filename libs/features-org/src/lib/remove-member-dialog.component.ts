@@ -5,6 +5,7 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TranslocoPipe } from '@oequ/i18n';
 import {
   SETTINGS_DIALOG_CONTENT_CLASS,
 } from '@oequ/shell';
@@ -13,23 +14,27 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 @Component({
   selector: 'oequ-remove-member-dialog',
-  imports: [HlmButtonImports, HlmDialogImports],
+  imports: [HlmButtonImports, HlmDialogImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle class="text-destructive">Remove member</h3>
+            <h3 hlmDialogTitle class="text-destructive">
+              {{ 'org.members.removeDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              Remove <strong>{{ memberLabel() }}</strong> from this workspace?
-              They will lose access immediately.
+              {{
+                'org.members.removeDialog.description'
+                  | transloco: { name: memberLabel() }
+              }}
             </p>
           </hlm-dialog-header>
 
           <hlm-dialog-footer>
             <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-              Cancel
+              {{ 'common.cancel' | transloco }}
             </button>
             <button
               hlmBtn
@@ -38,7 +43,11 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
               [disabled]="removing()"
               (click)="confirm()"
             >
-              {{ removing() ? 'Removing…' : 'Remove member' }}
+              {{
+                removing()
+                  ? ('org.members.removeDialog.removing' | transloco)
+                  : ('org.members.removeDialog.submit' | transloco)
+              }}
             </button>
           </hlm-dialog-footer>
         </hlm-dialog-content>

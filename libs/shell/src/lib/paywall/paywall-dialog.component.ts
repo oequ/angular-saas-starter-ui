@@ -15,6 +15,7 @@ import {
   BILLING_PORT,
   COMMERCIAL_PLAN_IDS,
   comparePlanTiers,
+  formatUsageNumber,
   getDowngradeBlocker,
   ORG_PORT,
   resolveCurrentPlanId,
@@ -26,6 +27,7 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 
 import {
@@ -50,6 +52,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
     HlmSkeletonImports,
     PlanDowngradeConfirmDialogComponent,
     PlanUpgradeCheckoutDialogComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ lucideCheck })],
@@ -58,10 +61,11 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
             <hlm-dialog-header class="shrink-0 space-y-1 text-start">
-              <h3 hlmDialogTitle class="text-xl">Change subscription plan</h3>
+              <h3 hlmDialogTitle class="text-xl">
+                {{ 'paywall.dialog.title' | transloco }}
+              </h3>
               <p hlmDialogDescription>
-                Compare tiers and upgrade or downgrade your plan when your needs
-                change.
+                {{ 'paywall.dialog.description' | transloco }}
               </p>
             </hlm-dialog-header>
 
@@ -70,7 +74,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
               <div
                 class="grid gap-4 py-2 md:grid-cols-3"
                 aria-busy="true"
-                aria-label="Loading plans"
+                [attr.aria-label]="'paywall.dialog.loadingPlans' | transloco"
               >
                 @for (_ of planSkeletonSlots; track $index) {
                   <div
@@ -118,7 +122,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                         <h4
                           class="text-primary text-sm font-semibold tracking-wide uppercase"
                         >
-                          {{ plan.name }}
+                          {{ planNameKey(plan.id) | transloco }}
                         </h4>
                         @if (planAction(plan.id) === 'current') {
                           <span
@@ -126,7 +130,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                             variant="secondary"
                             class="text-xs font-normal"
                           >
-                            Current plan
+                            {{ 'paywall.dialog.currentPlan' | transloco }}
                           </span>
                         } @else if (plan.id === 'pro') {
                           <span
@@ -134,7 +138,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                             variant="outline"
                             class="border-emerald-500/25 bg-emerald-500/10 text-emerald-700 text-xs font-normal dark:text-emerald-400"
                           >
-                            Most popular
+                            {{ 'paywall.dialog.mostPopular' | transloco }}
                           </span>
                         }
                       </div>
@@ -143,7 +147,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                         @if (plan.priceAmount === 0) {
                           $0.00
                         } @else if (plan.isPerSeat) {
-                          From
+                          {{ 'paywall.dialog.from' | transloco }}
                           {{
                             plan.priceAmount
                               | currency: plan.priceCurrency : 'symbol' : '1.0-0'
@@ -155,7 +159,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                           }}
                         }
                         <span class="text-muted-foreground text-sm font-normal">
-                          / month
+                          {{ 'paywall.dialog.perMonth' | transloco }}
                         </span>
                       </p>
 
@@ -168,7 +172,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                             class="w-full"
                             disabled
                           >
-                            Current plan
+                            {{ 'paywall.dialog.currentPlan' | transloco }}
                           </button>
                         } @else if (planAction(plan.id) === 'upgrade') {
                           <button
@@ -177,7 +181,12 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                             class="w-full"
                             (click)="startUpgrade(plan)"
                           >
-                            Upgrade to {{ plan.name }}
+                            {{
+                              'paywall.dialog.upgradeTo'
+                                | transloco: {
+                                    plan: (planNameKey(plan.id) | transloco),
+                                  }
+                            }}
                           </button>
                         } @else if (planAction(plan.id) === 'downgrade') {
                           <button
@@ -187,7 +196,12 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                             class="w-full"
                             (click)="startDowngrade(plan)"
                           >
-                            Downgrade to {{ plan.name }}
+                            {{
+                              'paywall.dialog.downgradeTo'
+                                | transloco: {
+                                    plan: (planNameKey(plan.id) | transloco),
+                                  }
+                            }}
                           </button>
                         }
                       </div>
@@ -202,7 +216,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                                 aria-hidden="true"
                               />
                               <span class="text-muted-foreground leading-snug">{{
-                                feature.name
+                                planFeatureKey(plan.id, feature.id) | transloco
                               }}</span>
                             </li>
                           }
@@ -213,8 +227,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                         <p
                           class="text-muted-foreground mt-auto pt-4 text-xs leading-relaxed"
                         >
-                          Free workspaces may pause after inactivity. Limit of 2
-                          active workspaces on Free.
+                          {{ 'paywall.dialog.freeFootnote' | transloco }}
                         </p>
                       }
                     </div>
@@ -229,7 +242,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
 
     <oequ-plan-upgrade-checkout-dialog
       [open]="checkoutConfirmOpen()"
-      [planName]="selectedPlan()?.name ?? ''"
+      [planId]="selectedPlanId() ?? 'free'"
       [loading]="checkoutLoading()"
       [confirming]="checkoutConfirming()"
       [error]="checkoutConfirmError()"
@@ -239,7 +252,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
 
     <oequ-plan-downgrade-confirm-dialog
       [open]="downgradeConfirmOpen()"
-      [planName]="selectedPlan()?.name ?? ''"
+      [planId]="selectedPlanId() ?? 'free'"
       [confirming]="downgradeConfirming()"
       [error]="downgradeConfirmError()"
       (confirmed)="confirmDowngrade()"
@@ -251,6 +264,7 @@ export class PaywallDialogComponent {
   private readonly dialogService = inject(PaywallDialogService);
   private readonly billingPort = inject(BILLING_PORT);
   private readonly orgPort = inject(ORG_PORT);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly planSkeletonSlots = [0, 1, 2] as const;
   protected readonly featureSkeletonSlots = [0, 1, 2, 3, 4] as const;
@@ -324,10 +338,20 @@ export class PaywallDialogComponent {
     return this.dialogService.suggestedPlanId() === planId;
   }
 
+  protected planNameKey(planId: string): string {
+    return `paywall.plans.${planId}.name`;
+  }
+
+  protected planFeatureKey(planId: string, featureId: string): string {
+    return `paywall.plans.${planId}.features.${featureId}`;
+  }
+
   protected async startUpgrade(plan: BillingPlan): Promise<void> {
     const org = this.activeOrganization();
     if (!org) {
-      this.loadError.set('No active workspace.');
+      this.loadError.set(
+        this.transloco.translate('paywall.errors.noWorkspace'),
+      );
       return;
     }
 
@@ -363,13 +387,21 @@ export class PaywallDialogComponent {
   protected startDowngrade(plan: BillingPlan): void {
     const summary = this.billingSummary();
     if (!summary) {
-      this.loadError.set('Billing information is not available.');
+      this.loadError.set(
+        this.transloco.translate('paywall.errors.billingUnavailable'),
+      );
       return;
     }
 
     const blocker = getDowngradeBlocker(summary, plan.id, this.plans());
     if (blocker) {
-      this.downgradeError.set(blocker);
+      this.downgradeError.set(
+        this.transloco.translate('paywall.errors.downgradeSeats', {
+          used: formatUsageNumber(blocker.seatsUsed),
+          limit: formatUsageNumber(blocker.seatLimit),
+          plan: this.transloco.translate(this.planNameKey(blocker.targetPlanId)),
+        }),
+      );
       return;
     }
 
@@ -446,7 +478,9 @@ export class PaywallDialogComponent {
   private async loadPaywallData(): Promise<void> {
     const org = this.activeOrganization();
     if (!org) {
-      this.loadError.set('No active workspace.');
+      this.loadError.set(
+        this.transloco.translate('paywall.errors.noWorkspace'),
+      );
       return;
     }
 

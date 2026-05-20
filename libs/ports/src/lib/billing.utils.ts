@@ -63,7 +63,7 @@ export function getDowngradeBlocker(
   summary: BillingSummary,
   targetPlanId: string,
   plans?: readonly BillingPlan[],
-): string | null {
+): PlanDowngradeSeatsBlocker | null {
   const newLimit = seatLimitForPlanId(targetPlanId, plans);
   if (newLimit === null) {
     return null;
@@ -71,9 +71,11 @@ export function getDowngradeBlocker(
   if (summary.seatsUsed <= newLimit) {
     return null;
   }
-  const planLabel =
-    plans?.find((plan) => plan.id === targetPlanId)?.name ?? targetPlanId;
-  return `You have ${formatUsageNumber(summary.seatsUsed)} members but ${planLabel} allows ${formatUsageNumber(newLimit)}. Remove members before downgrading.`;
+  return {
+    seatsUsed: summary.seatsUsed,
+    seatLimit: newLimit,
+    targetPlanId,
+  };
 }
 
 const DEFAULT_SEAT_LIMIT_BY_PLAN: Readonly<Record<string, number>> = {
@@ -284,9 +286,17 @@ export type BillingBannerTone = 'info' | 'warning' | 'critical';
 
 export interface BillingStatusBanner {
   readonly tone: BillingBannerTone;
-  readonly message: string;
-  readonly ctaLabel: string;
+  readonly messageKey: string;
+  readonly messageParams?: Record<string, string | number>;
+  readonly ctaLabelKey: string;
   readonly ctaPath: string;
+}
+
+/** Seat cap blocks downgrade until members are removed. */
+export interface PlanDowngradeSeatsBlocker {
+  readonly seatsUsed: number;
+  readonly seatLimit: number;
+  readonly targetPlanId: string;
 }
 
 const BILLING_SETTINGS_PATH = '/workspace/settings/billing';
@@ -303,45 +313,51 @@ export function billingStatusBanner(
   switch (summary.status) {
     case 'trialing': {
       const days = daysUntil(summary.trialEnd);
-      const suffix =
-        days !== null
-          ? ` Trial ends in ${days} day${days === 1 ? '' : 's'}.`
-          : '';
+      const messageKey =
+        days === null
+          ? 'paywall.banner.trialing.messageNoEnd'
+          : days === 1
+            ? 'paywall.banner.trialing.messageOneDay'
+            : 'paywall.banner.trialing.messageDays';
       return {
         tone: 'info',
-        message: `You are on a trial.${suffix} Add a payment method to avoid interruption.`,
-        ctaLabel: 'Manage billing',
+        messageKey,
+        messageParams: days !== null ? { days } : undefined,
+        ctaLabelKey: 'paywall.banner.trialing.cta',
         ctaPath: BILLING_SETTINGS_PATH,
       };
     }
     case 'past_due':
       return {
         tone: 'critical',
-        message: 'Your last payment failed. Update billing details to restore full access.',
-        ctaLabel: 'Update payment',
+        messageKey: 'paywall.banner.past_due.message',
+        ctaLabelKey: 'paywall.banner.past_due.cta',
         ctaPath: BILLING_SETTINGS_PATH,
       };
     case 'incomplete':
       return {
         tone: 'critical',
-        message: 'Action required to activate your subscription.',
-        ctaLabel: 'Complete checkout',
+        messageKey: 'paywall.banner.incomplete.message',
+        ctaLabelKey: 'paywall.banner.incomplete.cta',
         ctaPath: BILLING_SETTINGS_PATH,
       };
     case 'unpaid':
       return {
         tone: 'critical',
-        message: 'This workspace is suspended due to unpaid invoices.',
-        ctaLabel: 'Pay balance',
+        messageKey: 'paywall.banner.unpaid.message',
+        ctaLabelKey: 'paywall.banner.unpaid.cta',
         ctaPath: BILLING_SETTINGS_PATH,
       };
     case 'canceled':
       return {
         tone: 'warning',
-        message: summary.cancelAtPeriodEnd
-          ? `Your plan will end on ${formatShortDate(summary.currentPeriodEnd)}.`
-          : 'Your subscription has ended. Reactivate to regain access.',
-        ctaLabel: 'Renew plan',
+        messageKey: summary.cancelAtPeriodEnd
+          ? 'paywall.banner.canceled.messageEnd'
+          : 'paywall.banner.canceled.messageEnded',
+        messageParams: summary.cancelAtPeriodEnd
+          ? { date: formatShortDate(summary.currentPeriodEnd) }
+          : undefined,
+        ctaLabelKey: 'paywall.banner.canceled.cta',
         ctaPath: BILLING_SETTINGS_PATH,
       };
     default:

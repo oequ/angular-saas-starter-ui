@@ -19,11 +19,12 @@ import {
   formatPlanLabel,
   formatSeatUsageValue,
   formatUsageMeterValue,
+  formatUsageNumber,
   resolveCurrentPlanId,
-  usageDetailTooltip,
   type BillingSummary,
   type UsageMeter,
 } from '@oequ/ports';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { PaywallDialogService } from '@oequ/shell';
 import { provideBrnTooltipDefaultOptions, BrnTooltip } from '@spartan-ng/brain/tooltip';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -80,14 +81,14 @@ interface UsageDisplayRow {
 const PREMIUM_DEMO_METERS = [
   {
     metricId: 'sso_users',
-    name: 'Monthly Active SSO Users',
+    nameKey: 'org.usage.premium.sso_users',
     unit: 'MAU',
     consumed: 0,
     limit: 100,
   },
   {
     metricId: 'storage_image_transformations',
-    name: 'Storage Image Transformations',
+    nameKey: 'org.usage.premium.storage_image_transformations',
     consumed: 0,
     limit: null as number | null,
   },
@@ -104,13 +105,16 @@ const PREMIUM_DEMO_METERS = [
     OequUsageTooltipDirective,
     UsageMeterRingComponent,
     UsagePageSkeletonComponent,
+    TranslocoPipe,
   ],
   providers: [provideIcons({ lucideChevronRight, lucideExternalLink })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight">Usage</h1>
+        <h1 class="text-2xl font-semibold tracking-tight">
+          {{ 'org.usage.title' | transloco }}
+        </h1>
         @if (statusMessage(); as message) {
           <p role="status" class="text-muted-foreground mt-3 text-sm">{{ message }}</p>
         }
@@ -119,7 +123,10 @@ const PREMIUM_DEMO_METERS = [
       <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
         <div hlmCardContent class="!p-0">
           @if (billingResource.isLoading()) {
-            <oequ-usage-page-skeleton aria-busy="true" aria-label="Loading usage" />
+            <oequ-usage-page-skeleton
+              aria-busy="true"
+              [attr.aria-label]="'org.usage.loading' | transloco"
+            />
           } @else if (billingResource.error(); as err) {
             <p class="text-destructive p-6 text-sm">{{ err.message }}</p>
           } @else if (summary(); as billing) {
@@ -128,28 +135,34 @@ const PREMIUM_DEMO_METERS = [
             >
               <hlm-select class="w-full sm:w-[220px]" [disabled]="true">
                 <hlm-select-trigger class="h-9 shadow-none">
-                  <span>Current billing cycle</span>
+                  <span>{{ 'org.usage.billingCycle' | transloco }}</span>
                 </hlm-select-trigger>
                 <hlm-select-content *hlmSelectPortal>
-                  <hlm-select-item value="current">Current billing cycle</hlm-select-item>
+                  <hlm-select-item value="current">{{
+                    'org.usage.billingCycle' | transloco
+                  }}</hlm-select-item>
                 </hlm-select-content>
               </hlm-select>
 
               <p class="text-muted-foreground text-sm">
-                Organization is on the
-                <span class="text-foreground font-medium">{{ planDisplayLabel(billing) }}</span>
-                / {{ billingPeriodLabel(billing) }}
+                {{
+                  'org.usage.orgOnPlan'
+                    | transloco: {
+                        plan: planDisplayLabel(billing),
+                        period: billingPeriodLabel(billing),
+                      }
+                }}
               </p>
             </div>
 
             <div class="grid gap-8 p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
               <aside class="space-y-6">
                 <div>
-                  <h2 class="text-xl font-semibold tracking-tight">Usage Summary</h2>
+                  <h2 class="text-xl font-semibold tracking-tight">
+                    {{ 'org.usage.summary.title' | transloco }}
+                  </h2>
                   <p class="text-muted-foreground mt-3 text-sm leading-6">
-                    Your plan includes a limited amount of usage. If exceeded, you
-                    may experience restrictions, since overages are not currently
-                    billed. It may take up to 1 hour to reflect any usage changes.
+                    {{ 'org.usage.summary.lead' | transloco }}
                   </p>
                 </div>
 
@@ -157,7 +170,7 @@ const PREMIUM_DEMO_METERS = [
                   <p
                     class="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase"
                   >
-                    More information
+                    {{ 'org.usage.moreInfo' | transloco }}
                   </p>
                   <ul class="space-y-2 text-sm">
                     <li>
@@ -165,7 +178,7 @@ const PREMIUM_DEMO_METERS = [
                         class="hover:text-foreground inline-flex items-center gap-1.5 underline-offset-4 hover:underline"
                         routerLink="/workspace/settings/billing"
                       >
-                        How billing works
+                        {{ 'org.usage.howBillingWorks' | transloco }}
                         <ng-icon name="lucideExternalLink" class="size-3.5" />
                       </a>
                     </li>
@@ -175,7 +188,7 @@ const PREMIUM_DEMO_METERS = [
                         class="hover:text-foreground inline-flex items-center gap-1.5 underline-offset-4 hover:underline"
                         (click)="openUpgradeDialog()"
                       >
-                        Plans &amp; pricing
+                        {{ 'org.usage.plansPricing' | transloco }}
                         <ng-icon name="lucideExternalLink" class="size-3.5" />
                       </button>
                     </li>
@@ -194,7 +207,7 @@ const PREMIUM_DEMO_METERS = [
                         class="hover:text-foreground inline-flex items-center gap-1 text-left text-sm font-medium"
                         [oequUsageTooltip]="row.detailTooltip"
                         position="top"
-                        [attr.aria-label]="row.name + ' plan details'"
+                        [attr.aria-label]="usageRowAria(row.name)"
                       >
                         {{ row.name }}
                         <ng-icon
@@ -224,7 +237,7 @@ const PREMIUM_DEMO_METERS = [
                         class="shrink-0"
                         (click)="openUpgradeDialog()"
                       >
-                        Upgrade
+                        {{ 'org.usage.upgrade' | transloco }}
                       </button>
                     }
                   </div>
@@ -233,7 +246,7 @@ const PREMIUM_DEMO_METERS = [
             </div>
           } @else {
             <p class="text-muted-foreground p-6 text-sm">
-              Usage information is not available.
+              {{ 'org.usage.unavailable' | transloco }}
             </p>
           }
         </div>
@@ -246,6 +259,7 @@ export class OrgSettingsUsageComponent {
 
   private readonly billingPort = inject(BILLING_PORT);
   private readonly paywallDialog = inject(PaywallDialogService);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly billingPeriodLabel = billingPeriodLabel;
   protected readonly statusMessage = signal<string | null>(null);
@@ -267,17 +281,29 @@ export class OrgSettingsUsageComponent {
   protected readonly summary = computed(() => this.billingResource.value());
 
   protected planDisplayLabel(summary: BillingSummary): string {
-    return `${formatPlanLabel(summary.planId, summary.planName)} Plan`;
+    return this.transloco.translate('org.billing.subscription.planDisplay', {
+      plan: formatPlanLabel(summary.planId, summary.planName),
+    });
+  }
+
+  protected meterDisplayName(metricId: string, fallback: string): string {
+    const key = `org.usage.meters.${metricId}`;
+    const translated = this.transloco.translate(key);
+    return translated === key ? fallback : translated;
+  }
+
+  protected usageRowAria(name: string): string {
+    return this.transloco.translate('org.usage.rowAria', { name });
   }
 
   protected usageRows(summary: BillingSummary): readonly UsageDisplayRow[] {
     const seatsRow: UsageDisplayRow = {
       id: 'seats',
-      name: 'Seats',
+      name: this.transloco.translate('org.usage.seats'),
       value: formatSeatUsageValue(summary),
       percent: billingSeatUsagePercent(summary),
       available: true,
-      detailTooltip: usageDetailTooltip('seats', summary),
+      detailTooltip: this.translateUsageTooltip('seats', summary),
     };
 
     const meterRows = summary.meters.map((meter) =>
@@ -294,7 +320,7 @@ export class OrgSettingsUsageComponent {
       this.toUsageDisplayRow(
         {
           metricId: definition.metricId,
-          name: definition.name,
+          name: this.transloco.translate(definition.nameKey),
           consumed: definition.consumed,
           limit: available ? definition.limit : null,
           available,
@@ -310,7 +336,9 @@ export class OrgSettingsUsageComponent {
     const result = await this.paywallDialog.requestOpen();
     if (result === 'success') {
       this.billingResource.reload();
-      this.statusMessage.set('Plan upgraded successfully.');
+      this.statusMessage.set(
+        this.transloco.translate('org.usage.planUpgraded'),
+      );
     }
   }
 
@@ -320,15 +348,106 @@ export class OrgSettingsUsageComponent {
   ): UsageDisplayRow {
     return {
       id: meter.metricId,
-      name: meter.name,
+      name: this.meterDisplayName(meter.metricId, meter.name),
       value: formatUsageMeterValue(meter),
       percent: billingMeterUsagePercent(meter),
       available: meter.available,
-      detailTooltip: usageDetailTooltip(meter.metricId, summary, {
+      detailTooltip: this.translateUsageTooltip(meter.metricId, summary, {
         available: meter.available,
         limit: meter.limit,
         unit: meter.unit,
       }),
     };
+  }
+
+  private translateUsageTooltip(
+    metricId: string,
+    summary: BillingSummary,
+    options: {
+      readonly available?: boolean;
+      readonly limit?: number | null;
+      readonly unit?: string;
+    } = {},
+  ): string {
+    const planName = formatPlanLabel(summary.planId, summary.planName);
+    const available = options.available ?? true;
+
+    if (!available) {
+      switch (metricId) {
+        case 'sso_users':
+          return this.transloco.translate('org.usage.tooltips.ssoUsersLocked');
+        case 'storage_image_transformations':
+          return this.transloco.translate(
+            'org.usage.tooltips.imageTransformsLocked',
+          );
+        default:
+          return this.transloco.translate('org.usage.tooltips.notIncluded');
+      }
+    }
+
+    const limit = this.formatIncludedLimit(options.limit, options.unit);
+
+    switch (metricId) {
+      case 'seats':
+        return this.transloco.translate('org.usage.tooltips.seats', {
+          planName,
+          limit,
+        });
+      case 'emails_sent':
+        if (resolveCurrentPlanId(summary) === 'free') {
+          return this.transloco.translate('org.usage.tooltips.emailsFree', {
+            planName,
+          });
+        }
+        return this.transloco.translate('org.usage.tooltips.emails', {
+          planName,
+          limit,
+        });
+      case 'api_requests':
+        return this.transloco.translate('org.usage.tooltips.apiRequests', {
+          planName,
+          limit,
+        });
+      case 'webhook_deliveries':
+        return this.transloco.translate('org.usage.tooltips.webhookDeliveries', {
+          planName,
+          limit,
+        });
+      case 'storage_size':
+        return this.transloco.translate('org.usage.tooltips.storage', {
+          planName,
+          limit,
+        });
+      case 'sso_users':
+        return this.transloco.translate('org.usage.tooltips.ssoUsers', {
+          planName,
+          limit,
+        });
+      case 'storage_image_transformations':
+        return this.transloco.translate('org.usage.tooltips.imageTransforms', {
+          planName,
+          limit,
+        });
+      default:
+        return this.transloco.translate('org.usage.tooltips.default', {
+          planName,
+          limit,
+        });
+    }
+  }
+
+  private formatIncludedLimit(
+    limit: number | null | undefined,
+    unit?: string,
+  ): string {
+    if (limit === null || limit === undefined) {
+      return unit
+        ? this.transloco.translate('org.usage.limits.unlimitedWithUnit', {
+            unit,
+          })
+        : this.transloco.translate('org.usage.limits.unlimitedUsage');
+    }
+    const formatted = formatUsageNumber(limit);
+    return unit ? `${formatted} ${unit}` : formatted;
   }
 }

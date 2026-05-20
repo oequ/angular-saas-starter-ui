@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { TranslocoPipe } from '@oequ/i18n';
 import type { MetricsPeriod } from '@oequ/ports';
 
 const PERIOD_OPTIONS: readonly { value: MetricsPeriod; label: string }[] = [
@@ -9,12 +10,13 @@ const PERIOD_OPTIONS: readonly { value: MetricsPeriod; label: string }[] = [
 
 @Component({
   selector: 'oequ-metrics-period-segment',
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="bg-muted/50 border-input inline-flex rounded-lg border p-0.5"
       role="group"
-      aria-label="Time period"
+      [attr.aria-label]="'org.metrics.periodAria' | transloco"
     >
       @for (option of options; track option.value) {
         <button

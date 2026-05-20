@@ -5,6 +5,8 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TranslocoPipe } from '@oequ/i18n';
+import type { CommercialPlanId } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
@@ -12,17 +14,21 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
 
 @Component({
   selector: 'oequ-plan-downgrade-confirm-dialog',
-  imports: [HlmButtonImports, HlmDialogImports],
+  imports: [HlmButtonImports, HlmDialogImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Downgrade to {{ planName() }}</h3>
+            <h3 hlmDialogTitle>
+              {{
+                'paywall.downgradeDialog.title'
+                  | transloco: { plan: (planNameKey() | transloco) }
+              }}
+            </h3>
             <p hlmDialogDescription>
-              Your plan changes immediately in this demo. Seat limits and
-              features update right away.
+              {{ 'paywall.downgradeDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
@@ -30,12 +36,12 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
             class="text-muted-foreground list-disc space-y-2 ps-5 text-sm leading-6"
           >
             <li>
-              You may lose access to features not included on
-              {{ planName() }} (for example SSO or audit logs on Team).
+              {{
+                'paywall.downgradeDialog.bulletFeatures'
+                  | transloco: { plan: (planNameKey() | transloco) }
+              }}
             </li>
-            <li>
-              Active and invited members still count toward the new seat limit.
-            </li>
+            <li>{{ 'paywall.downgradeDialog.bulletSeats' | transloco }}</li>
           </ul>
 
           @if (error(); as message) {
@@ -44,7 +50,7 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
 
           <hlm-dialog-footer>
             <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-              Cancel
+              {{ 'common.cancel' | transloco }}
             </button>
             <button
               hlmBtn
@@ -52,7 +58,11 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
               [disabled]="confirming()"
               (click)="confirm()"
             >
-              {{ confirming() ? 'Applying…' : 'Confirm downgrade' }}
+              {{
+                confirming()
+                  ? ('paywall.downgradeDialog.applying' | transloco)
+                  : ('paywall.downgradeDialog.confirm' | transloco)
+              }}
             </button>
           </hlm-dialog-footer>
         </hlm-dialog-content>
@@ -62,7 +72,7 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
 })
 export class PlanDowngradeConfirmDialogComponent {
   readonly open = input(false);
-  readonly planName = input.required<string>();
+  readonly planId = input.required<CommercialPlanId>();
   readonly confirming = input(false);
   readonly error = input<string | null>(null);
 
@@ -70,6 +80,10 @@ export class PlanDowngradeConfirmDialogComponent {
   readonly cancelled = output<void>();
 
   protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
+
+  protected readonly planNameKey = computed(
+    () => `paywall.plans.${this.planId()}.name`,
+  );
 
   protected readonly dialogState = computed(() =>
     this.open() ? 'open' : 'closed',

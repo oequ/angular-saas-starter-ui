@@ -18,6 +18,7 @@ import {
   type MetricsPeriod,
   formatMetricsLastUpdated,
 } from '@oequ/ports';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 
 import { MetricsEmailsCardComponent } from './metrics/metrics-emails-card.component';
@@ -41,6 +42,7 @@ import {
     MetricsPageSkeletonComponent,
     MetricsEmailsCardComponent,
     MetricsStatCardComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ lucideGlobe })],
@@ -48,12 +50,19 @@ import {
     <div class="flex flex-col gap-6">
       <div class="flex flex-col gap-4">
         <div>
-          <h1 class="text-2xl font-semibold tracking-tight">Metrics</h1>
+          <h1 class="text-2xl font-semibold tracking-tight">
+            {{ 'org.metrics.title' | transloco }}
+          </h1>
           <p class="text-muted-foreground mt-1 text-sm">
-            Email delivery performance for your workspace
+            {{ 'org.metrics.subtitle' | transloco }}
             @if (metrics(); as data) {
               <span class="text-muted-foreground/80">
-                · Updated {{ formatMetricsLastUpdated(data.lastUpdatedAt) }}
+                {{
+                  'org.metrics.updated'
+                    | transloco: {
+                        time: formatMetricsLastUpdated(data.lastUpdatedAt),
+                      }
+                }}
               </span>
             }
           </p>
@@ -80,7 +89,13 @@ import {
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal class="w-[var(--brn-select-width)]">
               @for (domain of domainOptions(); track domain.id) {
-                <hlm-select-item [value]="domain.id">{{ domain.label }}</hlm-select-item>
+                <hlm-select-item [value]="domain.id">
+                  @if (domain.id === 'all') {
+                    {{ 'org.metrics.allDomains' | transloco }}
+                  } @else {
+                    {{ domain.label }}
+                  }
+                </hlm-select-item>
               }
             </hlm-select-content>
           </hlm-select>
@@ -103,14 +118,18 @@ import {
               role="status"
               aria-live="polite"
             >
-              <span class="text-sm font-medium">Simulating send history…</span>
+              <span class="text-sm font-medium">{{
+                'org.metrics.simulating' | transloco
+              }}</span>
             </div>
           } @else if (metricsLoading()) {
             <div
               class="bg-background/60 absolute inset-0 z-10 flex items-center justify-center rounded-xl backdrop-blur-[1px]"
               aria-hidden="true"
             >
-              <span class="text-muted-foreground text-sm">Updating…</span>
+              <span class="text-muted-foreground text-sm">{{
+                'org.metrics.updating' | transloco
+              }}</span>
             </div>
           }
 
@@ -120,9 +139,9 @@ import {
 
           <div class="grid gap-4 lg:grid-cols-2">
             <oequ-metrics-stat-card
-              title="Bounce rate"
+              [title]="'org.metrics.bounceRate' | transloco"
               [rate]="data.bounce.rate"
-              tooltip="Percentage of emails that bounced."
+              [tooltip]="'org.metrics.bounceTooltip' | transloco"
               [series]="data.bounce.series"
               lineColor="oklch(0.577 0.245 27.325)"
               [riskThresholdPercent]="data.bounce.riskThresholdPercent"
@@ -130,10 +149,10 @@ import {
             />
 
             <oequ-metrics-stat-card
-              title="Complain rate"
+              [title]="'org.metrics.complainRate' | transloco"
               [rate]="data.complain.rate"
               [rateDecimals]="2"
-              tooltip="Percentage of emails marked as spam."
+              [tooltip]="'org.metrics.complainTooltip' | transloco"
               [series]="data.complain.series"
               lineColor="oklch(0.75 0.15 85)"
               [riskThresholdPercent]="data.complain.riskThresholdPercent"
@@ -142,7 +161,7 @@ import {
           </div>
 
           <p class="text-muted-foreground text-sm">
-            Data is updated every 15 minutes.
+            {{ 'org.metrics.dataRefresh' | transloco }}
           </p>
         </div>
       }
@@ -153,6 +172,7 @@ export class OrgMetricsComponent {
   readonly organizationId = input.required<string>();
 
   private readonly metricsPort = inject(METRICS_PORT);
+  private readonly transloco = inject(TranslocoService);
   protected readonly retrospectiveSimulation = inject(
     MetricsRetrospectiveSimulationService,
   );
@@ -232,19 +252,25 @@ export class OrgMetricsComponent {
   });
 
   protected readonly domainOptions = computed(
-    () => this.metrics()?.domains ?? [{ id: 'all', label: 'All domains' }],
+    () => this.metrics()?.domains ?? [],
   );
 
   protected readonly selectedDomainLabel = computed(() => {
     const current = this.domainFilter();
-    return (
-      this.domainOptions().find((domain) => domain.id === current)?.label ??
-      'All domains'
-    );
+    const match = this.domainOptions().find((domain) => domain.id === current);
+    if (match && match.id !== 'all') {
+      return match.label;
+    }
+    return this.transloco.translate('org.metrics.allDomains');
   });
 
   protected readonly formatMetricsLastUpdated = formatMetricsLastUpdated;
-  protected readonly bounceLegendItems = bounceLegendItems;
+
+  protected bounceLegendItems(
+    breakdown: Parameters<typeof bounceLegendItems>[0],
+  ): readonly MetricsLegendItem[] {
+    return bounceLegendItems(breakdown, (key) => this.transloco.translate(key));
+  }
 
   protected complainLegendItems(): readonly MetricsLegendItem[] {
     const data = this.metrics();
@@ -253,7 +279,7 @@ export class OrgMetricsComponent {
     }
     return [
       {
-        label: 'Complained',
+        label: this.transloco.translate('org.metrics.complained'),
         count: data.complain.complainedCount,
         rate: data.complain.rate,
         dotClass: 'bg-amber-400',

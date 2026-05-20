@@ -5,6 +5,8 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TranslocoPipe } from '@oequ/i18n';
+import type { CommercialPlanId } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
@@ -13,16 +15,26 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
 
 @Component({
   selector: 'oequ-plan-upgrade-checkout-dialog',
-  imports: [HlmButtonImports, HlmDialogImports, HlmSkeletonImports],
+  imports: [
+    HlmButtonImports,
+    HlmDialogImports,
+    HlmSkeletonImports,
+    TranslocoPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Upgrade to {{ planName() }}</h3>
+            <h3 hlmDialogTitle>
+              {{
+                'paywall.upgradeDialog.title'
+                  | transloco: { plan: (planNameKey() | transloco) }
+              }}
+            </h3>
             <p hlmDialogDescription>
-              Simulated checkout for the standalone demo. No card is charged.
+              {{ 'paywall.upgradeDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
@@ -30,7 +42,9 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
             <div
               class="space-y-4 py-2"
               aria-busy="true"
-              aria-label="Initializing checkout"
+              [attr.aria-label]="
+                'paywall.upgradeDialog.initializing' | transloco
+              "
             >
               <hlm-skeleton class="h-4 w-full" />
               <hlm-skeleton class="h-4 w-5/6" />
@@ -38,8 +52,7 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
             </div>
           } @else {
             <p class="text-sm leading-6">
-              By upgrading, you agree to the organizational Terms of Service.
-              Billed securely via our payment partner.
+              {{ 'paywall.upgradeDialog.terms' | transloco }}
             </p>
 
             @if (error(); as message) {
@@ -48,7 +61,7 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button
                 hlmBtn
@@ -57,9 +70,9 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
                 (click)="confirm()"
               >
                 @if (confirming()) {
-                  Processing…
+                  {{ 'paywall.upgradeDialog.processing' | transloco }}
                 } @else {
-                  Simulate payment success
+                  {{ 'paywall.upgradeDialog.simulateSuccess' | transloco }}
                 }
               </button>
             </hlm-dialog-footer>
@@ -71,7 +84,7 @@ import { SETTINGS_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
 })
 export class PlanUpgradeCheckoutDialogComponent {
   readonly open = input(false);
-  readonly planName = input.required<string>();
+  readonly planId = input.required<CommercialPlanId>();
   readonly loading = input(false);
   readonly confirming = input(false);
   readonly error = input<string | null>(null);
@@ -80,6 +93,10 @@ export class PlanUpgradeCheckoutDialogComponent {
   readonly cancelled = output<void>();
 
   protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
+
+  protected readonly planNameKey = computed(
+    () => `paywall.plans.${this.planId()}.name`,
+  );
 
   protected readonly dialogState = computed(() =>
     this.open() ? 'open' : 'closed',

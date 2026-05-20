@@ -16,6 +16,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe } from '@oequ/i18n';
 import {
   SETTINGS_DIALOG_CONTENT_CLASS,
   SETTINGS_DIALOG_FIELD_CLASS,
@@ -31,6 +32,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
     HlmButtonImports,
     HlmDialogImports,
     HlmInput,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -38,10 +40,11 @@ import { HlmInput } from '@spartan-ng/helm/input';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content>
           <hlm-dialog-header>
-            <h3 hlmDialogTitle class="text-destructive">Delete account</h3>
+            <h3 hlmDialogTitle class="text-destructive">
+              {{ 'account.deleteDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              This permanently deletes your personal account and signs you out.
-              Workspaces you own are not deleted — transfer ownership first.
+              {{ 'account.deleteDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
@@ -52,7 +55,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
           >
             <div [class]="fieldClass">
               <label for="delete-email" class="mb-1.5 block text-sm font-medium">
-                Type your email to confirm
+                {{ 'account.deleteDialog.confirmLabel' | transloco }}
               </label>
               <input
                 id="delete-email"
@@ -65,21 +68,21 @@ import { HlmInput } from '@spartan-ng/helm/input';
               />
               @if (submitAttempted() && !canConfirm()) {
                 <p class="text-destructive mt-1.5 text-sm">
-                  Enter your account email exactly as shown.
+                  {{ 'account.deleteDialog.emailMismatch' | transloco }}
                 </p>
               }
             </div>
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button
                 hlmBtn
                 type="submit"
                 class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
               >
-                Delete account
+                {{ 'account.deleteDialog.submit' | transloco }}
               </button>
             </hlm-dialog-footer>
           </form>

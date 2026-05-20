@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   effect,
+  inject,
   input,
   output,
   signal,
@@ -17,6 +18,7 @@ import {
   type AddPaymentMethodInput,
   parseCardExpiryInput,
 } from '@oequ/ports';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import {
   SETTINGS_DIALOG_CONTENT_CLASS,
   SETTINGS_DIALOG_FIELD_CLASS,
@@ -32,6 +34,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
     HlmButtonImports,
     HlmDialogImports,
     HlmInput,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -39,20 +42,18 @@ import { HlmInput } from '@spartan-ng/helm/input';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Add payment method</h3>
+            <h3 hlmDialogTitle>
+              {{ 'org.billing.addPaymentDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              In production this step uses Stripe Elements and a Setup Intent.
-              For the demo, use test card
-              <span class="font-mono">4242 4242 4242 4242</span>
-              or
-              <span class="font-mono">5555 5555 5555 4444</span>.
+              {{ 'org.billing.addPaymentDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
           <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
             <div [class]="fieldClass">
               <label for="pm-cardholder" class="mb-1.5 block text-sm font-medium">
-                Name on card
+                {{ 'org.billing.addPaymentDialog.nameOnCard' | transloco }}
               </label>
               <input
                 id="pm-cardholder"
@@ -66,7 +67,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
 
             <div [class]="fieldClass">
               <label for="pm-number" class="mb-1.5 block text-sm font-medium">
-                Card number
+                {{ 'org.billing.addPaymentDialog.cardNumber' | transloco }}
               </label>
               <input
                 id="pm-number"
@@ -83,7 +84,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
             <div class="grid gap-4 sm:grid-cols-2">
               <div [class]="fieldClass">
                 <label for="pm-expiry" class="mb-1.5 block text-sm font-medium">
-                  Expiry
+                  {{ 'org.billing.addPaymentDialog.expiry' | transloco }}
                 </label>
                 <input
                   id="pm-expiry"
@@ -98,7 +99,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
               </div>
               <div [class]="fieldClass">
                 <label for="pm-cvc" class="mb-1.5 block text-sm font-medium">
-                  CVC
+                  {{ 'org.billing.addPaymentDialog.cvc' | transloco }}
                 </label>
                 <input
                   id="pm-cvc"
@@ -122,10 +123,14 @@ import { HlmInput } from '@spartan-ng/helm/input';
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button hlmBtn type="submit" [disabled]="saving()">
-                {{ saving() ? 'Saving…' : 'Add card' }}
+                {{
+                  saving()
+                    ? ('org.billing.addPaymentDialog.saving' | transloco)
+                    : ('org.billing.addPaymentDialog.submit' | transloco)
+                }}
               </button>
             </hlm-dialog-footer>
           </form>
@@ -135,6 +140,8 @@ import { HlmInput } from '@spartan-ng/helm/input';
   `,
 })
 export class AddPaymentMethodDialogComponent {
+  private readonly transloco = inject(TranslocoService);
+
   readonly open = input(false);
   readonly saving = input(false);
   readonly serverError = input<string | null>(null);
@@ -184,13 +191,17 @@ export class AddPaymentMethodDialogComponent {
     this.clientError.set(null);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.clientError.set('Fill in all card fields.');
+      this.clientError.set(
+        this.transloco.translate('org.billing.addPaymentDialog.fillAllFields'),
+      );
       return;
     }
 
     const expiry = parseCardExpiryInput(this.form.controls.expiry.value);
     if (!expiry) {
-      this.clientError.set('Enter expiry as MM/YY.');
+      this.clientError.set(
+        this.transloco.translate('org.billing.addPaymentDialog.expiryInvalid'),
+      );
       return;
     }
 

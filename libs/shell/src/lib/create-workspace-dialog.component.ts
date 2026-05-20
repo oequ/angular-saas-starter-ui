@@ -17,6 +17,7 @@ import {
   ORG_PORT,
   slugifyOrganizationName,
 } from '@oequ/ports';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -34,6 +35,7 @@ import {
     HlmButtonImports,
     HlmDialogImports,
     HlmInput,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -41,17 +43,18 @@ import {
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Create workspace</h3>
+            <h3 hlmDialogTitle>
+              {{ 'shell.workspace.createTitle' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              A workspace is where your team collaborates. You can create more
-              later.
+              {{ 'shell.workspace.createDescription' | transloco }}
             </p>
           </hlm-dialog-header>
 
           <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
             <div [class]="fieldClass">
               <label for="workspace-name" class="mb-1.5 block text-sm font-medium">
-                Workspace name
+                {{ 'shell.workspace.nameLabel' | transloco }}
               </label>
               <input
                 id="workspace-name"
@@ -63,7 +66,7 @@ import {
               />
               @if (submitAttempted() && form.controls.name.invalid) {
                 <p class="text-destructive mt-1.5 text-sm">
-                  Enter between 2 and 64 characters.
+                  {{ 'shell.workspace.nameInvalid' | transloco }}
                 </p>
               }
             </div>
@@ -74,14 +77,18 @@ import {
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button
                 hlmBtn
                 type="submit"
                 [disabled]="creating()"
               >
-                {{ creating() ? 'Creating…' : 'Create workspace' }}
+                {{
+                  creating()
+                    ? ('shell.workspace.creating' | transloco)
+                    : ('shell.workspace.createSubmit' | transloco)
+                }}
               </button>
             </hlm-dialog-footer>
           </form>
@@ -92,6 +99,7 @@ import {
 })
 export class CreateWorkspaceDialogComponent {
   private readonly orgPort = inject(ORG_PORT);
+  private readonly transloco = inject(TranslocoService);
   private readonly router = inject(Router);
   private readonly dialogService = inject(CreateWorkspaceDialogService);
 
@@ -128,7 +136,7 @@ export class CreateWorkspaceDialogComponent {
 
     if (!isValidOrganizationSlug(slug)) {
       this.errorMessage.set(
-        'Choose a workspace name with at least one letter or number.',
+        this.transloco.translate('shell.workspace.nameSlugInvalid'),
       );
       return;
     }

@@ -1,0 +1,46 @@
+{
+  "title": "Usage",
+  "loading": "Loading usage",
+  "unavailable": "Usage information is not available.",
+  "planUpgraded": "Plan upgraded successfully.",
+  "billingCycle": "Current billing cycle",
+  "orgOnPlan": "Organization is on the {{plan}} / {{period}}",
+  "summary": {
+    "title": "Usage Summary",
+    "lead": "Your plan includes a limited amount of usage. If exceeded, you may experience restrictions, since overages are not currently billed. It may take up to 1 hour to reflect any usage changes."
+  },
+  "moreInfo": "More information",
+  "howBillingWorks": "How billing works",
+  "plansPricing": "Plans & pricing",
+  "upgrade": "Upgrade",
+  "rowAria": "{{name}} plan details",
+  "seats": "Seats",
+  "meters": {
+    "emails_sent": "Emails sent",
+    "api_requests": "API requests",
+    "webhook_deliveries": "Webhook deliveries",
+    "storage_size": "Storage size"
+  },
+  "limits": {
+    "unlimitedUsage": "unlimited usage",
+    "unlimitedWithUnit": "unlimited {{unit}}"
+  },
+  "premium": {
+    "sso_users": "Monthly Active SSO Users",
+    "storage_image_transformations": "Storage Image Transformations"
+  },
+  "tooltips": {
+    "notIncluded": "This feature is not included on your current plan. Upgrade to unlock it.",
+    "ssoUsersLocked": "Team plan includes up to 100 monthly active SSO users. Upgrade to enable single sign-on for your organization.",
+    "imageTransformsLocked": "Team plan includes unlimited storage image transformations. Upgrade to optimize images on delivery.",
+    "seats": "Your {{planName}} plan includes up to {{limit}} seats. Active and invited members count toward this limit.",
+    "emailsFree": "{{planName}} includes 3,000 emails per billing cycle and up to 100 emails per day (UTC) for transactional sends.",
+    "emails": "{{planName}} includes {{limit}} per billing cycle for transactional and marketing sends.",
+    "apiRequests": "{{planName}} includes {{limit}} per billing cycle across sending and management endpoints.",
+    "webhookDeliveries": "{{planName}} includes {{limit}} per billing cycle for event notifications.",
+    "storage": "{{planName}} includes {{limit}} of file and attachment storage.",
+    "ssoUsers": "Team plan includes {{limit}} for SSO-enabled sign-ins each billing cycle.",
+    "imageTransforms": "Team plan includes {{limit}} for on-the-fly image processing.",
+    "default": "{{planName}} includes {{limit}} for this metric each billing cycle."
+  }
+}

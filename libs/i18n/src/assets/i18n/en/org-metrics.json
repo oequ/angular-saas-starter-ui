@@ -1,0 +1,38 @@
+{
+  "title": "Metrics",
+  "subtitle": "Email delivery performance for your workspace",
+  "updated": "· Updated {{time}}",
+  "periodAria": "Time period",
+  "allDomains": "All domains",
+  "simulating": "Simulating send history…",
+  "updating": "Updating…",
+  "dataRefresh": "Data is updated every 15 minutes.",
+  "bounceRate": "Bounce rate",
+  "bounceTooltip": "Percentage of emails that bounced.",
+  "complainRate": "Complain rate",
+  "complainTooltip": "Percentage of emails marked as spam.",
+  "chartAria": "{{title}} chart",
+  "moreInfo": "More information",
+  "healthy": "Healthy",
+  "aboveRisk": "Above risk",
+  "vsPrevPeriod": " vs prev period",
+  "kpi": {
+    "emailsSent": "Emails sent",
+    "deliverability": "Deliverability",
+    "bounceRate": "Bounce rate",
+    "complainRate": "Complain rate"
+  },
+  "emailsCard": {
+    "title": "Email volume",
+    "subtitle": "Sent over the selected period",
+    "allEvents": "All Events",
+    "chartAria": "Emails sent over time",
+    "deliverability": "deliverability"
+  },
+  "bounceKinds": {
+    "transient": "Transient",
+    "permanent": "Permanent",
+    "undetermined": "Undetermined"
+  },
+  "complained": "Complained"
+}

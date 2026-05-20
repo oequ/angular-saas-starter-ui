@@ -1,0 +1,63 @@
+{
+  "layout": {
+    "title": "Account settings"
+  },
+  "profile": {
+    "publicTitle": "Public profile",
+    "publicLead": "Your name is shown in the sidebar and across workspaces you join.",
+    "displayNameInvalid": "Please enter between 2 and 64 characters.",
+    "displayNameHint": "Use 64 characters at maximum.",
+    "emailTitle": "Email address",
+    "emailLead": "Used to sign in and receive security notifications.",
+    "updateEmail": "Update email",
+    "emailChangeSoon": "Email change with verification will be available in v0.3.",
+    "dangerTitle": "Danger zone",
+    "dangerLead": "Permanently delete your personal account. This does not delete any workspace you own — manage workspaces separately.",
+    "deleteAccount": "Delete account",
+    "deleteSoon": "Account deletion will be available in v0.3.",
+    "toastUpdated": "Profile updated."
+  },
+  "deleteDialog": {
+    "title": "Delete account",
+    "description": "This permanently deletes your personal account and signs you out. Workspaces you own are not deleted — transfer ownership first.",
+    "confirmLabel": "Type your email to confirm",
+    "emailMismatch": "Enter your account email exactly as shown.",
+    "submit": "Delete account"
+  },
+  "security": {
+    "passwordTitle": "Password",
+    "passwordLead": "Re-enter your current password before setting a new one.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordMismatch": "New passwords do not match.",
+    "passwordInvalid": "Complete all password fields (minimum 8 characters).",
+    "passwordHint": "Minimum 8 characters.",
+    "passwordChangeSoon": "Password change will be available in v0.3.",
+    "twoFactorTitle": "Two-factor authentication",
+    "twoFactorLead": "Add an authenticator app for an extra layer of security.",
+    "twoFactorDisabled": "Disabled",
+    "enable2fa": "Enable 2FA",
+    "twoFactorSoon": "TOTP setup will be available in v0.3.",
+    "connectedTitle": "Connected accounts",
+    "connectedLead": "Link Google or GitHub for passwordless sign-in (coming soon)."
+  },
+  "sessions": {
+    "title": "Active sessions",
+    "lead": "Devices and browsers signed in to your account. Revoke any session you do not recognize.",
+    "columnDevice": "Device",
+    "columnLocation": "Location",
+    "columnLastActive": "Last active",
+    "columnAction": "Action",
+    "loading": "Loading sessions…",
+    "empty": "No active sessions.",
+    "current": "Current",
+    "revoke": "Revoke",
+    "revoking": "Revoking…",
+    "footerLead": "Sign out of all other devices while keeping this session active.",
+    "signOutOthers": "Sign out other sessions",
+    "signingOutOthers": "Signing out…",
+    "revoked": "Session revoked.",
+    "signedOutOthers": "Signed out of all other sessions."
+  }
+}

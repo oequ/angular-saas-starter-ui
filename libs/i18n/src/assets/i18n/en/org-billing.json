@@ -1,0 +1,76 @@
+{
+  "title": "Billing",
+  "subscription": {
+    "title": "Subscription Plan",
+    "lead": "Each workspace has its own subscription plan, billing cycle, payment methods and usage quotas.",
+    "loading": "Loading subscription…",
+    "unavailable": "Billing information is not available.",
+    "statusLabel": "Status",
+    "cycleResets": "Billing cycle resets on {{date}}",
+    "cancelsAtPeriodEnd": "Cancels at the end of the current billing period.",
+    "changePlan": "Change subscription plan",
+    "planDisplay": "{{plan}} Plan",
+    "freeLimitTitle": "This organization is limited by the included usage",
+    "freeLimitLead": "Projects may become unresponsive when this organization exceeds its",
+    "includedQuotaLink": "included usage quota",
+    "freeLimitSuffix": ". To scale seamlessly, upgrade to a paid plan.",
+    "planUpdated": "Plan updated successfully."
+  },
+  "subscriptionStatus": {
+    "trialing": "Trial",
+    "past_due": "Past due",
+    "none": "No subscription",
+    "incomplete": "Incomplete",
+    "unpaid": "Unpaid",
+    "paused": "Paused",
+    "active": "Active",
+    "canceled": "Canceled"
+  },
+  "invoices": {
+    "title": "Past Invoices",
+    "lead": "You get an invoice every time you change your plan or when your monthly billing cycle resets.",
+    "loading": "Loading invoices…",
+    "empty": "No invoices yet. Invoices appear after your first paid billing cycle or plan change.",
+    "columnDate": "Date",
+    "columnAmount": "Amount",
+    "columnNumber": "Invoice number",
+    "columnStatus": "Status",
+    "columnActions": "Actions",
+    "downloadAria": "Download invoice {{number}}",
+    "downloadTooltip": "Download invoice",
+    "showing": "Showing 1 to {{count}} out of {{count}} invoices",
+    "status": {
+      "paid": "Paid",
+      "open": "Open",
+      "draft": "Draft",
+      "void": "Void",
+      "uncollectible": "Uncollectible"
+    }
+  },
+  "paymentMethods": {
+    "title": "Payment Methods",
+    "lead": "Subscription charges use the default card. Add or remove cards and choose which one is default.",
+    "loading": "Loading payment methods…",
+    "empty": "No payment methods",
+    "expires": "Expires",
+    "default": "Default",
+    "makeDefault": "Make default",
+    "remove": "Remove",
+    "addButton": "Add payment method",
+    "toastAdded": "Payment method added.",
+    "toastDefaultUpdated": "Default payment method updated.",
+    "toastRemoved": "Payment method removed."
+  },
+  "addPaymentDialog": {
+    "title": "Add payment method",
+    "description": "In production this step uses Stripe Elements and a Setup Intent. For the demo, use test card 4242 4242 4242 4242 or 5555 5555 5555 4444.",
+    "nameOnCard": "Name on card",
+    "cardNumber": "Card number",
+    "expiry": "Expiry",
+    "cvc": "CVC",
+    "fillAllFields": "Fill in all card fields.",
+    "expiryInvalid": "Enter expiry as MM/YY.",
+    "saving": "Saving…",
+    "submit": "Add card"
+  }
+}

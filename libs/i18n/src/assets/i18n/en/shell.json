@@ -24,5 +24,14 @@
   },
   "locale": {
     "english": "English"
+  },
+  "workspace": {
+    "createTitle": "Create workspace",
+    "createDescription": "A workspace is where your team collaborates. You can create more later.",
+    "nameLabel": "Workspace name",
+    "nameInvalid": "Enter between 2 and 64 characters.",
+    "nameSlugInvalid": "Choose a workspace name with at least one letter or number.",
+    "creating": "Creating…",
+    "createSubmit": "Create workspace"
   }
 }

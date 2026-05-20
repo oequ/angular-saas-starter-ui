@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslocoPipe } from '@oequ/i18n';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 
 import { CookieConsentPreferencesDialogComponent } from './cookie-consent-preferences-dialog.component';
@@ -11,6 +12,7 @@ import { CookieConsentService } from './cookie-consent.service';
     RouterLink,
     HlmButtonImports,
     CookieConsentPreferencesDialogComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -18,29 +20,27 @@ import { CookieConsentService } from './cookie-consent.service';
       <section
         class="border-border bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-[100] border-t p-4 shadow-lg backdrop-blur sm:p-5"
         role="region"
-        aria-label="Cookie consent"
+        [attr.aria-label]="'cookie.banner.ariaLabel' | transloco"
       >
         <div
           class="mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
         >
           <div class="min-w-0 flex-1 space-y-2">
             <h2 class="text-sm font-semibold tracking-tight">
-              We use cookies
+              {{ 'cookie.banner.title' | transloco }}
             </h2>
             <p class="text-muted-foreground text-sm leading-6">
-              We use strictly necessary cookies to run the app. With your
-              permission we also use optional analytics and marketing cookies.
-              Read our
+              {{ 'cookie.banner.leadPrefix' | transloco }}
               <a
                 routerLink="/auth/cookies"
                 class="text-foreground underline underline-offset-4 hover:opacity-80"
-                >Cookie Policy</a
+                >{{ 'cookie.banner.cookiePolicy' | transloco }}</a
               >
-              and
+              {{ 'cookie.banner.and' | transloco }}
               <a
                 routerLink="/auth/privacy"
                 class="text-foreground underline underline-offset-4 hover:opacity-80"
-                >Privacy Policy</a
+                >{{ 'cookie.banner.privacyPolicy' | transloco }}</a
               >.
             </p>
           </div>
@@ -55,7 +55,7 @@ import { CookieConsentService } from './cookie-consent.service';
                 class="w-full"
                 (click)="rejectAll()"
               >
-                Reject all
+                {{ 'cookie.banner.rejectAll' | transloco }}
               </button>
               <button
                 hlmBtn
@@ -64,7 +64,7 @@ import { CookieConsentService } from './cookie-consent.service';
                 class="w-full"
                 (click)="acceptAll()"
               >
-                Accept all
+                {{ 'cookie.banner.acceptAll' | transloco }}
               </button>
             </div>
             <button
@@ -74,14 +74,13 @@ import { CookieConsentService } from './cookie-consent.service';
               class="w-full"
               (click)="openPreferences()"
             >
-              Manage preferences
+              {{ 'cookie.banner.managePreferences' | transloco }}
             </button>
           </div>
         </div>
       </section>
+      <oequ-cookie-consent-preferences-dialog />
     }
-
-    <oequ-cookie-consent-preferences-dialog />
   `,
 })
 export class CookieConsentBannerComponent {

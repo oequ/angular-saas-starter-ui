@@ -2,5 +2,12 @@
   "cancel": "Cancel",
   "email": "Email",
   "language": "Language",
-  "password": "Password"
+  "password": "Password",
+  "role": "Role",
+  "saveChanges": "Save changes",
+  "saving": "Saving…",
+  "searchPlaceholder": "Search…",
+  "actions": "Actions",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "selectRole": "Select a role"
 }

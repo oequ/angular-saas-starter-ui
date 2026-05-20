@@ -2,15 +2,17 @@
   <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <form id="account-password-form" (ngSubmit)="savePassword()">
-        <h2 class="text-xl leading-8 font-semibold tracking-tight">Password</h2>
+        <h2 class="text-xl leading-8 font-semibold tracking-tight">
+          {{ 'account.security.passwordTitle' | transloco }}
+        </h2>
         <p class="text-muted-foreground my-3 text-sm leading-6">
-          Re-enter your current password before setting a new one.
+          {{ 'account.security.passwordLead' | transloco }}
         </p>
         <div [class]="fieldClass + ' space-y-3'">
           <input
             hlmInput
             type="password"
-            placeholder="Current password"
+            [placeholder]="'account.security.currentPassword' | transloco"
             class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
             [formControl]="passwordForm.controls.currentPassword"
             autocomplete="current-password"
@@ -18,7 +20,7 @@
           <input
             hlmInput
             type="password"
-            placeholder="New password"
+            [placeholder]="'account.security.newPassword' | transloco"
             class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
             [formControl]="passwordForm.controls.newPassword"
             autocomplete="new-password"
@@ -26,7 +28,7 @@
           <input
             hlmInput
             type="password"
-            placeholder="Confirm new password"
+            [placeholder]="'account.security.confirmNewPassword' | transloco"
             class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
             [formControl]="passwordForm.controls.confirmPassword"
             autocomplete="new-password"
@@ -42,10 +44,12 @@
         <p role="status">{{ message }}</p>
       } @else if (submitAttempted() && passwordForm.invalid) {
         <p class="text-destructive text-sm" role="alert">
-          Complete all password fields (minimum 8 characters).
+          {{ 'account.security.passwordInvalid' | transloco }}
         </p>
       } @else {
-        <p class="text-muted-foreground">Minimum 8 characters.</p>
+        <p class="text-muted-foreground">
+          {{ 'account.security.passwordHint' | transloco }}
+        </p>
       }
       <button
         hlmBtn
@@ -53,7 +57,11 @@
         form="account-password-form"
         [disabled]="!canSavePassword()"
       >
-        {{ saving() ? 'Saving…' : 'Save changes' }}
+        {{
+          saving()
+            ? ('common.saving' | transloco)
+            : ('common.saveChanges' | transloco)
+        }}
       </button>
     </div>
   </section>
@@ -61,19 +69,21 @@
   <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-xl leading-8 font-semibold tracking-tight">
-        Two-factor authentication
+        {{ 'account.security.twoFactorTitle' | transloco }}
       </h2>
       <p class="text-muted-foreground my-3 text-sm leading-6">
-        Add an authenticator app for an extra layer of security.
+        {{ 'account.security.twoFactorLead' | transloco }}
       </p>
-      <span hlmBadge variant="secondary">Disabled</span>
+      <span hlmBadge variant="secondary">{{
+        'account.security.twoFactorDisabled' | transloco
+      }}</span>
     </div>
     <div
       hlmCardFooter
       class="border-border text-foreground flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
     >
       <button hlmBtn type="button" (click)="enableTwoFactor()">
-        Enable 2FA
+        {{ 'account.security.enable2fa' | transloco }}
       </button>
     </div>
   </section>
@@ -81,10 +91,10 @@
   <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-xl leading-8 font-semibold tracking-tight">
-        Connected accounts
+        {{ 'account.security.connectedTitle' | transloco }}
       </h2>
       <p class="text-muted-foreground my-3 text-sm leading-6">
-        Link Google or GitHub for passwordless sign-in (coming soon).
+        {{ 'account.security.connectedLead' | transloco }}
       </p>
     </div>
   </section>

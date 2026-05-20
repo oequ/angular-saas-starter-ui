@@ -1,0 +1,35 @@
+{
+  "banner": {
+    "ariaLabel": "Cookie consent",
+    "title": "We use cookies",
+    "leadPrefix": "We use strictly necessary cookies to run the app. With your permission we also use optional analytics and marketing cookies. Read our",
+    "cookiePolicy": "Cookie Policy",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "rejectAll": "Reject all",
+    "acceptAll": "Accept all",
+    "managePreferences": "Manage preferences"
+  },
+  "preferences": {
+    "title": "Cookie preferences",
+    "descriptionPrefix": "Choose which optional cookies we may use. You can change this anytime. See our",
+    "cookiePolicy": "Cookie Policy",
+    "alwaysOn": "(always on)",
+    "rejectAll": "Reject all",
+    "savePreferences": "Save preferences"
+  },
+  "categories": {
+    "necessary": {
+      "label": "Strictly necessary",
+      "description": "Required for sign-in, security, and core app features (including session and UI preference storage). Always active."
+    },
+    "analytics": {
+      "label": "Analytics",
+      "description": "Helps us understand how the product is used (page views, feature adoption). No advertising profiles."
+    },
+    "marketing": {
+      "label": "Marketing",
+      "description": "Used to measure campaigns and personalize outreach. Disabled in the default demo build."
+    }
+  }
+}

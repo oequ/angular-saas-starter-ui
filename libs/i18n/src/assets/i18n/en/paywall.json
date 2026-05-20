@@ -1,0 +1,95 @@
+{
+  "dialog": {
+    "title": "Change subscription plan",
+    "description": "Compare tiers and upgrade or downgrade your plan when your needs change.",
+    "loadingPlans": "Loading plans",
+    "perMonth": "/ month",
+    "from": "From",
+    "currentPlan": "Current plan",
+    "mostPopular": "Most popular",
+    "upgradeTo": "Upgrade to {{plan}}",
+    "downgradeTo": "Downgrade to {{plan}}",
+    "freeFootnote": "Free workspaces may pause after inactivity. Limit of 2 active workspaces on Free."
+  },
+  "upgradeDialog": {
+    "title": "Upgrade to {{plan}}",
+    "description": "Simulated checkout for the standalone demo. No card is charged.",
+    "initializing": "Initializing checkout",
+    "terms": "By upgrading, you agree to the organizational Terms of Service. Billed securely via our payment partner.",
+    "processing": "Processing…",
+    "simulateSuccess": "Simulate payment success"
+  },
+  "downgradeDialog": {
+    "title": "Downgrade to {{plan}}",
+    "description": "Your plan changes immediately in this demo. Seat limits and features update right away.",
+    "bulletFeatures": "You may lose access to features not included on {{plan}} (for example SSO or audit logs on Team).",
+    "bulletSeats": "Active and invited members still count toward the new seat limit.",
+    "applying": "Applying…",
+    "confirm": "Confirm downgrade"
+  },
+  "plans": {
+    "free": {
+      "name": "Free",
+      "description": "For personal projects and experiments.",
+      "features": {
+        "seats": "Up to 3 seats",
+        "emails": "3,000 emails / month (100 / day)",
+        "metrics": "Basic metrics",
+        "api_keys": "Sending-only API keys"
+      }
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "For small teams shipping to production.",
+      "features": {
+        "seats": "Up to 10 seats",
+        "emails": "50,000 emails / month",
+        "metrics": "Advanced metrics & filters",
+        "api_keys": "Full-access API keys",
+        "support": "Email support"
+      }
+    },
+    "team": {
+      "name": "Team",
+      "description": "For organizations that need SSO and scale.",
+      "features": {
+        "seats": "Up to 50 seats",
+        "emails": "100,000 emails / month",
+        "sso": "Single Sign-On (SSO)",
+        "api_keys": "Full-access API keys",
+        "support": "Priority support",
+        "audit": "Audit logs"
+      }
+    }
+  },
+  "banner": {
+    "trialing": {
+      "messageNoEnd": "You are on a trial. Add a payment method to avoid interruption.",
+      "messageOneDay": "You are on a trial. Trial ends in {{days}} day. Add a payment method to avoid interruption.",
+      "messageDays": "You are on a trial. Trial ends in {{days}} days. Add a payment method to avoid interruption.",
+      "cta": "Manage billing"
+    },
+    "past_due": {
+      "message": "Your last payment failed. Update billing details to restore full access.",
+      "cta": "Update payment"
+    },
+    "incomplete": {
+      "message": "Action required to activate your subscription.",
+      "cta": "Complete checkout"
+    },
+    "unpaid": {
+      "message": "This workspace is suspended due to unpaid invoices.",
+      "cta": "Pay balance"
+    },
+    "canceled": {
+      "messageEnd": "Your plan will end on {{date}}.",
+      "messageEnded": "Your subscription has ended. Reactivate to regain access.",
+      "cta": "Renew plan"
+    }
+  },
+  "errors": {
+    "noWorkspace": "No active workspace.",
+    "billingUnavailable": "Billing information is not available.",
+    "downgradeSeats": "You have {{used}} members but {{plan}} allows {{limit}}. Remove members before downgrading."
+  }
+}

@@ -14,7 +14,6 @@ import {
   formatPaymentMethodBrand,
   formatPaymentMethodExpiry,
   formatPlanLabel,
-  formatSubscriptionStatus,
   resolveCurrentPlanId,
   USAGE_SETTINGS_PATH,
   type AddPaymentMethodInput,
@@ -24,6 +23,7 @@ import {
   type PaymentMethod,
   type SubscriptionStatus,
 } from '@oequ/ports';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { PaywallDialogService } from '@oequ/shell';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCreditCard, lucideReceipt } from '@ng-icons/lucide';
@@ -47,13 +47,16 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
     HlmBadgeImports,
     HlmTooltipImports,
     AddPaymentMethodDialogComponent,
+    TranslocoPipe,
   ],
   providers: [provideIcons({ lucideCreditCard, lucideReceipt })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight">Billing</h1>
+        <h1 class="text-2xl font-semibold tracking-tight">
+          {{ 'org.billing.title' | transloco }}
+        </h1>
         @if (statusMessage(); as message) {
           <p role="status" class="text-muted-foreground mt-3 text-sm">{{ message }}</p>
         }
@@ -62,15 +65,16 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
       <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
         <div hlmCardContent class="!p-6">
           <h2 class="text-xl leading-8 font-semibold tracking-tight">
-            Subscription Plan
+            {{ 'org.billing.subscription.title' | transloco }}
           </h2>
           <p class="text-muted-foreground my-3 text-sm leading-6">
-            Each workspace has its own subscription plan, billing cycle, payment
-            methods and usage quotas.
+            {{ 'org.billing.subscription.lead' | transloco }}
           </p>
 
           @if (billingResource.isLoading()) {
-            <p class="text-muted-foreground text-sm">Loading subscription…</p>
+            <p class="text-muted-foreground text-sm">
+              {{ 'org.billing.subscription.loading' | transloco }}
+            </p>
           } @else if (billingResource.error(); as err) {
             <p class="text-destructive text-sm">{{ err.message }}</p>
           } @else if (summary(); as billing) {
@@ -85,7 +89,7 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                   <p
                     class="text-muted-foreground mt-1 flex flex-wrap items-center gap-2 text-sm"
                   >
-                    Status
+                    {{ 'org.billing.subscription.statusLabel' | transloco }}
                     @let subscriptionBadge =
                       subscriptionStatusBadge(billing.status);
                     <span
@@ -93,17 +97,20 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                       [variant]="subscriptionBadge.variant"
                       [class]="subscriptionBadge.class"
                     >
-                      {{ formatSubscriptionStatus(billing.status) }}
+                      {{ subscriptionStatusKey(billing.status) | transloco }}
                     </span>
                   </p>
                   @if (billing.currentPeriodEnd; as periodEnd) {
                     <p class="text-muted-foreground mt-1 text-sm">
-                      Billing cycle resets on {{ periodEnd | date: 'mediumDate' }}
+                      {{
+                        'org.billing.subscription.cycleResets'
+                          | transloco: { date: (periodEnd | date: 'mediumDate') }
+                      }}
                     </p>
                   }
                   @if (billing.cancelAtPeriodEnd) {
                     <p class="text-muted-foreground mt-2 text-sm">
-                      Cancels at the end of the current billing period.
+                      {{ 'org.billing.subscription.cancelsAtPeriodEnd' | transloco }}
                     </p>
                   }
                 </div>
@@ -114,7 +121,7 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                   class="shrink-0"
                   (click)="openUpgradeDialog()"
                 >
-                  Change subscription plan
+                  {{ 'org.billing.subscription.changePlan' | transloco }}
                 </button>
               </div>
 
@@ -124,22 +131,24 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                   role="note"
                 >
                   <p class="font-medium">
-                    This organization is limited by the included usage
+                    {{ 'org.billing.subscription.freeLimitTitle' | transloco }}
                   </p>
                   <p class="text-muted-foreground mt-1">
-                    Projects may become unresponsive when this organization
-                    exceeds its
+                    {{ 'org.billing.subscription.freeLimitLead' | transloco }}
                     <a
                       [routerLink]="usageSettingsPath"
                       class="text-foreground underline underline-offset-4 hover:opacity-80"
-                    >included usage quota</a>. To scale seamlessly, upgrade to a paid plan.
+                      >{{
+                        'org.billing.subscription.includedQuotaLink' | transloco
+                      }}</a
+                    >{{ 'org.billing.subscription.freeLimitSuffix' | transloco }}
                   </p>
                 </div>
               }
             </div>
           } @else {
             <p class="text-muted-foreground text-sm">
-              Billing information is not available.
+              {{ 'org.billing.subscription.unavailable' | transloco }}
             </p>
           }
         </div>
@@ -148,19 +157,19 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
       <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
         <div hlmCardContent class="!p-6">
           <h2 class="text-xl leading-8 font-semibold tracking-tight">
-            Past Invoices
+            {{ 'org.billing.invoices.title' | transloco }}
           </h2>
           <p class="text-muted-foreground my-3 text-sm leading-6">
-            You get an invoice every time you change your plan or when your
-            monthly billing cycle resets.
+            {{ 'org.billing.invoices.lead' | transloco }}
           </p>
 
           @if (invoicesResource.isLoading()) {
-            <p class="text-muted-foreground text-sm">Loading invoices…</p>
+            <p class="text-muted-foreground text-sm">
+              {{ 'org.billing.invoices.loading' | transloco }}
+            </p>
           } @else if (invoices().length === 0) {
             <p class="text-muted-foreground text-sm">
-              No invoices yet. Invoices appear after your first paid billing
-              cycle or plan change.
+              {{ 'org.billing.invoices.empty' | transloco }}
             </p>
           } @else {
             <div class="border-input overflow-hidden rounded-[5px] border">
@@ -169,11 +178,21 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                   class="text-muted-foreground border-b text-xs font-medium"
                 >
                   <tr>
-                    <th class="px-4 py-2.5 font-medium">Date</th>
-                    <th class="px-4 py-2.5 font-medium">Amount</th>
-                    <th class="px-4 py-2.5 font-medium">Invoice number</th>
-                    <th class="px-4 py-2.5 font-medium">Status</th>
-                    <th class="px-4 py-2.5 text-right font-medium">Actions</th>
+                    <th class="px-4 py-2.5 font-medium">
+                      {{ 'org.billing.invoices.columnDate' | transloco }}
+                    </th>
+                    <th class="px-4 py-2.5 font-medium">
+                      {{ 'org.billing.invoices.columnAmount' | transloco }}
+                    </th>
+                    <th class="px-4 py-2.5 font-medium">
+                      {{ 'org.billing.invoices.columnNumber' | transloco }}
+                    </th>
+                    <th class="px-4 py-2.5 font-medium">
+                      {{ 'org.billing.invoices.columnStatus' | transloco }}
+                    </th>
+                    <th class="px-4 py-2.5 text-right font-medium">
+                      {{ 'org.billing.invoices.columnActions' | transloco }}
+                    </th>
                   </tr>
                 </thead>
                 <tbody class="divide-border divide-y">
@@ -198,7 +217,7 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                           [variant]="invoiceBadge.variant"
                           [class]="invoiceBadge.class"
                         >
-                          {{ invoiceStatusLabel(invoice.status) }}
+                          {{ invoiceStatusKey(invoice.status) | transloco }}
                         </span>
                       </td>
                       <td class="px-4 py-3 text-right">
@@ -207,11 +226,9 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                           [href]="invoice.invoicePdf"
                           target="_blank"
                           rel="noopener noreferrer"
-                          [hlmTooltip]="invoiceDownloadTooltip"
+                          [hlmTooltip]="'org.billing.invoices.downloadTooltip' | transloco"
                           position="top"
-                          [attr.aria-label]="
-                            'Download invoice ' + invoice.number
-                          "
+                          [attr.aria-label]="invoiceDownloadAria(invoice.number)"
                         >
                           <ng-icon
                             name="lucideReceipt"
@@ -231,8 +248,10 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
           <div
             class="border-border text-muted-foreground border-t px-6 py-3 text-sm"
           >
-            Showing 1 to {{ invoices().length }} out of
-            {{ invoices().length }} invoices
+            {{
+              'org.billing.invoices.showing'
+                | transloco: { count: invoices().length }
+            }}
           </div>
         }
       </section>
@@ -240,18 +259,21 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
       <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
         <div hlmCardContent class="!p-6">
           <h2 class="text-xl leading-8 font-semibold tracking-tight">
-            Payment Methods
+            {{ 'org.billing.paymentMethods.title' | transloco }}
           </h2>
           <p class="text-muted-foreground mt-3 text-sm leading-6">
-            Subscription charges use the default card. Add or remove cards and
-            choose which one is default.
+            {{ 'org.billing.paymentMethods.lead' | transloco }}
           </p>
           @if (paymentMethodsResource.isLoading()) {
-            <p class="text-muted-foreground mt-4 text-sm">Loading payment methods…</p>
+            <p class="text-muted-foreground mt-4 text-sm">
+              {{ 'org.billing.paymentMethods.loading' | transloco }}
+            </p>
           } @else if (paymentMethodsResource.error(); as err) {
             <p class="text-destructive mt-4 text-sm">{{ err.message }}</p>
           } @else if (paymentMethods().length === 0) {
-            <p class="text-muted-foreground mt-4 text-sm">No payment methods</p>
+            <p class="text-muted-foreground mt-4 text-sm">
+              {{ 'org.billing.paymentMethods.empty' | transloco }}
+            </p>
           } @else {
             <ul class="divide-border mt-4 divide-y rounded-[5px] border">
               @for (method of paymentMethods(); track method.id) {
@@ -271,7 +293,7 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                         {{ method.last4 }}
                       </p>
                       <p class="text-muted-foreground text-sm">
-                        Expires
+                        {{ 'org.billing.paymentMethods.expires' | transloco }}
                         {{
                           formatPaymentMethodExpiry(
                             method.expMonth,
@@ -283,7 +305,9 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                   </div>
                   <div class="flex flex-wrap items-center gap-2">
                     @if (method.isDefault) {
-                      <span hlmBadge variant="secondary">Default</span>
+                      <span hlmBadge variant="secondary">{{
+                        'org.billing.paymentMethods.default' | transloco
+                      }}</span>
                     } @else {
                       <button
                         hlmBtn
@@ -293,7 +317,7 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                         [disabled]="paymentMethodActionId() === method.id"
                         (click)="setDefaultPaymentMethod(method)"
                       >
-                        Make default
+                        {{ 'org.billing.paymentMethods.makeDefault' | transloco }}
                       </button>
                     }
                     <button
@@ -305,7 +329,7 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                       [disabled]="paymentMethodActionId() === method.id"
                       (click)="removePaymentMethod(method)"
                     >
-                      Remove
+                      {{ 'org.billing.paymentMethods.remove' | transloco }}
                     </button>
                   </div>
                 </li>
@@ -318,7 +342,7 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
           class="border-border flex min-h-[57px] items-center justify-end border-t !py-3"
         >
           <button hlmBtn type="button" (click)="openAddPaymentMethodDialog()">
-            Add payment method
+            {{ 'org.billing.paymentMethods.addButton' | transloco }}
           </button>
         </div>
       </section>
@@ -338,9 +362,9 @@ export class OrgSettingsBillingComponent {
 
   private readonly billingPort = inject(BILLING_PORT);
   private readonly paywallDialog = inject(PaywallDialogService);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly formatPlanLabel = formatPlanLabel;
-  protected readonly formatSubscriptionStatus = formatSubscriptionStatus;
   protected readonly formatPaymentMethodBrand = formatPaymentMethodBrand;
   protected readonly formatPaymentMethodExpiry = formatPaymentMethodExpiry;
   protected readonly resolveCurrentPlanId = resolveCurrentPlanId;
@@ -351,7 +375,6 @@ export class OrgSettingsBillingComponent {
   protected readonly addPaymentSaving = signal(false);
   protected readonly addPaymentError = signal<string | null>(null);
   protected readonly paymentMethodActionId = signal<string | null>(null);
-  protected readonly invoiceDownloadTooltip = 'Download invoice';
 
   protected readonly billingResource = resource({
     params: () => ({ orgId: this.organizationId() }),
@@ -408,24 +431,23 @@ export class OrgSettingsBillingComponent {
   );
 
   protected planDisplayLabel(summary: BillingSummary): string {
-    return `${formatPlanLabel(summary.planId, summary.planName)} Plan`;
+    return this.transloco.translate('org.billing.subscription.planDisplay', {
+      plan: formatPlanLabel(summary.planId, summary.planName),
+    });
   }
 
-  protected invoiceStatusLabel(status: InvoiceStatus): string {
-    switch (status) {
-      case 'paid':
-        return 'Paid';
-      case 'open':
-        return 'Open';
-      case 'draft':
-        return 'Draft';
-      case 'void':
-        return 'Void';
-      case 'uncollectible':
-        return 'Uncollectible';
-      default:
-        return status;
-    }
+  protected subscriptionStatusKey(status: SubscriptionStatus): string {
+    return `org.billing.subscriptionStatus.${status}`;
+  }
+
+  protected invoiceStatusKey(status: InvoiceStatus): string {
+    return `org.billing.invoices.status.${status}`;
+  }
+
+  protected invoiceDownloadAria(number: string): string {
+    return this.transloco.translate('org.billing.invoices.downloadAria', {
+      number,
+    });
   }
 
   protected async openUpgradeDialog(): Promise<void> {
@@ -433,7 +455,9 @@ export class OrgSettingsBillingComponent {
     const result = await this.paywallDialog.requestOpen();
     if (result === 'success') {
       this.billingResource.reload();
-      this.statusMessage.set('Plan updated successfully.');
+      this.statusMessage.set(
+        this.transloco.translate('org.billing.subscription.planUpdated'),
+      );
     }
   }
 
@@ -464,7 +488,9 @@ export class OrgSettingsBillingComponent {
     }
     this.paymentMethodsResource.reload();
     this.closeAddPaymentMethodDialog();
-    toast.success('Payment method added.');
+    toast.success(
+      this.transloco.translate('org.billing.paymentMethods.toastAdded'),
+    );
   }
 
   protected async setDefaultPaymentMethod(
@@ -481,7 +507,9 @@ export class OrgSettingsBillingComponent {
       return;
     }
     this.paymentMethodsResource.reload();
-    toast.success('Default payment method updated.');
+    toast.success(
+      this.transloco.translate('org.billing.paymentMethods.toastDefaultUpdated'),
+    );
   }
 
   protected async removePaymentMethod(method: PaymentMethod): Promise<void> {
@@ -496,7 +524,9 @@ export class OrgSettingsBillingComponent {
       return;
     }
     this.paymentMethodsResource.reload();
-    toast.success('Payment method removed.');
+    toast.success(
+      this.transloco.translate('org.billing.paymentMethods.toastRemoved'),
+    );
   }
 
   protected subscriptionStatusBadge(status: SubscriptionStatus): {

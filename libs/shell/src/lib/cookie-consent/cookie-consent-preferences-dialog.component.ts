@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslocoPipe } from '@oequ/i18n';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -24,6 +25,7 @@ import { CookieConsentService } from './cookie-consent.service';
     HlmButtonImports,
     HlmCheckboxImports,
     HlmDialogImports,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -34,14 +36,15 @@ import { CookieConsentService } from './cookie-consent.service';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content class="sm:!max-w-[440px]">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Cookie preferences</h3>
+            <h3 hlmDialogTitle>
+              {{ 'cookie.preferences.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              Choose which optional cookies we may use. You can change this
-              anytime. See our
+              {{ 'cookie.preferences.descriptionPrefix' | transloco }}
               <a
                 routerLink="/auth/cookies"
                 class="text-foreground underline underline-offset-4"
-                >Cookie Policy</a
+                >{{ 'cookie.preferences.cookiePolicy' | transloco }}</a
               >.
             </p>
           </hlm-dialog-header>
@@ -63,15 +66,15 @@ import { CookieConsentService } from './cookie-consent.service';
                     [for]="'cookie-' + category.id"
                     class="text-sm font-medium leading-none"
                   >
-                    {{ category.label }}
+                    {{ category.labelKey | transloco }}
                     @if (category.required) {
                       <span class="text-muted-foreground font-normal">
-                        (always on)
+                        {{ 'cookie.preferences.alwaysOn' | transloco }}
                       </span>
                     }
                   </label>
                   <p class="text-muted-foreground mt-1.5 text-sm leading-6">
-                    {{ category.description }}
+                    {{ category.descriptionKey | transloco }}
                   </p>
                 </div>
               </li>
@@ -86,7 +89,7 @@ import { CookieConsentService } from './cookie-consent.service';
               class="w-full sm:w-auto"
               (click)="rejectAll()"
             >
-              Reject all
+              {{ 'cookie.preferences.rejectAll' | transloco }}
             </button>
             <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               <button
@@ -96,7 +99,7 @@ import { CookieConsentService } from './cookie-consent.service';
                 class="w-full sm:w-auto"
                 hlmDialogClose
               >
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button
                 hlmBtn
@@ -104,7 +107,7 @@ import { CookieConsentService } from './cookie-consent.service';
                 class="w-full sm:w-auto"
                 (click)="save()"
               >
-                Save preferences
+                {{ 'cookie.preferences.savePreferences' | transloco }}
               </button>
             </div>
           </hlm-dialog-footer>

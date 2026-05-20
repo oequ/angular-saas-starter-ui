@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleHelp } from '@ng-icons/lucide';
 import {
@@ -9,6 +15,8 @@ import {
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 
 import { MetricsLineChartComponent } from './metrics-line-chart.component';
 
@@ -27,6 +35,7 @@ export interface MetricsLegendItem {
     HlmCardImports,
     HlmTooltipImports,
     MetricsLineChartComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ lucideCircleHelp })],
@@ -53,7 +62,7 @@ export interface MetricsLegendItem {
             type="button"
             class="text-muted-foreground hover:text-foreground mt-0.5 shrink-0"
             [hlmTooltip]="tooltip()"
-            aria-label="More information"
+            [attr.aria-label]="'org.metrics.moreInfo' | transloco"
           >
             <ng-icon name="lucideCircleHelp" class="size-4" aria-hidden="true" />
           </button>
@@ -89,6 +98,8 @@ export interface MetricsLegendItem {
   `,
 })
 export class MetricsStatCardComponent {
+  private readonly transloco = inject(TranslocoService);
+
   readonly title = input.required<string>();
   readonly rate = input.required<number>();
   readonly rateDecimals = input(0);
@@ -122,9 +133,11 @@ export class MetricsStatCardComponent {
     const rate = this.rate();
     const risk = this.riskThresholdPercent();
     if (rate === 0) {
-      return 'Healthy';
+      return this.transloco.translate('org.metrics.healthy');
     }
-    return rate >= risk ? 'Above risk' : 'Healthy';
+    return rate >= risk
+      ? this.transloco.translate('org.metrics.aboveRisk')
+      : this.transloco.translate('org.metrics.healthy');
   });
 
   protected readonly healthBadgeVariant = computed(() => {
@@ -139,11 +152,12 @@ export class MetricsStatCardComponent {
 
 export function bounceLegendItems(
   breakdown: readonly BounceBreakdownItem[],
+  translate: (key: string) => string,
 ): readonly MetricsLegendItem[] {
   const labels: Record<BounceBreakdownItem['kind'], string> = {
-    transient: 'Transient',
-    permanent: 'Permanent',
-    undetermined: 'Undetermined',
+    transient: translate('org.metrics.bounceKinds.transient'),
+    permanent: translate('org.metrics.bounceKinds.permanent'),
+    undetermined: translate('org.metrics.bounceKinds.undetermined'),
   };
   const dots: Record<BounceBreakdownItem['kind'], string> = {
     transient: 'bg-red-500',

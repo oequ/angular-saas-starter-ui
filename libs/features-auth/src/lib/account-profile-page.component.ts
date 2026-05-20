@@ -13,6 +13,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
 import { AUTH_PORT } from '@oequ/ports';
 import { toast } from '@spartan-ng/brain/sonner';
@@ -30,6 +31,7 @@ import { DeleteAccountDialogComponent } from './delete-account-dialog.component'
     HlmButtonImports,
     HlmInput,
     DeleteAccountDialogComponent,
+    TranslocoPipe,
   ],
   templateUrl: './account-profile-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,6 +40,7 @@ export class AccountProfilePageComponent {
   protected readonly fieldClass = SETTINGS_FORM_FIELD_CLASS;
 
   private readonly authPort = inject(AUTH_PORT);
+  private readonly transloco = inject(TranslocoService);
 
   private readonly session = toSignal(this.authPort.session$, {
     initialValue: null,
@@ -136,12 +139,12 @@ export class AccountProfilePageComponent {
         this.profileForm.patchValue({ displayName }, { emitEvent: false });
         this.profileForm.markAsPristine();
         this.displayNameStateVersion.update((v) => v + 1);
-        toast.success('Profile updated.');
+        toast.success(this.transloco.translate('account.profile.toastUpdated'));
       } else {
         toast.error(result.error.message);
       }
     } catch {
-      toast.error('Something went wrong. Please try again.');
+      toast.error(this.transloco.translate('common.errorGeneric'));
     } finally {
       this.saving.set(false);
     }
@@ -149,7 +152,7 @@ export class AccountProfilePageComponent {
 
   protected updateEmail(): void {
     this.statusMessage.set(
-      'Email change with verification will be available in v0.3.',
+      this.transloco.translate('account.profile.emailChangeSoon'),
     );
   }
 
@@ -163,8 +166,6 @@ export class AccountProfilePageComponent {
 
   protected confirmDeleteAccount(): void {
     this.deleteDialogOpen.set(false);
-    this.statusMessage.set(
-      'Account deletion will be available in v0.3.',
-    );
+    this.statusMessage.set(this.transloco.translate('account.profile.deleteSoon'));
   }
 }

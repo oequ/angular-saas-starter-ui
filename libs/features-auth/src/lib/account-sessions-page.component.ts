@@ -4,6 +4,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { AUTH_PORT, type AuthSessionDevice } from '@oequ/ports';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -11,18 +12,17 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 
 @Component({
   selector: 'oequ-account-sessions-page',
-  imports: [HlmCardImports, HlmButtonImports, HlmBadgeImports],
+  imports: [HlmCardImports, HlmButtonImports, HlmBadgeImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">
       <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
         <div hlmCardContent class="!p-6">
           <h2 class="text-xl leading-8 font-semibold tracking-tight">
-            Active sessions
+            {{ 'account.sessions.title' | transloco }}
           </h2>
           <p class="text-muted-foreground my-3 text-sm leading-6">
-            Devices and browsers signed in to your account. Revoke any session
-            you do not recognize.
+            {{ 'account.sessions.lead' | transloco }}
           </p>
 
           <div class="border-input overflow-hidden rounded-[5px] border">
@@ -31,14 +31,18 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
                 class="text-muted-foreground border-b text-xs font-medium"
               >
                 <tr>
-                  <th class="px-4 py-2.5 font-medium">Device</th>
+                  <th class="px-4 py-2.5 font-medium">
+                    {{ 'account.sessions.columnDevice' | transloco }}
+                  </th>
                   <th class="hidden px-4 py-2.5 font-medium md:table-cell">
-                    Location
+                    {{ 'account.sessions.columnLocation' | transloco }}
                   </th>
                   <th class="hidden px-4 py-2.5 font-medium lg:table-cell">
-                    Last active
+                    {{ 'account.sessions.columnLastActive' | transloco }}
                   </th>
-                  <th class="px-4 py-2.5 text-right font-medium">Action</th>
+                  <th class="px-4 py-2.5 text-right font-medium">
+                    {{ 'account.sessions.columnAction' | transloco }}
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-border divide-y">
@@ -48,7 +52,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
                       colspan="4"
                       class="text-muted-foreground px-4 py-8 text-center"
                     >
-                      Loading sessions…
+                      {{ 'account.sessions.loading' | transloco }}
                     </td>
                   </tr>
                 } @else if (sessions().length === 0) {
@@ -57,7 +61,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
                       colspan="4"
                       class="text-muted-foreground px-4 py-8 text-center"
                     >
-                      No active sessions.
+                      {{ 'account.sessions.empty' | transloco }}
                     </td>
                   </tr>
                 } @else {
@@ -71,7 +75,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
                               hlmBadge
                               variant="outline"
                               class="border-primary/25 bg-primary/10 text-primary ms-2"
-                              >Current</span
+                              >{{ 'account.sessions.current' | transloco }}</span
                             >
                           }
                         </p>
@@ -99,7 +103,9 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
                           (click)="revokeSession(session.id)"
                         >
                           {{
-                            revokingId() === session.id ? 'Revoking…' : 'Revoke'
+                            revokingId() === session.id
+                              ? ('account.sessions.revoking' | transloco)
+                              : ('account.sessions.revoke' | transloco)
                           }}
                         </button>
                       </td>
@@ -119,7 +125,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
             <p role="status" class="min-w-0 flex-1">{{ message }}</p>
           } @else {
             <p class="text-muted-foreground min-w-0 flex-1">
-              Sign out of all other devices while keeping this session active.
+              {{ 'account.sessions.footerLead' | transloco }}
             </p>
           }
           <button
@@ -129,7 +135,11 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
             [disabled]="revokingAll() || otherSessionCount() === 0"
             (click)="revokeAllOthers()"
           >
-            {{ revokingAll() ? 'Signing out…' : 'Sign out other sessions' }}
+            {{
+              revokingAll()
+                ? ('account.sessions.signingOutOthers' | transloco)
+                : ('account.sessions.signOutOthers' | transloco)
+            }}
           </button>
         </div>
       </section>
@@ -138,6 +148,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 })
 export class AccountSessionsPageComponent {
   private readonly authPort = inject(AUTH_PORT);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly sessions = signal<readonly AuthSessionDevice[]>([]);
   protected readonly loading = signal(true);
@@ -168,12 +179,14 @@ export class AccountSessionsPageComponent {
       const result = await this.authPort.revokeSession(sessionId);
       if (result.ok) {
         await this.loadSessions();
-        this.statusMessage.set('Session revoked.');
+        this.statusMessage.set(
+          this.transloco.translate('account.sessions.revoked'),
+        );
       } else {
         this.statusMessage.set(result.error.message);
       }
     } catch {
-      this.statusMessage.set('Something went wrong. Please try again.');
+      this.statusMessage.set(this.transloco.translate('common.errorGeneric'));
     } finally {
       this.revokingId.set(null);
     }
@@ -187,12 +200,14 @@ export class AccountSessionsPageComponent {
       const result = await this.authPort.revokeAllOtherSessions();
       if (result.ok) {
         await this.loadSessions();
-        this.statusMessage.set('Signed out of all other sessions.');
+        this.statusMessage.set(
+          this.transloco.translate('account.sessions.signedOutOthers'),
+        );
       } else {
         this.statusMessage.set(result.error.message);
       }
     } catch {
-      this.statusMessage.set('Something went wrong. Please try again.');
+      this.statusMessage.set(this.transloco.translate('common.errorGeneric'));
     } finally {
       this.revokingAll.set(false);
     }

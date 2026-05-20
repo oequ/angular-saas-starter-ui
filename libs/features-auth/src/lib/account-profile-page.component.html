@@ -7,10 +7,10 @@
         (ngSubmit)="saveProfile($event)"
       >
         <h2 class="text-xl leading-8 font-semibold tracking-tight">
-          Public profile
+          {{ 'account.profile.publicTitle' | transloco }}
         </h2>
         <p class="text-muted-foreground my-3 text-sm leading-6">
-          Your name is shown in the sidebar and across workspaces you join.
+          {{ 'account.profile.publicLead' | transloco }}
         </p>
         <div [class]="fieldClass">
           <label for="display-name" class="sr-only">Display name</label>
@@ -24,7 +24,7 @@
           />
           @if (submitAttempted() && profileForm.controls.displayName.invalid) {
             <p class="text-destructive mt-2 text-sm">
-              Please enter between 2 and 64 characters.
+              {{ 'account.profile.displayNameInvalid' | transloco }}
             </p>
           }
         </div>
@@ -37,7 +37,9 @@
       @if (statusMessage(); as message) {
         <p role="status">{{ message }}</p>
       } @else {
-        <p class="text-muted-foreground">Use 64 characters at maximum.</p>
+        <p class="text-muted-foreground">
+          {{ 'account.profile.displayNameHint' | transloco }}
+        </p>
       }
       <button
         hlmBtn
@@ -45,7 +47,11 @@
         [disabled]="!canSaveProfile()"
         (click)="onSaveClick()"
       >
-        {{ saving() ? 'Saving…' : 'Save changes' }}
+        {{
+          saving()
+            ? ('common.saving' | transloco)
+            : ('common.saveChanges' | transloco)
+        }}
       </button>
     </div>
   </section>
@@ -53,10 +59,10 @@
   <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-xl leading-8 font-semibold tracking-tight">
-        Email address
+        {{ 'account.profile.emailTitle' | transloco }}
       </h2>
       <p class="text-muted-foreground my-3 text-sm leading-6">
-        Used to sign in and receive security notifications.
+        {{ 'account.profile.emailLead' | transloco }}
       </p>
       <div [class]="fieldClass">
         <input
@@ -74,7 +80,7 @@
       class="border-border text-foreground flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
     >
       <button hlmBtn type="button" variant="secondary" (click)="updateEmail()">
-        Update email
+        {{ 'account.profile.updateEmail' | transloco }}
       </button>
     </div>
   </section>
@@ -82,11 +88,10 @@
   <section hlmCard variant="outline" class="gap-0 overflow-hidden border-destructive/40 py-0">
     <div hlmCardContent class="!p-6">
       <h2 class="text-destructive text-xl leading-8 font-semibold tracking-tight">
-        Danger zone
+        {{ 'account.profile.dangerTitle' | transloco }}
       </h2>
       <p class="text-muted-foreground my-3 text-sm leading-6">
-        Permanently delete your personal account. This does not delete any
-        workspace you own — manage workspaces separately.
+        {{ 'account.profile.dangerLead' | transloco }}
       </p>
     </div>
     <div
@@ -99,7 +104,7 @@
         class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
         (click)="openDeleteDialog()"
       >
-        Delete account
+        {{ 'account.profile.deleteAccount' | transloco }}
       </button>
     </div>
   </section>

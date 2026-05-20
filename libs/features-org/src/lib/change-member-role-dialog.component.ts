@@ -12,6 +12,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe } from '@oequ/i18n';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -24,6 +25,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
     HlmButtonImports,
     HlmDialogImports,
     HlmSelectImports,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -31,9 +33,14 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Change role</h3>
+            <h3 hlmDialogTitle>
+              {{ 'org.members.changeRoleDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              Update the role for <strong>{{ memberLabel() }}</strong>.
+              {{
+                'org.members.changeRoleDialog.description'
+                  | transloco: { name: memberLabel() }
+              }}
             </p>
           </hlm-dialog-header>
 
@@ -43,7 +50,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
                 for="change-role-trigger"
                 class="mb-1.5 block text-sm font-medium"
               >
-                Role
+                {{ 'common.role' | transloco }}
               </label>
               <hlm-select
                 class="block w-full"
@@ -54,7 +61,10 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
                   buttonId="change-role-trigger"
                   class="w-full max-w-full shadow-none"
                 >
-                  <span hlmSelectValue placeholder="Select a role"></span>
+                  <span
+                    hlmSelectValue
+                    [placeholder]="'common.selectRole' | transloco"
+                  ></span>
                 </hlm-select-trigger>
                 <hlm-select-content
                   *hlmSelectPortal
@@ -62,11 +72,13 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
                 >
                   @for (option of roleOptions; track option.value) {
                     <hlm-select-item [value]="option.value">
-                      <span class="font-medium">{{ option.label }}</span>
+                      <span class="font-medium">{{
+                        option.labelKey | transloco
+                      }}</span>
                       <span
                         class="text-muted-foreground block text-xs font-normal"
                       >
-                        {{ option.description }}
+                        {{ option.descriptionKey | transloco }}
                       </span>
                     </hlm-select-item>
                   }
@@ -76,10 +88,14 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button hlmBtn type="submit" [disabled]="saving()">
-                {{ saving() ? 'Saving…' : 'Save role' }}
+                {{
+                  saving()
+                    ? ('common.saving' | transloco)
+                    : ('org.members.changeRoleDialog.saveRole' | transloco)
+                }}
               </button>
             </hlm-dialog-footer>
           </form>
@@ -105,18 +121,18 @@ export class ChangeMemberRoleDialogComponent {
 
   protected readonly roleOptions: readonly {
     value: 'admin' | 'member';
-    label: string;
-    description: string;
+    labelKey: string;
+    descriptionKey: string;
   }[] = [
     {
       value: 'member',
-      label: 'Member',
-      description: 'Can access workspace apps and data.',
+      labelKey: 'org.members.roles.member.label',
+      descriptionKey: 'org.members.roles.member.description',
     },
     {
       value: 'admin',
-      label: 'Admin',
-      description: 'Can manage settings, members, and billing.',
+      labelKey: 'org.members.roles.admin.label',
+      descriptionKey: 'org.members.roles.admin.description',
     },
   ];
 

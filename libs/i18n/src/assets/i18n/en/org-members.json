@@ -1,0 +1,71 @@
+{
+  "title": "Members",
+  "inviteButton": "+ Invite member",
+  "loading": "Loading members…",
+  "emptyTitle": "No members yet",
+  "emptyDescription": "Invite teammates by email. They receive a link to join this workspace.",
+  "noFilterMatch": "No members match your filters.",
+  "columnMember": "Member",
+  "columnRole": "Role",
+  "columnStatus": "Status",
+  "actionsFor": "Actions for {{name}}",
+  "changeRole": "Change role",
+  "remove": "Remove",
+  "filters": {
+    "allRoles": "All roles",
+    "owner": "Owner",
+    "admin": "Admin",
+    "member": "Member"
+  },
+  "status": {
+    "active": "active",
+    "invited": "invited",
+    "suspended": "suspended"
+  },
+  "roles": {
+    "member": {
+      "label": "Member",
+      "description": "Can access workspace apps and data."
+    },
+    "admin": {
+      "label": "Admin",
+      "description": "Can manage settings, members, and billing."
+    }
+  },
+  "inviteDialog": {
+    "title": "Invite member",
+    "description": "Send an invitation to join this workspace.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "colleague@company.com",
+    "emailInvalid": "Enter a valid email address.",
+    "seatsExhaustedWithUsage": "All seats are in use ({{usage}}).",
+    "seatsExhausted": "All seats on your plan are in use.",
+    "upgradePlan": "Upgrade your plan",
+    "upgradeSuffix": "to invite more members.",
+    "sending": "Sending…",
+    "sendInvite": "Send invite"
+  },
+  "changeRoleDialog": {
+    "title": "Change role",
+    "description": "Update the role for {{name}}.",
+    "saveRole": "Save role"
+  },
+  "removeDialog": {
+    "title": "Remove member",
+    "description": "Remove {{name}} from this workspace? They will lose access immediately.",
+    "removing": "Removing…",
+    "submit": "Remove member"
+  },
+  "toast": {
+    "planUpgraded": "Plan upgraded. You can invite more members.",
+    "inviteSent": "Invitation sent to {{email}}.",
+    "roleChanged": "{{name}} is now {{role}}.",
+    "memberRemoved": "{{name}} was removed from the workspace."
+  },
+  "errors": {
+    "seatsExhausted": "No seats available. Upgrade your plan.",
+    "conflict": "This email is already a member or has a pending invite.",
+    "ownerRoleChange": "The workspace owner role cannot be changed.",
+    "ownerRemove": "The workspace owner cannot be removed."
+  }
+}
