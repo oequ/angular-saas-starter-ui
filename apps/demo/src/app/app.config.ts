@@ -8,6 +8,7 @@ import {
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideDemoAdapters } from '@oequ/adapters-mock';
+import { LocalePreferenceService, provideOequI18n } from '@oequ/i18n';
 import { ACTIVATION_ONBOARDING_CONFIG, HELP_PANEL_PORT } from '@oequ/ports';
 
 import { DEMO_EMAIL_ACTIVATION_CONFIG } from './demo-activation.config';
@@ -21,6 +22,7 @@ import { appRoutes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideOequI18n(),
     provideRouter(
       appRoutes,
       withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
@@ -35,6 +37,7 @@ export const appConfig: ApplicationConfig = {
       inject(ThemeService).init();
       inject(CookieConsentService).init();
     }),
+    provideAppInitializer(() => inject(LocalePreferenceService).init()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',

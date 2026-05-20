@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   output,
   signal,
@@ -12,9 +13,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import {
   type RetrospectiveSendPeriod,
-  retrospectiveSendPeriodLabel,
 } from '@oequ/ports';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -33,6 +34,12 @@ const PERIOD_OPTIONS: readonly RetrospectiveSendPeriod[] = [
   '30d',
 ];
 
+const PERIOD_LABEL_KEYS: Record<RetrospectiveSendPeriod, string> = {
+  today: 'onboarding.retroDialog.periodToday',
+  '7d': 'onboarding.retroDialog.period7d',
+  '30d': 'onboarding.retroDialog.period30d',
+};
+
 @Component({
   selector: 'oequ-onboarding-retrospective-dialog',
   imports: [
@@ -41,6 +48,7 @@ const PERIOD_OPTIONS: readonly RetrospectiveSendPeriod[] = [
     HlmDialogImports,
     HlmInput,
     HlmSelectImports,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -48,18 +56,18 @@ const PERIOD_OPTIONS: readonly RetrospectiveSendPeriod[] = [
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Simulate send history</h3>
+            <h3 hlmDialogTitle>
+              {{ 'onboarding.retroDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              Choose how many emails to backfill and the time window. After
-              confirming, Metrics refreshes with the simulated volume. Sends
-              respect your plan limits.
+              {{ 'onboarding.retroDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
           <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
             <div class="w-full min-w-0">
               <label for="retro-count" class="mb-1.5 block text-sm font-medium">
-                Email count
+                {{ 'onboarding.retroDialog.emailCount' | transloco }}
               </label>
               <input
                 hlmInput
@@ -73,14 +81,14 @@ const PERIOD_OPTIONS: readonly RetrospectiveSendPeriod[] = [
               />
               @if (submitAttempted() && form.controls.count.invalid) {
                 <p class="text-destructive mt-1 text-xs">
-                  Enter a number between 1 and 10,000.
+                  {{ 'onboarding.retroDialog.emailCountInvalid' | transloco }}
                 </p>
               }
             </div>
 
             <div class="w-full min-w-0">
               <label class="mb-1.5 block text-sm font-medium">
-                Time period
+                {{ 'onboarding.retroDialog.timePeriod' | transloco }}
               </label>
               <hlm-select
                 class="w-full"
@@ -109,10 +117,14 @@ const PERIOD_OPTIONS: readonly RetrospectiveSendPeriod[] = [
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button hlmBtn type="submit" [disabled]="submitting()">
-                {{ submitting() ? 'Starting…' : 'Run simulation' }}
+                {{
+                  submitting()
+                    ? ('onboarding.retroDialog.starting' | transloco)
+                    : ('onboarding.retroDialog.runSimulation' | transloco)
+                }}
               </button>
             </hlm-dialog-footer>
           </form>
@@ -122,6 +134,8 @@ const PERIOD_OPTIONS: readonly RetrospectiveSendPeriod[] = [
   `,
 })
 export class OnboardingRetrospectiveDialogComponent {
+  private readonly transloco = inject(TranslocoService);
+
   readonly open = input(false);
   readonly submitting = input(false);
 
@@ -130,7 +144,6 @@ export class OnboardingRetrospectiveDialogComponent {
 
   protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
   protected readonly periodOptions = PERIOD_OPTIONS;
-  protected readonly periodLabel = retrospectiveSendPeriodLabel;
   protected readonly submitAttempted = signal(false);
 
   protected readonly dialogState = computed(() =>
@@ -150,6 +163,10 @@ export class OnboardingRetrospectiveDialogComponent {
       nonNullable: true,
     }),
   });
+
+  protected periodLabel(period: RetrospectiveSendPeriod): string {
+    return this.transloco.translate(PERIOD_LABEL_KEYS[period]);
+  }
 
   protected onPeriodChange(
     value: string | string[] | null | undefined,

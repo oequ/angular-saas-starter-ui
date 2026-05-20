@@ -20,6 +20,7 @@ import {
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
+import { TranslocoPipe } from '@oequ/i18n';
 import { ACTIVATION_ONBOARDING_CONFIG } from './activation-ui.model';
 import {
   OnboardingRetrospectiveDialogComponent,
@@ -36,6 +37,7 @@ import { OnboardingMemberImpersonationDialogComponent } from './onboarding-membe
     HlmButtonImports,
     OnboardingRetrospectiveDialogComponent,
     OnboardingMemberImpersonationDialogComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -48,10 +50,10 @@ import { OnboardingMemberImpersonationDialogComponent } from './onboarding-membe
     <div class="mx-auto w-full max-w-3xl">
       <div class="mb-10">
         <h1 class="text-2xl font-semibold tracking-tight">
-          {{ config().title }}
+          {{ config().title | transloco }}
         </h1>
         <p class="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
-          {{ config().subtitle }}
+          {{ config().subtitle | transloco }}
         </p>
       </div>
 
@@ -72,10 +74,10 @@ import { OnboardingMemberImpersonationDialogComponent } from './onboarding-membe
               <section hlmCard class="gap-0 overflow-hidden py-0">
                 <div hlmCardContent class="!p-6">
                   <h2 class="text-base font-semibold leading-6">
-                    {{ step.title }}
+                    {{ step.title | transloco }}
                   </h2>
                   <p class="text-muted-foreground mt-1 text-sm leading-6">
-                    {{ step.description }}
+                    {{ step.description | transloco }}
                   </p>
                   <div class="mt-4">
                     @switch (step.action) {
@@ -91,7 +93,7 @@ import { OnboardingMemberImpersonationDialogComponent } from './onboarding-membe
                             class="me-2 size-4"
                             aria-hidden="true"
                           />
-                          {{ step.actionLabel }}
+                          {{ step.actionLabel | transloco }}
                         </button>
                       }
                       @case ('member-impersonation') {
@@ -106,7 +108,7 @@ import { OnboardingMemberImpersonationDialogComponent } from './onboarding-membe
                             class="me-2 size-4"
                             aria-hidden="true"
                           />
-                          {{ step.actionLabel }}
+                          {{ step.actionLabel | transloco }}
                         </button>
                       }
                     }
@@ -142,10 +144,10 @@ import { OnboardingMemberImpersonationDialogComponent } from './onboarding-membe
               >
                 <div hlmCardContent class="!p-6">
                   <h2 class="text-base font-semibold leading-6">
-                    {{ step.title }}
+                    {{ step.title | transloco }}
                   </h2>
                   <p class="text-muted-foreground mt-1 text-sm leading-6">
-                    {{ step.description }}
+                    {{ step.description | transloco }}
                   </p>
                   <p class="text-muted-foreground mt-4 text-xs">
                     Configure production steps in ACTIVATION_ONBOARDING_CONFIG.

@@ -1,7 +1,7 @@
 # Product roadmap — angular-saas-starter-ui
 
 Living backlog for **angular-saas-starter-ui** (UI kit + mock demo).  
-Last updated: **2026-05-19** (after billing, paywall, cookie consent, settings polish).
+Last updated: **2026-05-20** (after i18n infrastructure pilot).
 
 Aligns with [QUALITY.md](./QUALITY.md) (L1 target) and full-stack wiring in [oequ/saas-starter](https://github.com/oequ/saas-starter).
 
@@ -14,6 +14,7 @@ Aligns with [QUALITY.md](./QUALITY.md) (L1 target) and full-stack wiring in [oeq
 - Workspace General: rename, icon upload/remove, Sonner toasts
 - Cookie consent: GDPR-style banner (reject / accept / manage preferences), user-menu reopen
 - Members, API keys, metrics, onboarding activation (mock ports)
+- i18n infrastructure (Transloco, `@oequ/i18n`): English locale; pilot on shell, auth login/register/forgot, onboarding — see [I18N.md](./I18N.md)
 - Account sessions (list / revoke), integrations (mock)
 - Legal pages (demo copy): terms, privacy, security, cookies
 - PWA on demo (production / GitHub Pages builds)
@@ -76,7 +77,7 @@ From [QUALITY.md](./QUALITY.md):
 ## P4 — Strategic (post v0.4)
 
 - Zoneless Angular
-- i18n / locales
+- i18n wave 2: `features-org`, help panel, legal docs per locale — [I18N.md](./I18N.md)
 - Enterprise SSO/SAML UI (Usage “locked” rows remain demo-only until then)
 - OpenSSF Scorecard
 - Git tag **v0.4.0-ui** + GitHub release notes

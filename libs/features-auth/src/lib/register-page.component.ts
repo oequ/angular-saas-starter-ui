@@ -13,6 +13,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe } from '@oequ/i18n';
 import { AUTH_PORT } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -49,12 +50,15 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     HlmCheckboxImports,
     HlmInput,
     AuthPasswordInputComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="${AUTH_PAGE_SHELL_CLASS}">
       <div class="${AUTH_PAGE_CONTENT_CLASS}">
-        <h1 class="${AUTH_PAGE_HEADING_CLASS}">Sign up</h1>
+        <h1 class="${AUTH_PAGE_HEADING_CLASS}">
+          {{ 'auth.register.title' | transloco }}
+        </h1>
 
         <section hlmCard class="${AUTH_CARD_CLASS}">
           <div hlmCardContent class="!p-6">
@@ -64,20 +68,20 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                   for="register-email"
                   class="mb-1.5 block text-sm font-medium"
                 >
-                  Email
+                  {{ 'common.email' | transloco }}
                 </label>
                 <input
                   id="register-email"
                   hlmInput
                   type="email"
                   autocomplete="email"
-                  placeholder="you@example.com"
+                  [placeholder]="'auth.login.emailPlaceholder' | transloco"
                   [class]="inputClass"
                   formControlName="email"
                 />
                 @if (submitAttempted() && form.controls.email.invalid) {
                   <p class="text-destructive mt-1.5 text-sm">
-                    Enter a valid email address.
+                    {{ 'auth.register.emailInvalid' | transloco }}
                   </p>
                 }
               </div>
@@ -87,7 +91,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                   for="register-password"
                   class="mb-1.5 block text-sm font-medium"
                 >
-                  Password
+                  {{ 'common.password' | transloco }}
                 </label>
                 <oequ-auth-password-input
                   inputId="register-password"
@@ -96,7 +100,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                 />
                 @if (submitAttempted() && form.controls.password.invalid) {
                   <p class="text-destructive mt-1.5 text-sm">
-                    Password must be at least 8 characters.
+                    {{ 'auth.register.passwordMinLength' | transloco }}
                   </p>
                 }
               </div>
@@ -106,7 +110,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                   for="register-confirm-password"
                   class="mb-1.5 block text-sm font-medium"
                 >
-                  Confirm password
+                  {{ 'auth.register.confirmPassword' | transloco }}
                 </label>
                 <oequ-auth-password-input
                   inputId="register-confirm-password"
@@ -119,7 +123,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                     form.hasError('passwordMismatch'))
                 ) {
                   <p class="text-destructive mt-1.5 text-sm">
-                    Passwords do not match.
+                    {{ 'auth.register.passwordMismatch' | transloco }}
                   </p>
                 }
               </div>
@@ -135,17 +139,17 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                     for="register-accept-terms"
                     class="text-muted-foreground text-sm leading-5"
                   >
-                    I agree to the
+                    {{ 'auth.register.acceptTermsPrefix' | transloco }}
                     <a
                       routerLink="/auth/terms"
                       class="text-foreground underline-offset-4 hover:underline"
-                      >Terms of Service</a
+                      >{{ 'auth.login.terms' | transloco }}</a
                     >.
                   </label>
                 </div>
                 @if (submitAttempted() && form.controls.acceptTerms.invalid) {
                   <p class="text-destructive text-sm">
-                    You must accept the Terms of Service.
+                    {{ 'auth.register.acceptTermsRequired' | transloco }}
                   </p>
                 }
 
@@ -159,17 +163,17 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                     for="register-accept-privacy"
                     class="text-muted-foreground text-sm leading-5"
                   >
-                    I agree to the
+                    {{ 'auth.register.acceptPrivacyPrefix' | transloco }}
                     <a
                       routerLink="/auth/privacy"
                       class="text-foreground underline-offset-4 hover:underline"
-                      >Privacy Policy</a
+                      >{{ 'auth.login.privacy' | transloco }}</a
                     >.
                   </label>
                 </div>
                 @if (submitAttempted() && form.controls.acceptPrivacy.invalid) {
                   <p class="text-destructive text-sm">
-                    You must accept the Privacy Policy.
+                    {{ 'auth.register.acceptPrivacyRequired' | transloco }}
                   </p>
                 }
               </div>
@@ -184,7 +188,11 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                 class="h-9 w-full shadow-none"
                 [disabled]="signingUp()"
               >
-                {{ signingUp() ? 'Creating account…' : 'Create account' }}
+                {{
+                  signingUp()
+                    ? ('auth.register.submitting' | transloco)
+                    : ('auth.register.submit' | transloco)
+                }}
               </button>
             </form>
           </div>
@@ -192,11 +200,11 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
         <div class="${AUTH_PAGE_FOOTER_CLASS}">
           <p class="${AUTH_PAGE_FOOTER_TEXT_CLASS}">
-            Already have an account?
+            {{ 'auth.register.hasAccount' | transloco }}
             <a
               routerLink="/auth/login"
               class="text-foreground ms-1 underline-offset-4 hover:underline"
-              >Sign in</a
+              >{{ 'auth.register.signIn' | transloco }}</a
             >
           </p>
         </div>

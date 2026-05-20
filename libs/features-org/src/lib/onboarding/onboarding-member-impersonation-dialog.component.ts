@@ -21,6 +21,7 @@ import {
   formatOrgRole,
   type OrganizationMember,
 } from '@oequ/ports';
+import { TranslocoPipe } from '@oequ/i18n';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -35,6 +36,7 @@ import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
     HlmDialogImports,
     HlmBadgeImports,
     HlmSkeletonImports,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -42,10 +44,11 @@ import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>Sign in as member</h3>
+            <h3 hlmDialogTitle>
+              {{ 'onboarding.impersonationDialog.title' | transloco }}
+            </h3>
             <p hlmDialogDescription>
-              Demo only: pick an active workspace member to switch the session.
-              Invited or suspended members are listed but cannot be selected.
+              {{ 'onboarding.impersonationDialog.description' | transloco }}
             </p>
           </hlm-dialog-header>
 
@@ -65,21 +68,25 @@ import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
               </p>
             } @else if (activeMembers().length === 0) {
               <p class="text-muted-foreground text-sm">
-                No active members in this workspace yet. Invite someone from
-                Settings → Members first.
+                {{ 'onboarding.impersonationDialog.noMembers' | transloco }}
               </p>
             } @else {
               <fieldset class="flex min-h-0 flex-col gap-2">
                 <legend class="text-sm font-medium">
-                  Member
+                  {{ 'onboarding.impersonationDialog.memberLegend' | transloco }}
                   <span class="text-muted-foreground font-normal">
-                    ({{ activeMembers().length }} active)
+                    {{
+                      'onboarding.impersonationDialog.memberActiveCount'
+                        | transloco: { count: activeMembers().length }
+                    }}
                   </span>
                 </legend>
                 <div
                   class="max-h-[min(18rem,50dvh)] space-y-2 overflow-y-auto overscroll-contain pe-0.5"
                   role="listbox"
-                  aria-label="Workspace members"
+                  [attr.aria-label]="
+                    'onboarding.impersonationDialog.membersAria' | transloco
+                  "
                 >
                 @for (member of members(); track member.userId) {
                   <label
@@ -132,13 +139,15 @@ import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
                 </div>
               </fieldset>
               @if (submitAttempted() && form.controls.memberId.invalid) {
-                <p class="text-destructive text-xs">Select an active member.</p>
+                <p class="text-destructive text-xs">
+                  {{ 'onboarding.impersonationDialog.selectMember' | transloco }}
+                </p>
               }
             }
 
             <hlm-dialog-footer>
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
-                Cancel
+                {{ 'common.cancel' | transloco }}
               </button>
               <button
                 hlmBtn
@@ -149,7 +158,11 @@ import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
                   activeMembers().length === 0
                 "
               >
-                {{ submitting() ? 'Signing in…' : 'Sign in' }}
+                {{
+                  submitting()
+                    ? ('onboarding.impersonationDialog.signingIn' | transloco)
+                    : ('onboarding.impersonationDialog.signIn' | transloco)
+                }}
               </button>
             </hlm-dialog-footer>
           </form>

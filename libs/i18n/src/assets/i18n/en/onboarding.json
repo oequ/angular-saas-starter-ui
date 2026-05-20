@@ -1,0 +1,41 @@
+{
+  "demo": {
+    "title": "Welcome to your demo workspace",
+    "subtitle": "Get a feel for our platform by exploring live metrics and simulating team collaboration in a sandbox environment."
+  },
+  "steps": {
+    "metrics": {
+      "title": "Simulate email volume",
+      "description": "Generate simulated email traffic over the last 30 days to see how delivery rates, bounces, and charts update in real time.",
+      "action": "Simulate sends"
+    },
+    "impersonation": {
+      "title": "Test team roles",
+      "description": "Switch sessions with other teammates instantly to preview different workspace permissions (Admin vs. Member).",
+      "action": "Switch teammate"
+    }
+  },
+  "retroDialog": {
+    "title": "Simulate send history",
+    "description": "Choose how many emails to backfill and the time window. After confirming, Metrics refreshes with the simulated volume. Sends respect your plan limits.",
+    "emailCount": "Email count",
+    "emailCountInvalid": "Enter a number between 1 and 10,000.",
+    "timePeriod": "Time period",
+    "runSimulation": "Run simulation",
+    "starting": "Starting…",
+    "periodToday": "Today",
+    "period7d": "Last 7 days",
+    "period30d": "Last 30 days"
+  },
+  "impersonationDialog": {
+    "title": "Sign in as member",
+    "description": "Demo only: pick an active workspace member to switch the session. Invited or suspended members are listed but cannot be selected.",
+    "noMembers": "No active members in this workspace yet. Invite someone from Settings → Members first.",
+    "memberLegend": "Member",
+    "memberActiveCount": "({{count}} active)",
+    "membersAria": "Workspace members",
+    "selectMember": "Select an active member.",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…"
+  }
+}

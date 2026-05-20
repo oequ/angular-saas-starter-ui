@@ -21,14 +21,19 @@ export type ActivationDemoStepAction =
 
 export interface ActivationDemoStepConfig {
   readonly id: string;
+  /** Transloco key (e.g. `onboarding.steps.metrics.title`). */
   readonly title: string;
+  /** Transloco key. */
   readonly description: string;
+  /** Transloco key. */
   readonly actionLabel: string;
   readonly action: ActivationDemoStepAction;
 }
 
 export interface ActivationOnboardingConfig {
+  /** Transloco key for page heading. */
   readonly title: string;
+  /** Transloco key for page lead. */
   readonly subtitle: string;
   /** Production activation checklist (API key, send email, …). */
   readonly steps?: readonly ActivationStepConfig[];

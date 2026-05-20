@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "onboarding": "Onboarding",
+    "metrics": "Metrics",
+    "emails": "Emails",
+    "apiKeys": "API keys",
+    "integrations": "Integrations",
+    "general": "General",
+    "members": "Members",
+    "billing": "Billing",
+    "usage": "Usage",
+    "profile": "Profile",
+    "security": "Security",
+    "sessions": "Sessions"
+  },
+  "userMenu": {
+    "accountSettings": "Account settings",
+    "onboarding": "Onboarding",
+    "help": "Help",
+    "cookiePreferences": "Cookie preferences",
+    "toggleTheme": "Toggle theme",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "locale": {
+    "english": "English"
+  }
+}

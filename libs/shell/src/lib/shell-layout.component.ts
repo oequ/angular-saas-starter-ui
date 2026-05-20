@@ -35,6 +35,7 @@ import {
   lucideUser,
   lucideUsers,
 } from '@ng-icons/lucide';
+import { TranslocoPipe } from '@oequ/i18n';
 import { ORG_PORT, type Organization } from '@oequ/ports';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmIcon } from '@spartan-ng/helm/icon';
@@ -75,6 +76,7 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
     CreateWorkspaceDialogComponent,
     PaywallDialogComponent,
     HelpPanelComponent,
+    TranslocoPipe,
   ],
   templateUrl: './shell-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

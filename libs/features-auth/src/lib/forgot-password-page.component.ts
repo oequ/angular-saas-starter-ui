@@ -10,6 +10,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe } from '@oequ/i18n';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -33,30 +34,34 @@ import {
     HlmCardImports,
     HlmButtonImports,
     HlmInput,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="${AUTH_PAGE_SHELL_CLASS}">
       <div class="${AUTH_PAGE_CONTENT_CLASS}">
-        <h1 class="${AUTH_PAGE_HEADING_CLASS}">Reset your password</h1>
+        <h1 class="${AUTH_PAGE_HEADING_CLASS}">
+          {{ 'auth.forgotPassword.title' | transloco }}
+        </h1>
         <p class="${AUTH_PAGE_LEAD_CLASS}">
-          Enter your email and we will send a reset link if an account exists.
+          {{ 'auth.forgotPassword.lead' | transloco }}
         </p>
 
         <section hlmCard class="${AUTH_CARD_CLASS}">
           <div hlmCardContent class="!p-6">
             @if (sent()) {
               <p class="text-sm leading-6" role="status">
-                If an account exists for
-                <span class="font-medium">{{ submittedEmail() }}</span>, you will
-                receive instructions shortly. In this demo, no email is sent.
+                {{
+                  'auth.forgotPassword.sentStatus'
+                    | transloco: { email: submittedEmail() }
+                }}
               </p>
               <a
                 hlmBtn
                 class="mt-6 h-9 w-full shadow-none"
                 routerLink="/auth/login"
               >
-                Back to sign in
+                {{ 'auth.forgotPassword.backToSignIn' | transloco }}
               </a>
             } @else {
               <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
@@ -65,20 +70,20 @@ import {
                     for="reset-email"
                     class="mb-1.5 block text-sm font-medium"
                   >
-                    Email
+                    {{ 'common.email' | transloco }}
                   </label>
                   <input
                     id="reset-email"
                     hlmInput
                     type="email"
                     autocomplete="email"
-                    placeholder="you@example.com"
+                    [placeholder]="'auth.login.emailPlaceholder' | transloco"
                     [class]="inputClass"
                     formControlName="email"
                   />
                   @if (submitAttempted() && form.controls.email.invalid) {
                     <p class="text-destructive mt-1.5 text-sm">
-                      Enter a valid email address.
+                      {{ 'auth.forgotPassword.emailInvalid' | transloco }}
                     </p>
                   }
                 </div>
@@ -89,7 +94,11 @@ import {
                   class="h-9 w-full shadow-none"
                   [disabled]="submitting()"
                 >
-                  {{ submitting() ? 'Sending…' : 'Send reset link' }}
+                  {{
+                    submitting()
+                      ? ('auth.forgotPassword.submitting' | transloco)
+                      : ('auth.forgotPassword.submit' | transloco)
+                  }}
                 </button>
               </form>
             }
@@ -103,7 +112,7 @@ import {
                 routerLink="/auth/login"
                 class="text-foreground underline-offset-4 hover:underline"
               >
-                Back to sign in
+                {{ 'auth.forgotPassword.backToSignIn' | transloco }}
               </a>
             </p>
           </div>

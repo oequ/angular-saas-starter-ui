@@ -11,6 +11,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe } from '@oequ/i18n';
 import { AUTH_PORT, DEMO_AUTH_EMAIL, DEMO_AUTH_PASSWORD } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -44,32 +45,35 @@ function safeReturnUrl(raw: string | null): string {
     HlmButtonImports,
     HlmInput,
     AuthPasswordInputComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="${AUTH_PAGE_SHELL_CLASS}">
       <div class="${AUTH_PAGE_CONTENT_CLASS}">
-        <h1 class="${AUTH_PAGE_HEADING_CLASS}">Sign in</h1>
+        <h1 class="${AUTH_PAGE_HEADING_CLASS}">
+          {{ 'auth.login.title' | transloco }}
+        </h1>
 
         <section hlmCard class="${AUTH_CARD_CLASS}">
           <div hlmCardContent class="!p-6">
             <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
               <div>
                 <label for="login-email" class="mb-1.5 block text-sm font-medium">
-                  Email
+                  {{ 'common.email' | transloco }}
                 </label>
                 <input
                   id="login-email"
                   hlmInput
                   type="email"
                   autocomplete="email"
-                  placeholder="you@example.com"
+                  [placeholder]="'auth.login.emailPlaceholder' | transloco"
                   [class]="inputClass"
                   formControlName="email"
                 />
                 @if (submitAttempted() && form.controls.email.invalid) {
                   <p class="text-destructive mt-1.5 text-sm">
-                    Enter a valid email address.
+                    {{ 'auth.login.emailInvalid' | transloco }}
                   </p>
                 }
               </div>
@@ -77,13 +81,13 @@ function safeReturnUrl(raw: string | null): string {
               <div>
                 <div class="mb-1.5 flex items-center justify-between gap-2">
                   <label for="login-password" class="text-sm font-medium">
-                    Password
+                    {{ 'common.password' | transloco }}
                   </label>
                   <a
                     routerLink="/auth/forgot-password"
                     class="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot password?
+                    {{ 'auth.login.forgotPassword' | transloco }}
                   </a>
                 </div>
                 <oequ-auth-password-input
@@ -93,7 +97,7 @@ function safeReturnUrl(raw: string | null): string {
                 />
                 @if (submitAttempted() && form.controls.password.invalid) {
                   <p class="text-destructive mt-1.5 text-sm">
-                    Password is required.
+                    {{ 'auth.login.passwordRequired' | transloco }}
                   </p>
                 }
               </div>
@@ -108,7 +112,11 @@ function safeReturnUrl(raw: string | null): string {
                 class="h-9 w-full shadow-none"
                 [disabled]="signingIn()"
               >
-                {{ signingIn() ? 'Signing in…' : 'Sign in' }}
+                {{
+                  signingIn()
+                    ? ('auth.login.submitting' | transloco)
+                    : ('auth.login.submit' | transloco)
+                }}
               </button>
             </form>
           </div>
@@ -116,25 +124,25 @@ function safeReturnUrl(raw: string | null): string {
 
         <div class="${AUTH_PAGE_FOOTER_CLASS}">
           <p class="${AUTH_PAGE_FOOTER_TEXT_CLASS}">
-            Don&apos;t have an account?
+            {{ 'auth.login.noAccount' | transloco }}
             <a
               routerLink="/auth/register"
               class="text-foreground ms-1 underline-offset-4 hover:underline"
-              >Sign up</a
+              >{{ 'auth.login.signUp' | transloco }}</a
             >
           </p>
           <p class="${AUTH_PAGE_LEGAL_CLASS}">
-            By continuing, you agree to our
+            {{ 'auth.login.legalPrefix' | transloco }}
             <a
               routerLink="/auth/terms"
               class="text-foreground underline-offset-4 hover:underline"
-              >Terms of Service</a
+              >{{ 'auth.login.terms' | transloco }}</a
             >
-            and
+            {{ 'auth.login.legalAnd' | transloco }}
             <a
               routerLink="/auth/privacy"
               class="text-foreground underline-offset-4 hover:underline"
-              >Privacy Policy</a
+              >{{ 'auth.login.privacy' | transloco }}</a
             >.
           </p>
         </div>

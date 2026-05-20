@@ -20,6 +20,7 @@ import {
   lucideSun,
   lucideUser,
 } from '@ng-icons/lucide';
+import { OequLocaleSwitcherComponent, TranslocoPipe } from '@oequ/i18n';
 import { AUTH_PORT, ORG_PORT } from '@oequ/ports';
 import {
   HlmDropdownMenuImports,
@@ -32,7 +33,7 @@ import { ThemeService } from './theme.service';
 
 @Component({
   selector: 'oequ-user-menu',
-  imports: [HlmDropdownMenuImports, NgIcon],
+  imports: [HlmDropdownMenuImports, NgIcon, TranslocoPipe, OequLocaleSwitcherComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     provideIcons({
@@ -95,7 +96,7 @@ import { ThemeService } from './theme.service';
           (triggered)="navigateToAccount('/account/profile')"
         >
           <ng-icon name="lucideUser" class="size-4 shrink-0" aria-hidden="true" />
-          <span>Account settings</span>
+          <span>{{ 'shell.userMenu.accountSettings' | transloco }}</span>
         </button>
         <button
           type="button"
@@ -105,7 +106,7 @@ import { ThemeService } from './theme.service';
           (triggered)="navigateToOnboarding()"
         >
           <ng-icon name="lucideRocket" class="size-4 shrink-0" aria-hidden="true" />
-          <span>Onboarding</span>
+          <span>{{ 'shell.userMenu.onboarding' | transloco }}</span>
         </button>
         <button
           type="button"
@@ -118,7 +119,7 @@ import { ThemeService } from './theme.service';
             class="size-4 shrink-0"
             aria-hidden="true"
           />
-          <span>Help</span>
+          <span>{{ 'shell.userMenu.help' | transloco }}</span>
         </button>
         <button
           type="button"
@@ -131,7 +132,7 @@ import { ThemeService } from './theme.service';
             class="size-4 shrink-0"
             aria-hidden="true"
           />
-          <span>Cookie preferences</span>
+          <span>{{ 'shell.userMenu.cookiePreferences' | transloco }}</span>
         </button>
         <button
           type="button"
@@ -144,9 +145,10 @@ import { ThemeService } from './theme.service';
             class="size-4 shrink-0"
             aria-hidden="true"
           />
-          <span>Toggle theme</span>
+          <span>{{ 'shell.userMenu.toggleTheme' | transloco }}</span>
           <span hlmDropdownMenuShortcut>M</span>
         </button>
+        <oequ-locale-switcher />
         <div hlmDropdownMenuSeparator></div>
         <button
           type="button"
@@ -156,7 +158,7 @@ import { ThemeService } from './theme.service';
           (triggered)="signOut()"
         >
           <ng-icon name="lucideLogOut" class="size-4 shrink-0" aria-hidden="true" />
-          <span>Sign out</span>
+          <span>{{ 'shell.userMenu.signOut' | transloco }}</span>
         </button>
       </div>
     </ng-template>
