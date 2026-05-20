@@ -89,11 +89,11 @@ export async function createWorkspaceViaOnboarding(
   ).toBeVisible();
 }
 
-export const DEMO_ACTIVATION_HEADING = 'Try the demo workspace';
+export const DEMO_ACTIVATION_HEADING = 'Welcome to your demo workspace';
 
 /** Mock activation: run metrics retrospective simulation, land on Metrics. */
 export async function completeActivationViaOnboarding(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Simulate send history' }).click();
+  await page.getByRole('button', { name: 'Simulate sends' }).click();
   await expect(
     page.getByRole('heading', { name: 'Simulate send history' }),
   ).toBeVisible();

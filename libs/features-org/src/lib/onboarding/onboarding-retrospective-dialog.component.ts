@@ -51,8 +51,8 @@ const PERIOD_OPTIONS: readonly RetrospectiveSendPeriod[] = [
             <h3 hlmDialogTitle>Simulate send history</h3>
             <p hlmDialogDescription>
               Choose how many emails to backfill and the time window. After
-              confirming, Metrics loads and replays volume over about 2 seconds.
-              Sends respect your plan limits.
+              confirming, Metrics refreshes with the simulated volume. Sends
+              respect your plan limits.
             </p>
           </hlm-dialog-header>
 

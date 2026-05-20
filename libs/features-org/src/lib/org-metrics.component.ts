@@ -104,15 +104,6 @@ import {
               aria-live="polite"
             >
               <span class="text-sm font-medium">Simulating send history…</span>
-              <span class="text-muted-foreground text-xs tabular-nums">
-                {{ simulationProgressPercent() }}%
-              </span>
-              <div class="bg-muted mt-1 h-1.5 w-48 overflow-hidden rounded-full">
-                <div
-                  class="bg-primary h-full rounded-full transition-[width] duration-200"
-                  [style.width.%]="simulationProgressPercent()"
-                ></div>
-              </div>
             </div>
           } @else if (metricsLoading()) {
             <div
@@ -202,13 +193,10 @@ export class OrgMetricsComponent {
       this.simulationKickoffStarted = true;
       void this.retrospectiveSimulation.runAnimated(pending, async () => {
         await this.metricsResource.reload();
+        return this.metricsResource.value() ?? null;
       });
     });
   }
-
-  protected readonly simulationProgressPercent = computed(() =>
-    Math.round(this.retrospectiveSimulation.progress() * 100),
-  );
 
   private readonly filters = computed<MetricsFilters>(() => ({
     domainId: this.domainFilter(),

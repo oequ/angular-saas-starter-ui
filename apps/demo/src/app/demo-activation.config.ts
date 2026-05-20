@@ -1,25 +1,25 @@
 import type { ActivationOnboardingConfig } from '@oequ/ports';
 
 export const DEMO_EMAIL_ACTIVATION_CONFIG: ActivationOnboardingConfig = {
-  title: 'Try the demo workspace',
+  title: 'Welcome to your demo workspace',
   subtitle:
-    'Explore simulated email history and member access. Replace this screen in production via ActivationPort and ACTIVATION_ONBOARDING_CONFIG.',
+    'Get a feel for our platform by exploring live metrics and simulating team collaboration in a sandbox environment.',
   demoSteps: [
     {
       id: 'metrics-retrospective',
       action: 'metrics-retrospective',
-      title: 'Preview delivery metrics',
+      title: 'Simulate email volume',
       description:
-        'Backfill simulated sends over a time window and watch volume update live on the Metrics dashboard (about 2 seconds). Plan limits apply.',
-      actionLabel: 'Simulate send history',
+        'Generate simulated email traffic over the last 30 days to see how delivery rates, bounces, and charts update in real time.',
+      actionLabel: 'Simulate sends',
     },
     {
       id: 'member-impersonation',
       action: 'member-impersonation',
-      title: 'Preview as another member',
+      title: 'Test team roles',
       description:
-        'Choose a workspace member (with role) and sign in as them instantly — useful for testing admin vs member access.',
-      actionLabel: 'Sign in as member',
+        'Switch sessions with other teammates instantly to preview different workspace permissions (Admin vs. Member).',
+      actionLabel: 'Switch teammate',
     },
   ],
 };

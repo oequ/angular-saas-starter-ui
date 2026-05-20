@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import {
   EMAILS_PORT,
   buildRetrospectiveEmailRecords,
+  type MetricsDashboard,
   type OrganizationId,
   type RetrospectiveSendPeriod,
   retrospectivePeriodToMetricsPeriod,
@@ -15,13 +16,6 @@ export interface MetricsRetrospectiveSimulationRequest {
   readonly period: RetrospectiveSendPeriod;
 }
 
-const ANIMATION_MS = 2_000;
-const ANIMATION_STEPS = 20;
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 @Injectable({ providedIn: 'root' })
 export class MetricsRetrospectiveSimulationService {
   private readonly emailsPort = inject(EMAILS_PORT);
@@ -30,7 +24,6 @@ export class MetricsRetrospectiveSimulationService {
     signal<MetricsRetrospectiveSimulationRequest | null>(null);
 
   readonly running = signal(false);
-  readonly progress = signal(0);
 
   schedule(request: MetricsRetrospectiveSimulationRequest): void {
     this.pending.set(request);
@@ -56,55 +49,40 @@ export class MetricsRetrospectiveSimulationService {
 
   async runAnimated(
     request: MetricsRetrospectiveSimulationRequest,
-    reloadMetrics: () => Promise<void>,
+    reloadMetrics: () => Promise<MetricsDashboard | null>,
   ): Promise<void> {
     if (this.running()) {
       return;
     }
 
     this.running.set(true);
-    this.progress.set(0);
 
     const plan = buildRetrospectiveEmailRecords(request.count, request.period);
-    const chunkSize = Math.max(1, Math.ceil(plan.length / ANIMATION_STEPS));
     let totalCreated = 0;
     let hitLimit = false;
-    const stepDelay = ANIMATION_MS / ANIMATION_STEPS;
 
     try {
-      for (let step = 0; step < ANIMATION_STEPS; step++) {
-        const start = step * chunkSize;
-        const chunk = plan.slice(start, start + chunkSize);
-        if (!chunk.length) {
-          this.progress.set((step + 1) / ANIMATION_STEPS);
-          await delay(stepDelay);
-          continue;
-        }
-
+      if (plan.length > 0) {
         const result = await this.emailsPort.simulateOutbound(
           request.organizationId,
-          { records: chunk },
+          { records: plan },
         );
 
         if (!result.ok) {
           hitLimit = true;
           toast.warning(result.error.message);
-          break;
+        } else {
+          totalCreated = result.data.created.length;
+          if (result.data.capped) {
+            hitLimit = true;
+            toast.warning(
+              'Simulation stopped at your plan limit. Upgrade for higher volume.',
+            );
+          }
         }
-
-        totalCreated += result.data.created.length;
-        if (result.data.capped) {
-          hitLimit = true;
-          toast.warning(
-            'Simulation stopped at your plan limit. Upgrade for higher volume.',
-          );
-          break;
-        }
-
-        await reloadMetrics();
-        this.progress.set((step + 1) / ANIMATION_STEPS);
-        await delay(stepDelay);
       }
+
+      await reloadMetrics();
 
       if (totalCreated > 0 && !hitLimit) {
         toast.success(
@@ -117,7 +95,6 @@ export class MetricsRetrospectiveSimulationService {
       }
     } finally {
       this.running.set(false);
-      this.progress.set(1);
     }
   }
 }
