@@ -2,7 +2,7 @@
 
 Angular B2B SaaS shell — layout, org settings, auth UI. **You bring the API.**
 
-Standalone UI monorepo (Spartan + Tailwind v4). Implement `@oequ/ports` against your API. For Supabase, RLS, and tenant isolation at the database layer, see the full-stack starter: [oequ/saas-starter](https://github.com/oequ/saas-starter).
+Standalone UI monorepo (Spartan + Tailwind v4). Implement `@oequ/ports` against your API. For Supabase, RLS, and tenant isolation at the database layer, see the full-stack starter: [oequ/saas-starter](https://github.com/oequ/saas-starter). **Marketing site (full-stack positioning):** [oequ/saas-starter-landing](https://oequ.github.io/saas-starter-landing/).
 
 **Current UI release:** `v0.4.0-ui` — metrics, API keys, list-style members, outline settings, activation onboarding, in-app payment methods, stacked paywall checkout/downgrade dialogs.
 
