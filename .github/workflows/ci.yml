@@ -42,3 +42,41 @@ jobs:
 
       - name: E2E (demo)
         run: npx nx e2e demo-e2e
+
+  web-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Use npm 11
+        run: npm install -g npm@11.6.2
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        run: supabase start
+
+      - name: Reset database
+        run: supabase db reset
+
+      - name: Web Supabase settings
+        run: node scripts/write-web-supabase-settings.mjs
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: E2E (web @web)
+        run: npm run e2e:web:release

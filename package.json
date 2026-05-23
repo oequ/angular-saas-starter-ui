@@ -10,6 +10,8 @@
     "lint": "nx run-many -t lint --all",
     "e2e": "nx e2e demo-e2e",
     "e2e:web": "nx e2e web-e2e",
+    "e2e:web:release": "nx e2e web-e2e --grep @web",
+    "pre-release:web": "node scripts/pre-release-web.mjs",
     "screenshots": "nx e2e demo-e2e --grep \"README screenshots\"",
     "db:init": "supabase init",
     "db:start": "supabase start",

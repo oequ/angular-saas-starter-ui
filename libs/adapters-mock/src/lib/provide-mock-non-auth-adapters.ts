@@ -2,11 +2,13 @@ import {
   EnvironmentProviders,
   makeEnvironmentProviders,
 } from '@angular/core';
+import { DEMO_AUTH_EXTENSION } from '@oequ/ports';
 
 import {
   MOCK_ACTIVATION_PROVIDER,
   MockActivationAdapter,
 } from './mock-activation.adapter';
+import { MockAuthAdapter } from './mock-auth.adapter';
 import {
   MOCK_API_KEYS_PROVIDER,
   MockApiKeysAdapter,
@@ -35,6 +37,11 @@ import {
 /** Billing, activation, and other ports — mock only (used by `apps/web`). */
 export function provideMockNonAuthAdapters(): EnvironmentProviders {
   return makeEnvironmentProviders([
+    MockAuthAdapter,
+    {
+      provide: DEMO_AUTH_EXTENSION,
+      useExisting: MockAuthAdapter,
+    },
     MockBillingAdapter,
     MockActivationAdapter,
     MockApiKeysAdapter,

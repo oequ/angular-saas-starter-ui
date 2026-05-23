@@ -38,7 +38,21 @@ Copy `apps/web/src/app/supabase.settings.example.ts` → `supabase.settings.ts` 
 npm run start:web
 ```
 
-After sign-up, link your user to org `demo` once in [Studio SQL](http://127.0.0.1:54323) — steps in [supabase/README.md](./supabase/README.md).
+After sign-up you can **create a workspace** in the app, or link your user to org `demo` in [Studio SQL](http://127.0.0.1:54323) — [supabase/README.md](./supabase/README.md).
+
+### Pre-release check (web + Supabase)
+
+Playwright smoke for auth, onboarding, tenant isolation (`@web` tag):
+
+```bash
+npm run pre-release:web
+```
+
+Or manually (Supabase already running):
+
+```bash
+npm run e2e:web:release
+```
 
 ---
 
@@ -120,7 +134,9 @@ supabase/                 # Migrations, seed, local CLI config
 | `npm run db:start` / `db:reset` / `db:status` | Local Supabase stack |
 | `npx nx build demo` | Production build + service worker |
 | `npm run build:pages` | GitHub Pages (`baseHref` + PWA) |
-| `npm run e2e` | Playwright |
+| `npm run e2e` | Playwright (demo) |
+| `npm run e2e:web:release` | Playwright smoke for `apps/web` (`@web`, needs Supabase) |
+| `npm run pre-release:web` | `db:start` + `db:reset` + `e2e:web:release` |
 | `UPDATE_SCREENSHOTS=1 npm run screenshots` | Regenerate `docs/assets/*.png` |
 | `npx nx run-many -t lint --all` | Lint |
 

@@ -2,16 +2,15 @@ import { test, expect } from '@playwright/test';
 
 import {
   createWorkspaceViaOnboarding,
-  openWorkspaceSwitcher,
   registerUser,
+  uniqueEmail,
 } from './web.helpers';
 
-test.describe('tenant isolation (Supabase RLS)', () => {
+test.describe('tenant isolation (Supabase RLS) @web', () => {
   test('user B does not see user A workspace in switcher', async ({ browser }) => {
-    const slug = `tenant-${Date.now()}`;
-    const workspaceName = `Tenant ${slug}`;
-    const emailA = `tenant-a-${Date.now()}@example.com`;
-    const emailB = `tenant-b-${Date.now()}@example.com`;
+    const workspaceName = `Tenant ${Date.now()}`;
+    const emailA = uniqueEmail('tenant-a');
+    const emailB = uniqueEmail('tenant-b');
 
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
