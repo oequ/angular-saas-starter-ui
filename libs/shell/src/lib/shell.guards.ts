@@ -1,7 +1,18 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AUTH_PORT, ORG_PORT } from '@oequ/ports';
+import { AUTH_PORT, ORG_PORT, type Organization } from '@oequ/ports';
 import { firstValueFrom } from 'rxjs';
+
+/** Await org list hydration after full reload (Supabase starts with []). */
+async function ensureOrganizationsLoaded(): Promise<readonly Organization[]> {
+  const authPort = inject(AUTH_PORT);
+  const orgPort = inject(ORG_PORT);
+  const session = await firstValueFrom(authPort.session$);
+  if (session) {
+    await orgPort.listOrganizations();
+  }
+  return firstValueFrom(orgPort.organizations$);
+}
 
 /** Requires a signed-in session; redirects to login with optional returnUrl. */
 export const authGuard: CanActivateFn = async (_route, state) => {
@@ -38,7 +49,7 @@ export const guestGuard: CanActivateFn = async () => {
 export const onboardingRouteGuard: CanActivateFn = async () => {
   const orgPort = inject(ORG_PORT);
 
-  const orgs = await firstValueFrom(orgPort.organizations$);
+  const orgs = await ensureOrganizationsLoaded();
   if (orgs.length === 0) {
     return true;
   }
@@ -62,7 +73,7 @@ export const onboardingGuard = onboardingRouteGuard;
 export const workspaceContextGuard: CanActivateFn = async () => {
   const orgPort = inject(ORG_PORT);
   const router = inject(Router);
-  const orgs = await firstValueFrom(orgPort.organizations$);
+  const orgs = await ensureOrganizationsLoaded();
 
   if (orgs.length === 0) {
     return router.createUrlTree(['/onboarding']);

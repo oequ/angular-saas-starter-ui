@@ -48,35 +48,10 @@ Suggested PR order: **cancel + webhooks** → **invoices** → per-seat → embe
 | Emails | `SupabaseEmailsAdapter`, billing snapshot email meters | `0011_outbound_emails.sql` |
 | Metrics | `WebMetricsAdapter` (aggregates outbound emails) | — |
 | Activation | `SupabaseActivationAdapter`, `create_organization` → `pending` | `0012_organization_activation.sql` |
+| E2E | Tenant isolation (`api-keys-tenant`, `emails-tenant`); deep-link smoke in `release-smoke` | — |
+| Guards | `ensureOrganizationsLoaded()` in workspace + onboarding guards (reload hydration) | — |
 
 `provideWebAdapters` uses `provideMockIntegrationsSupport()` (billing mock + integrations + support only).
-
----
-
-## Then — Phase 3: Supabase for remaining ports (archived checklist)
-
-Wire **metrics**, **API keys**, **activation/onboarding**, and **emails** the same way as **org**:
-
-1. **Migrations** — tenant-scoped tables, default-deny RLS, `private` helpers, admin RPCs where needed  
-2. **RPC / triggers** — business rules in Postgres (quotas, ownership, org membership checks)  
-3. **Adapters** — `libs/data-access-supabase` implements ports; `provideWebAdapters` swaps mock → Supabase per domain  
-4. **E2E** — `@web` specs for critical paths (tenant isolation pattern from org/billing)
-
-| Port | UI surface (approx.) | Pattern reference |
-|------|----------------------|-------------------|
-| **Metrics** | Workspace metrics / usage | Org read RLS + snapshot RPCs |
-| **API keys** | Settings → API keys | Org admin writes + hashed secrets |
-| **Activation** | Post-signup onboarding | Auth-linked rows, claim flow like invitations |
-| **Emails** | Usage / sending settings | Org-scoped quotas; optional Edge Function for provider later |
-
-Order is flexible; a practical sequence:
-
-1. **Metrics** (read-heavy, proves usage meters + RLS)  
-2. **API keys** (admin writes, good RLS exercise)  
-3. **Activation** (auth signup path)  
-4. **Emails** (quotas + optional external provider)
-
-Each slice: migration `001x_*` → adapter → drop mock for that port in `apps/web` only → `web-e2e` if user-facing.
 
 ---
 
@@ -90,6 +65,6 @@ Each slice: migration `001x_*` → adapter → drop mock for that port in `apps/
 
 ## How to use
 
-1. Pick **Stripe v2** row or **Phase 3** port.  
+1. Pick a **Stripe v2** row (Phase 3 ports are done).  
 2. Open a PR with one vertical (migration + adapter + tests).  
 3. Update this doc and [README.md](../README.md) capability table when shipped.

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 import {
+  bootstrapOwnerWithActiveWorkspace,
   completeActivationViaOnboarding,
   createWorkspaceViaOnboarding,
   registerUser,
@@ -49,6 +50,23 @@ test.describe('release smoke @web', () => {
     await expect(
       page.getByRole('heading', { name: 'Sign in', level: 1 }),
     ).toBeVisible();
+  });
+
+  test('deep link to workspace emails after full reload', async ({ page }) => {
+    await bootstrapOwnerWithActiveWorkspace(
+      page,
+      `DeepLink Co ${Date.now()}`,
+      uniqueEmail('release-deeplink'),
+    );
+
+    await page.goto('/workspace/emails');
+    await expect(page).toHaveURL(/\/workspace\/emails$/);
+    await expect(
+      page.getByRole('heading', { name: 'Emails', level: 1 }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Welcome to your demo workspace' }),
+    ).not.toBeVisible();
   });
 
   test('settings members page loads after activation', async ({ page }) => {

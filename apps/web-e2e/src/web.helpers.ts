@@ -110,7 +110,6 @@ export async function goToMembersPage(page: Page): Promise<void> {
   await waitForMembersPageLoaded(page);
 }
 
-/** Client-side nav avoids workspace guard racing empty org list on full page reload. */
 export async function goToApiKeysPage(page: Page): Promise<void> {
   if (page.url().includes('/workspace/api-keys')) {
     await expect(
@@ -122,6 +121,20 @@ export async function goToApiKeysPage(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/workspace\/api-keys$/);
   await expect(
     page.getByRole('heading', { name: 'API keys', level: 1 }),
+  ).toBeVisible();
+}
+
+export async function goToEmailsPage(page: Page): Promise<void> {
+  if (page.url().includes('/workspace/emails')) {
+    await expect(
+      page.getByRole('heading', { name: 'Emails', level: 1 }),
+    ).toBeVisible();
+    return;
+  }
+  await page.getByRole('link', { name: 'Emails' }).click();
+  await expect(page).toHaveURL(/\/workspace\/emails$/);
+  await expect(
+    page.getByRole('heading', { name: 'Emails', level: 1 }),
   ).toBeVisible();
 }
 
