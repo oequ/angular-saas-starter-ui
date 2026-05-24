@@ -156,16 +156,17 @@ Find your user id: Studio → **Authentication** → Users → copy UUID.
 | `23503` on `organization_members_user_id_fkey` when creating workspace | JWT `sub` is not in `auth.users` (usual: `db:reset` while browser still has old session). **Sign out** in the app (or clear site data), **sign in** again. Confirm `.env` `SUPABASE_URL` matches the running stack (`http://127.0.0.1:54321` for CLI). |
 | `42P17` infinite recursion on `organization_members` | Fixed in `0005` — run `npm run db:reset` or `npx supabase migration up` after pull. |
 
-## Verify tenant isolation
+## Verify (web E2E)
+
+Requires local Supabase + `apps/web` (Playwright starts `web:serve` unless port 4201 is already in use).
 
 ```bash
 npx nx e2e web-e2e --grep "tenant isolation"
+npx nx e2e web-e2e --grep "invite flow"
+npm run e2e:web:release
 ```
-
-Requires local Supabase + `apps/web` (`npm run start:web` is started by the e2e target).
 
 ## Next step (roadmap)
 
 - Seat limits backed by Postgres
 - Hosted Supabase project + CI migration pipeline
-- E2E: invite-by-email → sign-up → member visible in org

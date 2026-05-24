@@ -86,3 +86,41 @@ export async function waitForMembersPageLoaded(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
 }
+
+/** Register, create workspace, complete mock activation (owner ready for Members). */
+export async function bootstrapOwnerWithActiveWorkspace(
+  page: Page,
+  workspaceName: string,
+  email = uniqueEmail('owner'),
+  password = 'password123',
+): Promise<void> {
+  await registerUser(page, email, password);
+  await createWorkspaceViaOnboarding(page, workspaceName);
+  await completeActivationViaOnboarding(page);
+  await expect(page).toHaveURL(/\/workspace\/metrics$/);
+}
+
+export async function goToMembersPage(page: Page): Promise<void> {
+  await page.getByRole('link', { name: 'Members' }).click();
+  await expect(page).toHaveURL(/\/workspace\/settings\/members$/);
+  await waitForMembersPageLoaded(page);
+}
+
+export async function inviteMemberByEmail(page: Page, email: string): Promise<void> {
+  await page.getByRole('button', { name: '+ Invite member' }).click();
+  await page.getByLabel('Email address').fill(email);
+  await page.getByRole('button', { name: 'Send invite' }).click();
+  await expect(
+    page.getByText(`Invitation sent to ${email}.`),
+  ).toBeVisible();
+}
+
+export async function expectWorkspaceInSwitcher(
+  page: Page,
+  workspaceName: string,
+): Promise<void> {
+  await expect(page.getByRole('button', { name: 'Switch workspace' })).toContainText(
+    workspaceName,
+    { timeout: 30_000 },
+  );
+}
