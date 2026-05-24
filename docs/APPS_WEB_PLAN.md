@@ -30,12 +30,13 @@ Previously «out of scope» for phase 2. Same stack: Edge Functions + webhooks +
 | # | Item | Notes |
 |---|------|--------|
 | 1 | **Real invoices from Stripe API** | Replace mock `listInvoices` when `stripeEnabled`; optional Edge Function `billing-list-invoices` or server-side Stripe SDK |
-| 2 | **Cancel subscription in UI ↔ webhook** | Billing UI: cancel at period end; handle `customer.subscription.updated` / `deleted` (today cancel is mock-only) |
-| 3 | **Per-seat pricing in Stripe** | Quantity on subscription line item; sync seat count with `organizations` / usage |
-| 4 | **Embedded Checkout / Elements** | Alternative to hosted redirect; SetupIntent only if we add card-on-file outside Checkout |
-| 5 | **E2E with Stripe** | Optional local/staging smoke; **not** in CI (keep mock path for `e2e:web:release`) |
+| 2 | **Per-seat pricing in Stripe** | Quantity on subscription line item; sync seat count with `organizations` / usage |
+| 3 | **Embedded Checkout / Elements** | Alternative to hosted redirect; SetupIntent only if we add card-on-file outside Checkout |
+| 4 | **E2E with Stripe** | Optional local/staging smoke; **not** in CI (keep mock path for `e2e:web:release`) |
 
-Suggested PR order: **cancel + webhooks** → **invoices** → per-seat → embedded (only if product needs it).
+**Done (Stripe v2):** Cancel subscription — `billing-cancel-subscription`, billing UI, webhooks (`subscription.updated` / `deleted`).
+
+Suggested PR order: **invoices** → per-seat → embedded (only if product needs it).
 
 ---
 

@@ -155,6 +155,7 @@ Deno.serve(async (req) => {
           event.data.object as Stripe.Checkout.Session,
         );
         break;
+      // cancel_at_period_end and end-of-period downgrade: updated + deleted
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':

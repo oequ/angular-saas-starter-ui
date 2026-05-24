@@ -3,6 +3,7 @@ export * from './lib/onboarding-page.component';
 export * from './lib/onboarding/activation-ui.model';
 export * from './lib/workspace-getting-started.store';
 export * from './lib/delete-workspace-dialog.component';
+export * from './lib/cancel-subscription-dialog.component';
 export * from './lib/workspace-settings-layout.component';
 export * from './lib/workspace-settings-general-page.component';
 export * from './lib/workspace-settings-members-page.component';

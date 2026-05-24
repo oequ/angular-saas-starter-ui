@@ -40,6 +40,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 
 import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.component';
+import { CancelSubscriptionDialogComponent } from './cancel-subscription-dialog.component';
 
 @Component({
   selector: 'oequ-org-settings-billing',
@@ -53,6 +54,7 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
     HlmBadgeImports,
     HlmTooltipImports,
     AddPaymentMethodDialogComponent,
+    CancelSubscriptionDialogComponent,
     TranslocoPipe,
   ],
   providers: [provideIcons({ lucideCreditCard, lucideReceipt })],
@@ -140,6 +142,18 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                   >
                     {{ 'org.billing.subscription.changePlan' | transloco }}
                   </button>
+                  @if (canCancelSubscription(billing)) {
+                    <button
+                      hlmBtn
+                      type="button"
+                      variant="outline"
+                      class="!border-destructive !text-destructive hover:!bg-destructive/10"
+                      [disabled]="cancelLoading()"
+                      (click)="openCancelSubscriptionDialog()"
+                    >
+                      {{ 'org.billing.subscription.cancelButton' | transloco }}
+                    </button>
+                  }
                 </div>
               </div>
 
@@ -373,6 +387,13 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
       (submitted)="onAddPaymentMethodSubmitted($event)"
       (cancelled)="closeAddPaymentMethodDialog()"
     />
+
+    <oequ-cancel-subscription-dialog
+      [open]="cancelDialogOpen()"
+      [cancelling]="cancelLoading()"
+      (confirmed)="onCancelSubscriptionConfirmed($event)"
+      (cancelled)="closeCancelSubscriptionDialog()"
+    />
   `,
 })
 export class OrgSettingsBillingComponent {
@@ -424,6 +445,8 @@ export class OrgSettingsBillingComponent {
   protected readonly addPaymentSaving = signal(false);
   protected readonly addPaymentError = signal<string | null>(null);
   protected readonly paymentMethodActionId = signal<string | null>(null);
+  protected readonly cancelDialogOpen = signal(false);
+  protected readonly cancelLoading = signal(false);
 
   protected readonly billingResource = resource({
     params: () => ({ orgId: this.organizationId() }),
@@ -528,6 +551,45 @@ export class OrgSettingsBillingComponent {
         this.transloco.translate('org.billing.subscription.planUpdated'),
       );
     }
+  }
+
+  protected canCancelSubscription(billing: BillingSummary): boolean {
+    if (resolveCurrentPlanId(billing) === 'free' || billing.cancelAtPeriodEnd) {
+      return false;
+    }
+    if (this.stripeBillingEnabled && billing.status === 'none') {
+      return false;
+    }
+    return true;
+  }
+
+  protected openCancelSubscriptionDialog(): void {
+    this.statusMessage.set(null);
+    this.cancelDialogOpen.set(true);
+  }
+
+  protected closeCancelSubscriptionDialog(): void {
+    this.cancelDialogOpen.set(false);
+    this.cancelLoading.set(false);
+  }
+
+  protected async onCancelSubscriptionConfirmed(reason: string): Promise<void> {
+    this.cancelLoading.set(true);
+    this.statusMessage.set(null);
+    const result = await this.billingPort.cancelSubscription(
+      this.organizationId(),
+      reason,
+    );
+    this.cancelLoading.set(false);
+    if (!result.ok) {
+      this.statusMessage.set(translatePortError(result.error, this.transloco));
+      return;
+    }
+    this.closeCancelSubscriptionDialog();
+    this.billingResource.reload();
+    toast.success(
+      this.transloco.translate('org.billing.subscription.cancelSuccess'),
+    );
   }
 
   protected openAddPaymentMethodDialog(): void {

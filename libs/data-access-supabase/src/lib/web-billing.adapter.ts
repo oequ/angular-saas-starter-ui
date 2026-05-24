@@ -218,10 +218,45 @@ export class WebBillingAdapter implements BillingPort {
     return this.mock.removePaymentMethod(organizationId, paymentMethodId);
   }
 
-  cancelSubscription(
+  async cancelSubscription(
     organizationId: OrganizationId,
     reason: string,
   ): Promise<PortResult<void>> {
+    if (this.isStripeEnabled()) {
+      const client = this.supabase.getClient();
+      if (!client) {
+        return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+      }
+
+      const { data, error } = await client.functions.invoke(
+        'billing-cancel-subscription',
+        {
+          body: {
+            organization_id: organizationId,
+            reason,
+          },
+        },
+      );
+
+      if (error) {
+        return supabaseErr('UNAVAILABLE', error.message);
+      }
+
+      const payload = data as { ok?: boolean; error?: string } | null;
+      if (payload?.error) {
+        if (payload.error.includes('no active stripe subscription')) {
+          return supabaseErr('VALIDATION', 'billingNoActiveSubscription');
+        }
+        return supabaseErr('UNAVAILABLE', payload.error);
+      }
+
+      if (!payload?.ok) {
+        return supabaseErr('UNAVAILABLE', 'billingCancelFailed');
+      }
+
+      return portOk(undefined);
+    }
+
     return this.mock.cancelSubscription(organizationId, reason);
   }
 
@@ -296,7 +331,7 @@ export class WebBillingAdapter implements BillingPort {
       currentPeriodEnd:
         snapshot.current_period_end ?? summary.currentPeriodEnd,
       cancelAtPeriodEnd:
-        snapshot.cancel_at_period_end ?? summary.cancelAtPeriodEnd,
+        (snapshot.cancel_at_period_end ?? false) || summary.cancelAtPeriodEnd,
       meters,
     };
   }

@@ -17,7 +17,17 @@
     "planUpdated": "Plan updated successfully.",
     "checkoutSuccess": "Subscription updated. It may take a moment for your plan and seat limits to refresh.",
     "manageInStripe": "Manage in Stripe",
-    "portalUnavailable": "Could not open the billing portal. Try again in a moment."
+    "portalUnavailable": "Could not open the billing portal. Try again in a moment.",
+    "cancelButton": "Cancel subscription",
+    "cancelSuccess": "Subscription will cancel at the end of the current billing period.",
+    "cancelDialog": {
+      "title": "Cancel subscription",
+      "description": "Your workspace keeps its current plan until the billing period ends. You can upgrade again anytime before then.",
+      "reasonLabel": "Reason for canceling (optional)",
+      "reasonPlaceholder": "Tell us why you are canceling…",
+      "submit": "Cancel at period end",
+      "cancelling": "Canceling…"
+    }
   },
   "subscriptionStatus": {
     "trialing": "Trial",

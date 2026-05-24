@@ -34,7 +34,8 @@ supabase functions serve
 In another terminal:
 
 ```bash
-stripe listen --forward-to http://127.0.0.1:54321/functions/v1/stripe-webhook
+stripe listen --forward-to http://127.0.0.1:54321/functions/v1/stripe-webhook \
+  --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,invoice.payment_failed
 ```
 
 Copy the webhook signing secret into `STRIPE_WEBHOOK_SECRET`.
@@ -53,6 +54,17 @@ Sign in, open **Settings → Billing**, upgrade via paywall. After Checkout, Str
 
 With `STRIPE_ENABLED=true`, paywall downgrades open **Customer Portal** (cancel or change plan in Stripe). Seat limits update when subscription webhooks are processed.
 
+## 5. Cancel subscription (in-app)
+
+**Settings → Billing → Cancel subscription** calls `billing-cancel-subscription` (sets `cancel_at_period_end` on the Stripe subscription and syncs Postgres immediately).
+
+Manual smoke:
+
+1. Upgrade via Checkout (Pro or Team).
+2. Cancel in the billing UI — banner **Cancels at the end of the current billing period** appears; `plan_id` stays paid until period end.
+3. `stripe listen` should receive `customer.subscription.updated` (webhook idempotent with the Edge Function sync).
+4. After period end (or Stripe test clock), `customer.subscription.deleted` downgrades the org to **Free** in Postgres.
+
 ## CI / E2E
 
 `e2e:web:release` keeps `STRIPE_ENABLED` unset (mock checkout). No Stripe keys in CI.
@@ -63,4 +75,5 @@ With `STRIPE_ENABLED=true`, paywall downgrades open **Customer Portal** (cancel 
 |----------|-----|------|
 | `billing-create-checkout` | yes | Creates Checkout Session (`mode=subscription`) |
 | `billing-create-portal` | yes | Customer Portal session |
+| `billing-cancel-subscription` | yes | Cancel at period end + Postgres sync |
 | `stripe-webhook` | no | Verifies signature, idempotent `billing_events`, `apply_billing_subscription` (`provider = stripe`) |
