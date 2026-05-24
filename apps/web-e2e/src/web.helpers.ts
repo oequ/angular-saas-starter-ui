@@ -101,7 +101,11 @@ export async function bootstrapOwnerWithActiveWorkspace(
 }
 
 export async function goToMembersPage(page: Page): Promise<void> {
-  await page.getByRole('link', { name: 'Members' }).click();
+  if (page.url().includes('/workspace/settings/members')) {
+    await waitForMembersPageLoaded(page);
+    return;
+  }
+  await page.locator('a[href="/workspace/settings/members"]').click();
   await expect(page).toHaveURL(/\/workspace\/settings\/members$/);
   await waitForMembersPageLoaded(page);
 }
@@ -128,6 +132,33 @@ export async function expectInviteDialogSeatsExhausted(
     page.getByRole('alert').filter({ hasText: 'All seats on your plan are in use' }),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Send invite' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+}
+
+export async function goToBillingPage(page: Page): Promise<void> {
+  await expect(page.getByRole('button', { name: 'Switch workspace' })).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.getByRole('link', { name: 'Billing' }).click();
+  await expect(page).toHaveURL(/\/workspace\/settings\/billing$/, { timeout: 30_000 });
+  await expect(page.getByRole('heading', { name: 'Billing', level: 1 })).toBeVisible();
+}
+
+/** Opens paywall from the invite dialog “Upgrade your plan” action. */
+export async function upgradeViaPaywallFromInviteDialog(
+  page: Page,
+  planName: 'Pro' | 'Team',
+): Promise<void> {
+  await page.getByRole('button', { name: '+ Invite member' }).click();
+  await page.getByRole('button', { name: 'Upgrade your plan' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Change subscription plan' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: `Upgrade to ${planName}` }).click();
+  await page.getByRole('button', { name: 'Simulate payment success' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Change subscription plan' }),
+  ).toHaveCount(0, { timeout: 15_000 });
 }
 
 export async function expectWorkspaceInSwitcher(
@@ -138,4 +169,32 @@ export async function expectWorkspaceInSwitcher(
     workspaceName,
     { timeout: 30_000 },
   );
+}
+
+export async function upgradeWorkspaceToPlan(
+  page: Page,
+  planName: 'Pro' | 'Team',
+): Promise<void> {
+  if (!page.url().includes('/workspace/settings/billing')) {
+    await goToBillingPage(page);
+  }
+  await page.getByRole('button', { name: 'Change subscription plan' }).click();
+  await page.getByRole('button', { name: `Upgrade to ${planName}` }).click();
+  await page.getByRole('button', { name: 'Simulate payment success' }).click();
+  await expect(page.getByText('Plan updated successfully.')).toBeVisible({
+    timeout: 15_000,
+  });
+}
+
+export async function downgradeWorkspaceToPlan(
+  page: Page,
+  planName: 'Free' | 'Pro',
+): Promise<void> {
+  await goToBillingPage(page);
+  await page.getByRole('button', { name: 'Change subscription plan' }).click();
+  await page.getByRole('button', { name: `Downgrade to ${planName}` }).click();
+  await page.getByRole('button', { name: 'Confirm downgrade' }).click();
+  await expect(page.getByText('Plan updated successfully.')).toBeVisible({
+    timeout: 15_000,
+  });
 }

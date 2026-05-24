@@ -16,6 +16,7 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0005_fix_rls_recursion.sql` | RLS on orgs/members via `private.is_org_member` (fixes `42P17`) |
 | `0006_rls_helper_grants.sql` | `GRANT EXECUTE` on private helpers for RLS |
 | `0007_org_seat_limits.sql` | `organizations.seats_limit` (default 3); seat count = members + pending invitations; enforced on invite, claim, and `BEFORE INSERT` triggers |
+| `0008_org_billing_plan.sql` | `organizations.plan_id`; `get_organization_billing_snapshot`, `update_organization_plan` (syncs `seats_limit` with plan tier) |
 
 There are **no** permissive `WITH CHECK (true)` insert policies on `organizations`. Demo rows are seeded as superuser, not via a hole in RLS.
 

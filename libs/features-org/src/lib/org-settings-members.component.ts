@@ -360,13 +360,19 @@ export class OrgSettingsMembersComponent {
   });
 
   protected readonly inviteSeatsExhausted = computed(() => {
+    const summary = this.billingResource.value();
     const members = this.members();
     if (members.length > 0) {
       const used = countMembersTowardSeats(members);
-      const limit = this.billingResource.value()?.seatsLimit ?? 3;
-      return limit !== null && used >= limit;
+      const limit = summary?.seatsLimit;
+      if (limit !== null && limit !== undefined) {
+        return used >= limit;
+      }
+      // Postgres default (free tier) while billing snapshot is still loading
+      if (this.billingResource.isLoading() || !summary) {
+        return used >= 3;
+      }
     }
-    const summary = this.billingResource.value();
     return summary ? isBillingSeatsExhausted(summary) : false;
   });
 

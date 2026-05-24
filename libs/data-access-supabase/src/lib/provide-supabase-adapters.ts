@@ -5,6 +5,7 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 import { provideMockNonAuthAdapters } from '@oequ/adapters-mock';
+import { BILLING_PORT } from '@oequ/ports';
 import { distinctUntilChanged, filter, map } from 'rxjs';
 
 import {
@@ -14,6 +15,7 @@ import {
 import { SupabaseAuthAdapter, SUPABASE_AUTH_PROVIDER } from './supabase-auth.adapter';
 import { SupabaseClientService } from './supabase-client.service';
 import { SupabaseOrgAdapter, SUPABASE_ORG_PROVIDER } from './supabase-org.adapter';
+import { WebBillingAdapter } from './web-billing.adapter';
 
 export function provideSupabaseAdapters(
   config: SupabaseConfig,
@@ -47,5 +49,12 @@ export function provideSupabaseAdapters(
 export function provideWebAdapters(
   config: SupabaseConfig,
 ): EnvironmentProviders[] {
-  return [provideSupabaseAdapters(config), provideMockNonAuthAdapters()];
+  return [
+    provideSupabaseAdapters(config),
+    provideMockNonAuthAdapters(),
+    makeEnvironmentProviders([
+      WebBillingAdapter,
+      { provide: BILLING_PORT, useExisting: WebBillingAdapter },
+    ]),
+  ];
 }
