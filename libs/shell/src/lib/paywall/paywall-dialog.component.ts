@@ -13,6 +13,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
 import {
   BILLING_PORT,
+  checkoutBillableSeatCount,
   COMMERCIAL_PLAN_IDS,
   STRIPE_BILLING_ENABLED,
   comparePlanTiers,
@@ -368,10 +369,12 @@ export class PaywallDialogComponent {
     this.checkoutConfirmError.set(null);
 
     const seatFeature = plan.features.find((feature) => feature.id === 'seats');
+    const seatCap = seatFeature?.limit ?? 10;
+    const seatsUsed = this.billingSummary()?.seatsUsed ?? 1;
     const result = await this.billingPort.createCheckoutSession(
       org.id,
       plan.id,
-      seatFeature?.limit ?? 10,
+      checkoutBillableSeatCount(plan.id, seatsUsed, seatCap),
     );
     this.checkoutLoading.set(false);
 

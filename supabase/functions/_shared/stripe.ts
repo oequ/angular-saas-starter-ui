@@ -30,6 +30,44 @@ export function priceIdForPlan(planId: string): string {
   throw new Error(`Unsupported plan_id for checkout: ${planId}`);
 }
 
+const TEAM_PLAN_MAX_SEATS = 50;
+
+/** Team uses per-unit Stripe price × quantity; Pro is flat (quantity 1). */
+export function isPerSeatPlan(planId: string): boolean {
+  return planId.toLowerCase().trim() === 'team';
+}
+
+export function subscriptionLineQuantity(
+  subscription: Stripe.Subscription,
+): number {
+  const qty = subscription.items.data[0]?.quantity;
+  return typeof qty === 'number' && qty > 0 ? Math.floor(qty) : 1;
+}
+
+/** When non-null, passed to `apply_billing_subscription` as `p_seats_limit`. */
+export function seatsLimitOverrideForSubscription(
+  planId: string,
+  subscription: Stripe.Subscription,
+): number | null {
+  if (!isPerSeatPlan(planId)) {
+    return null;
+  }
+  const qty = subscriptionLineQuantity(subscription);
+  return Math.min(TEAM_PLAN_MAX_SEATS, Math.max(1, qty));
+}
+
+export function checkoutQuantityForPlan(
+  planId: string,
+  seatsUsed: number,
+): number {
+  const normalized = planId.toLowerCase().trim();
+  if (normalized === 'team') {
+    const used = Number.isFinite(seatsUsed) ? Math.floor(seatsUsed) : 1;
+    return Math.min(TEAM_PLAN_MAX_SEATS, Math.max(1, used));
+  }
+  return 1;
+}
+
 export function planIdFromSubscription(
   subscription: Stripe.Subscription,
 ): 'free' | 'pro' | 'team' {

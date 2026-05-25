@@ -25,17 +25,14 @@ Cursor plan archive: Stripe phase 2 implementation notes in `.cursor/plans/` (if
 
 ## Next — Stripe v2 (billing polish)
 
-Previously «out of scope» for phase 2. Same stack: Edge Functions + webhooks + Postgres as source of truth for `plan_id` / `seats_limit`.
-
-| # | Item | Notes |
+| # | Item | Status |
 |---|------|--------|
-| 1 | **Per-seat pricing in Stripe** | Quantity on subscription line item; sync seat count with `organizations` / usage |
-| 2 | **Embedded Checkout / Elements** | Alternative to hosted redirect; SetupIntent only if we add card-on-file outside Checkout |
-| 3 | **E2E with Stripe** | Optional local/staging smoke; **not** in CI (keep mock path for `e2e:web:release`) |
+| 1 | **Per-seat pricing in Stripe** | **Done** — Team Checkout `quantity = seats_used`; webhook → `p_seats_limit` (`0015`); [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) runbook |
+| 2 | **Sync quantity on invite** | Later — bump Stripe subscription when `seats_used` exceeds paid quantity |
+| 3 | **Embedded Checkout / Elements** | Later — alternative to hosted redirect |
+| 4 | **E2E with Stripe** | Optional local smoke; **not** in CI |
 
-**Done (Stripe v2):** Cancel subscription (`billing-cancel-subscription`). **Invoices** — `billing-list-invoices` (Stripe live API; `organization_invoices` + `upsert_organization_invoice` for custom/YooKassa).
-
-Suggested PR order: **per-seat** → embedded (only if product needs it).
+**Done (Stripe v2):** Cancel subscription, invoices, multi-provider (`0013`/`0014`), per-seat Team checkout.
 
 ---
 

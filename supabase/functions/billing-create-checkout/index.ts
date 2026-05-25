@@ -1,5 +1,9 @@
 import { corsHeaders, handleCors, jsonResponse } from '../_shared/cors.ts';
-import { getStripe, priceIdForPlan } from '../_shared/stripe.ts';
+import {
+  checkoutQuantityForPlan,
+  getStripe,
+  priceIdForPlan,
+} from '../_shared/stripe.ts';
 import {
   assertOrgAdmin,
   createServiceClient,
@@ -11,6 +15,8 @@ interface CheckoutBody {
   organization_id?: string;
   plan_id?: string;
   return_url?: string;
+  /** Hint from client; server uses Postgres `seats_used` for Team quantity. */
+  seat_quantity?: number;
 }
 
 Deno.serve(async (req) => {
@@ -74,6 +80,24 @@ Deno.serve(async (req) => {
       }
     }
 
+    const { data: billingSnapshot, error: snapshotError } = await admin.rpc(
+      'get_organization_billing_snapshot',
+      { p_organization_id: organizationId },
+    );
+
+    if (snapshotError) {
+      console.error('get_organization_billing_snapshot', snapshotError);
+      return jsonResponse({ error: 'failed to load billing snapshot' }, 500);
+    }
+
+    const seatsUsed =
+      typeof billingSnapshot === 'object' &&
+        billingSnapshot !== null &&
+        'seats_used' in billingSnapshot
+        ? Number((billingSnapshot as { seats_used: number }).seats_used)
+        : 1;
+
+    const quantity = checkoutQuantityForPlan(planId, seatsUsed);
     const priceId = priceIdForPlan(planId);
     const successUrl = returnUrl.includes('?')
       ? `${returnUrl}&checkout=success`
@@ -85,19 +109,21 @@ Deno.serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      line_items: [{ price: priceId, quantity }],
       metadata: {
         organization_id: organizationId,
         plan_id: planId,
+        seat_quantity: String(quantity),
       },
       subscription_data: {
         metadata: {
           organization_id: organizationId,
           plan_id: planId,
+          seat_quantity: String(quantity),
         },
       },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
     if (!session.url) {

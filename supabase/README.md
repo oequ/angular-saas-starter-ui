@@ -20,6 +20,7 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0009_stripe_billing.sql` | Stripe billing (superseded by `0013` for mirror table) |
 | `0013_billing_multi_provider.sql` | `organization_billing`, `billing_events (provider, external_event_id)`, `apply_billing_subscription`; Stripe wrappers kept |
 | `0014_organization_invoices.sql` | `organization_invoices`, `list_organization_invoices`, `upsert_organization_invoice` (custom providers) |
+| `0015_stripe_per_seat_seats_limit.sql` | `apply_billing_subscription(..., p_seats_limit)` — Team Stripe quantity → `seats_limit` |
 | `0010_organization_api_keys.sql` | Hashed API keys; `list` / `create` / `revoke` RPCs (admin writes) |
 | `0011_outbound_emails.sql` | Outbound email log, quota helpers, `list_outbound_emails` / `simulate_outbound_emails`; billing snapshot email usage |
 | `0012_organization_activation.sql` | `organization_activation` + onboarding RPCs; `create_organization` seeds `pending` |

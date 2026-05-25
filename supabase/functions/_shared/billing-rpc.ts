@@ -11,6 +11,8 @@ export interface ApplyBillingSubscriptionParams {
   subscriptionStatus: string;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  /** Team per-seat: subscription item quantity; omit for plan default caps. */
+  seatsLimit?: number | null;
 }
 
 export async function applyBillingSubscription(
@@ -26,6 +28,7 @@ export async function applyBillingSubscription(
     p_subscription_status: params.subscriptionStatus,
     p_current_period_end: params.currentPeriodEnd,
     p_cancel_at_period_end: params.cancelAtPeriodEnd,
+    p_seats_limit: params.seatsLimit ?? null,
   });
 
   if (error) {

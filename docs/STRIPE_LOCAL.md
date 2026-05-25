@@ -7,80 +7,133 @@ For non-Stripe regions, see [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVID
 ## Prerequisites
 
 - Stripe test account
-- [Stripe CLI](https://stripe.com/docs/stripe-cli)
-- Local Supabase: `npm run db:reset`
-- Products/prices in Stripe Dashboard for **Pro** and **Team** (recurring monthly)
+- [Stripe CLI](https://stripe.com/docs/stripe-cli) (`winget install Stripe.StripeCli` on Windows, or `npx` only for Supabase)
+- **Docker Desktop** running
+- Local Supabase: `npm run db:reset` (applies migrations through `0015_stripe_per_seat_seats_limit.sql`)
+- Products/prices in Stripe Dashboard — see [Pricing](#pricing-pro--team) below
 
-## 1. Edge Function secrets
+## Local runbook (4 terminals)
 
-Create `supabase/.env` (gitignored) or set secrets for local serve:
+Run from the **repository root** (`C:\cursor\saas-starter` or clone path).
+
+### Terminal 1 — database
+
+```bash
+npm run db:start
+```
+
+First time or after migration changes:
+
+```bash
+npm run db:reset
+npm run db:status
+```
+
+Copy **Project URL** and **Publishable** key into `apps/web/src/app/supabase.settings.ts`, or export them before Terminal 4.
+
+### Terminal 2 — Edge Functions + Stripe secrets
+
+Create `supabase/.env` (gitignored; copy from `supabase/functions/.env.example`):
 
 ```env
 STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...   # from stripe listen (below)
+STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRICE_PRO=price_...
 STRIPE_PRICE_TEAM=price_...
 ```
 
-`SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically when using `supabase functions serve`.
-
-## 2. Start stack
-
 ```bash
-npm run db:reset
-npx supabase functions serve --env-file supabase/.env
+npm run functions:serve
 ```
 
-In another terminal:
+(`functions:serve` = `npx supabase functions serve --env-file supabase/.env`)
+
+`SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically.
+
+### Terminal 3 — Stripe webhooks
 
 ```bash
-stripe listen --forward-to http://127.0.0.1:54321/functions/v1/stripe-webhook \
-  --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,invoice.payment_failed
+stripe listen --forward-to http://127.0.0.1:54321/functions/v1/stripe-webhook --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,invoice.payment_failed
 ```
 
-Copy the webhook signing secret into `STRIPE_WEBHOOK_SECRET`.
+Copy `whsec_...` into `STRIPE_WEBHOOK_SECRET` in `supabase/.env`, then **restart** Terminal 2.
 
-## 3. Enable Stripe in the web app
+### Terminal 4 — Angular app (Stripe billing)
 
-```bash
+**Windows (cmd):**
+
+```bat
+set BILLING_PROVIDER=stripe
 set STRIPE_ENABLED=true
 node scripts/write-web-supabase-settings.mjs
 npm run start:web
 ```
 
-Sign in, open **Settings → Billing**, upgrade via paywall. After Checkout, Stripe redirects to `/workspace/settings/billing?checkout=success`; the webhook updates Postgres plan and seat limits.
+**PowerShell:**
 
-## 4. Downgrades
+```powershell
+$env:BILLING_PROVIDER='stripe'
+$env:STRIPE_ENABLED='true'
+node scripts/write-web-supabase-settings.mjs
+npm run start:web
+```
 
-With `STRIPE_ENABLED=true`, paywall downgrades open **Customer Portal** (cancel or change plan in Stripe). Seat limits update when subscription webhooks are processed.
+Open http://localhost:4201 → sign in → **Settings → Billing**.
 
-## 5. Cancel subscription (in-app)
+After Checkout, Stripe redirects to `/workspace/settings/billing?checkout=success`; webhooks update `plan_id` and `seats_limit`.
 
-**Settings → Billing → Cancel subscription** calls `billing-cancel-subscription` (sets `cancel_at_period_end` on the Stripe subscription and syncs Postgres immediately).
+## Pricing (Pro / Team)
 
-Manual smoke:
+| Plan | Stripe price model | Checkout `quantity` | Postgres `seats_limit` |
+|------|-------------------|---------------------|-------------------------|
+| **Pro** | Flat monthly (e.g. $25) | `1` | `10` (plan cap) |
+| **Team** | **Per seat** monthly (e.g. $49 / seat) | `max(1, seats_used)` capped at `50` | subscription item quantity |
 
-1. Upgrade via Checkout (Pro or Team).
-2. Cancel in the billing UI — banner **Cancels at the end of the current billing period** appears; `plan_id` stays paid until period end.
-3. `stripe listen` should receive `customer.subscription.updated` (webhook idempotent with the Edge Function sync).
-4. After period end (or Stripe test clock), `customer.subscription.deleted` downgrades the org to **Free** in Postgres.
+Create **Team** price as recurring **per unit** (not flat). Example test amounts: Pro $25/mo flat, Team $49/mo per seat.
 
-## 6. Past invoices
+## Per-seat behavior (Team)
 
-**Settings → Billing → Past Invoices** uses `billing-list-invoices`. For `billingProvider: 'stripe'`, invoices are fetched live from the Stripe API (not cached in Postgres in v1). After Checkout, open Billing and confirm rows appear with PDF download links.
+1. Paywall upgrade uses **current `seats_used`** (members + pending invites) for Checkout line item quantity.
+2. Edge Function `billing-create-checkout` re-reads `seats_used` from Postgres (client hint is not trusted alone).
+3. Webhooks pass subscription **quantity** into `apply_billing_subscription(..., p_seats_limit)` for Team.
+4. **Pro** stays flat (`quantity: 1`, `seats_limit = 10`).
 
-Custom providers use `organization_invoices` instead — see [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVIDER.md).
+Increasing seats after subscribe (invite more members than paid quantity) is blocked by Postgres seat enforcement until subscription quantity is updated (future: `billing-update-subscription`).
+
+## Downgrades
+
+With Stripe enabled, paywall downgrades open **Customer Portal**. Seat limits update on subscription webhooks.
+
+## Cancel subscription (in-app)
+
+**Settings → Billing → Cancel subscription** → `billing-cancel-subscription` (cancel at period end + Postgres sync).
+
+## Past invoices
+
+**Settings → Billing → Past Invoices** → `billing-list-invoices` (Stripe API live for `billingProvider: 'stripe'`).
 
 ## CI / E2E
 
-`e2e:web:release` keeps `STRIPE_ENABLED` unset (mock checkout). No Stripe keys in CI.
+`e2e:web:release` keeps mock billing (`STRIPE_ENABLED` unset). No Stripe keys in CI.
 
 ## Functions
 
 | Function | JWT | Role |
 |----------|-----|------|
-| `billing-create-checkout` | yes | Creates Checkout Session (`mode=subscription`) |
-| `billing-create-portal` | yes | Customer Portal session |
-| `billing-cancel-subscription` | yes | Cancel at period end + Postgres sync |
-| `billing-list-invoices` | yes | List invoices (Stripe API or `organization_invoices`) |
-| `stripe-webhook` | no | Verifies signature, idempotent `billing_events`, `apply_billing_subscription` (`provider = stripe`) |
+| `billing-create-checkout` | yes | Checkout Session (`quantity` per plan) |
+| `billing-create-portal` | yes | Customer Portal |
+| `billing-cancel-subscription` | yes | Cancel at period end |
+| `billing-list-invoices` | yes | Invoice list |
+| `stripe-webhook` | no | Idempotent sync via `apply_billing_subscription` |
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `stripe` / `supabase` not found | Use `npx stripe`, `npx supabase`, or `npm run functions:serve` |
+| `STRIPE_SECRET_KEY is not set` | `npm run functions:serve` **with** `--env-file supabase/.env` |
+| Mock “Simulate payment” dialog | Regenerate settings with `BILLING_PROVIDER=stripe`; restart `start:web` |
+| Requests Pending on `/functions/v1/...` | Terminal 2 not running or wrong `STRIPE_WEBHOOK_SECRET` |
+| `demo@example.com` login fails | Use register + workspace, or seed `demo` after `db:reset` |
+
+Test card: `4242 4242 4242 4242`, any future expiry, any CVC — [Stripe testing](https://docs.stripe.com/testing#cards).

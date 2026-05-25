@@ -9,6 +9,7 @@ import {
   getStripe,
   mapSubscriptionStatus,
   planIdFromSubscription,
+  seatsLimitOverrideForSubscription,
   stripeCryptoProvider,
 } from '../_shared/stripe.ts';
 import { createServiceClient } from '../_shared/supabase-clients.ts';
@@ -37,6 +38,7 @@ async function applySubscription(
     subscriptionStatus: mapSubscriptionStatus(subscription.status),
     currentPeriodEnd: periodEnd,
     cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+    seatsLimit: seatsLimitOverrideForSubscription(planId, subscription),
   });
 }
 

@@ -17,7 +17,8 @@
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
-    "db:status": "supabase status"
+    "db:status": "supabase status",
+    "functions:serve": "supabase functions serve --env-file supabase/.env"
   },
   "private": true,
   "engines": {

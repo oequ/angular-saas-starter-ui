@@ -140,6 +140,7 @@ export class WebBillingAdapter implements BillingPort {
           organization_id: organizationId,
           plan_id: planId,
           return_url: this.billingReturnUrl(),
+          seat_quantity: seats,
         },
       },
     );

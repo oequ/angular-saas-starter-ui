@@ -10,6 +10,45 @@ import type { OrganizationMember } from './models/org.model';
 
 export type CommercialPlanId = 'free' | 'pro' | 'team';
 
+/** Max seats on Team (catalog + Postgres `seat_limit_for_plan` cap). */
+export const TEAM_PLAN_MAX_SEATS = 50;
+
+/** Team is billed per seat in Stripe; Pro is a flat monthly price (quantity 1). */
+export function isPerSeatBillingPlan(planId: string): boolean {
+  return planId.toLowerCase().trim() === 'team';
+}
+
+/**
+ * Seat quantity for Stripe Checkout line item.
+ * Team: current usage (min 1, max catalog cap). Pro: flat (1).
+ */
+export function checkoutBillableSeatCount(
+  planId: string,
+  seatsUsed: number,
+  planSeatCap = TEAM_PLAN_MAX_SEATS,
+): number {
+  if (!isPerSeatBillingPlan(planId)) {
+    return 1;
+  }
+  const used = Number.isFinite(seatsUsed) ? Math.floor(seatsUsed) : 1;
+  const cap = Number.isFinite(planSeatCap) ? Math.floor(planSeatCap) : TEAM_PLAN_MAX_SEATS;
+  return Math.min(Math.max(1, used), Math.max(1, cap));
+}
+
+/** Postgres `seats_limit` from Stripe subscription item quantity (Team only). */
+export function seatsLimitFromStripeQuantity(
+  planId: string,
+  quantity: number,
+  planSeatCap = TEAM_PLAN_MAX_SEATS,
+): number | null {
+  if (!isPerSeatBillingPlan(planId)) {
+    return null;
+  }
+  const qty = Number.isFinite(quantity) ? Math.floor(quantity) : 1;
+  const cap = Number.isFinite(planSeatCap) ? Math.floor(planSeatCap) : TEAM_PLAN_MAX_SEATS;
+  return Math.min(Math.max(1, qty), Math.max(1, cap));
+}
+
 export const COMMERCIAL_PLAN_IDS: readonly CommercialPlanId[] = [
   'free',
   'pro',
