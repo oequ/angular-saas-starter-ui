@@ -96,7 +96,6 @@ libs/data-access-supabase     →  Supabase auth/org adapters
 | **Stripe in PR CI** | `e2e:web:release` uses mock only |
 | **Stripe nightly CI** | API smoke workflow (webhook + seat bump) — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md#cie2e); needs GitHub secrets |
 | **Stripe UI smoke** | Manual on your machine: Checkout + Members — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md) |
-| **Pending invite cancel** | Not implemented — no revoke UI, no seat decrease on cancel |
 | **`apps/demo`** | Mock-first; not full parity with `apps/web` |
 | **Embedded Checkout** | Hosted redirect only (Elements later) |
 

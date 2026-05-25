@@ -8,6 +8,7 @@ import {
   goToMembersPage,
   inviteMemberByEmail,
   inviteMemberByEmailExpectingSeatSync,
+  revokeInvitationByEmail,
   uniqueEmail,
   upgradeViaPaywallFromInviteDialog,
   upgradeWorkspaceToPlan,
@@ -54,6 +55,32 @@ test.describe('billing seats sync @web', () => {
     await expect(
       page.getByRole('heading', { name: 'Subscription Plan' }).locator('..').getByText('Team Plan'),
     ).toBeVisible();
+  });
+
+  test('revoking Team invite decreases seats and allows another invite', async ({
+    page,
+  }) => {
+    const workspaceName = `Billing Team Revoke ${Date.now()}`;
+    const emailB = uniqueEmail('bill-team-revoke-b');
+    const emailC = uniqueEmail('bill-team-revoke-c');
+
+    await bootstrapOwnerWithActiveWorkspace(page, workspaceName);
+    await goToBillingPage(page);
+    await upgradeWorkspaceToPlan(page, 'Team');
+    await goToMembersPage(page);
+    await page.reload();
+    await waitForMembersPageLoaded(page);
+
+    await inviteMemberByEmailExpectingSeatSync(page, emailB);
+    await expect(page.locator('tbody tr').filter({ hasText: emailB })).toBeVisible();
+
+    await revokeInvitationByEmail(page, emailB);
+    await expect(
+      page.locator('tbody tr').filter({ hasText: emailB }),
+    ).toHaveCount(0);
+
+    await inviteMemberByEmail(page, emailC);
+    await expect(page.locator('tbody tr').filter({ hasText: emailC })).toBeVisible();
   });
 
   test('downgrade to Free blocks invite when at seat cap', async ({ page }) => {

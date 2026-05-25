@@ -32,7 +32,7 @@ Cursor plan archive: Stripe phase 2 implementation notes in `.cursor/plans/` (if
 | 3 | **Embedded Checkout / Elements** | Later — alternative to hosted redirect |
 | 4 | **Stripe API smoke in CI** | **Done (nightly)** — [stripe-smoke.yml](../.github/workflows/stripe-smoke.yml) + `stripe:smoke:ci`; **not** PR-blocking; no Playwright Checkout |
 
-**Done (Stripe v2):** Cancel subscription, invoices, multi-provider (`0013`/`0014`), per-seat Team checkout, seat sync on invite, **seat decrease on remove**, **confirm before Stripe seat charge**, **mock e2e Team seat bump** (`billing-seats-sync.spec.ts`).
+**Done (Stripe v2):** Cancel subscription, invoices, multi-provider (`0013`/`0014`), per-seat Team checkout, seat sync on invite, **seat decrease on remove**, **revoke pending invite + seat decrease**, **confirm before Stripe seat charge**, **mock e2e Team seat bump** (`billing-seats-sync.spec.ts`).
 
 ---
 
@@ -80,7 +80,7 @@ YooKassa and others: implement as `provider = 'yookassa'` (or your slug); invoic
 | **Stripe in PR CI** | `e2e:web:release` stays **mock** only |
 | **Stripe nightly CI** | API smoke — [stripe-smoke.yml](../.github/workflows/stripe-smoke.yml) (webhook + `billing-update-subscription`); not browser Checkout |
 | **Manual Stripe smoke (UI)** | Operator-run: `functions serve`, `stripe listen`, `BILLING_PROVIDER=stripe` — full Checkout + Members flows — [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) |
-| **Cancel pending invite** | No UI to revoke a pending invitation; no seat decrease on invite cancel |
+| ~~**Cancel pending invite**~~ | **Done** — Members → Revoke invitation; per-seat seat sync on revoke (mock + Stripe) |
 | **`apps/demo` parity** | Demo stays mock-first; not full feature parity with `apps/web` |
 | **Embedded Checkout / Elements** | Alternative to hosted Checkout redirect (Stripe v2 row #3) |
 | **Custom providers in prod** | YooKassa etc. — implement `provider` slug + webhooks per [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVIDER.md) |

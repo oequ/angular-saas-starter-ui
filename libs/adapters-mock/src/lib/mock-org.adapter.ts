@@ -335,6 +335,32 @@ export class MockOrgAdapter implements OrgPort {
     return portOk(undefined);
   }
 
+  async revokeInvitation(
+    organizationId: OrganizationId,
+    invitationId: string,
+  ): Promise<PortResult<void>> {
+    const session = await this.authAdapter.getClaims();
+    if (!session.ok || !session.data) {
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
+    }
+
+    const members = this.membersByOrgId.get(organizationId) ?? [];
+    const target = members.find(
+      (member) => member.userId === invitationId && member.status === 'invited',
+    );
+    if (!target) {
+      return mockErr('NOT_FOUND', 'invitationNotFound');
+    }
+
+    await delay(300);
+
+    const next = members.filter((member) => member.userId !== invitationId);
+    this.membersByOrgId.set(organizationId, next);
+    this.syncBillingSeatUsage(organizationId);
+
+    return portOk(undefined);
+  }
+
   async updateMemberRole(
     organizationId: OrganizationId,
     userId: string,

@@ -147,6 +147,22 @@ export async function inviteMemberByEmail(page: Page, email: string): Promise<vo
   ).toBeVisible();
 }
 
+export async function revokeInvitationByEmail(
+  page: Page,
+  email: string,
+): Promise<void> {
+  const row = page.locator('tbody tr').filter({ hasText: email });
+  await row.locator('button[aria-label^="Actions for"]').click();
+  await page.getByRole('menuitem', { name: 'Revoke invitation' }).click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Revoke invitation' })
+    .click();
+  await expect(
+    page.getByText(`Invitation for ${email} was revoked.`),
+  ).toBeVisible();
+}
+
 /** Team at seat cap: mock bumps seats_limit in Postgres, then invites. */
 export async function inviteMemberByEmailExpectingSeatSync(
   page: Page,

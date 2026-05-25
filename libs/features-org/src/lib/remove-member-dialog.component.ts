@@ -12,6 +12,8 @@ import {
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
+export type MemberRemovalDialogMode = 'remove' | 'revoke';
+
 @Component({
   selector: 'oequ-remove-member-dialog',
   imports: [HlmButtonImports, HlmDialogImports, TranslocoPipe],
@@ -22,12 +24,19 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
             <h3 hlmDialogTitle class="text-destructive">
-              {{ 'org.members.removeDialog.title' | transloco }}
+              {{
+                (mode() === 'revoke'
+                  ? 'org.members.revokeDialog.title'
+                  : 'org.members.removeDialog.title'
+                ) | transloco
+              }}
             </h3>
             <p hlmDialogDescription>
               {{
-                'org.members.removeDialog.description'
-                  | transloco: { name: memberLabel() }
+                (mode() === 'revoke'
+                  ? 'org.members.revokeDialog.description'
+                  : 'org.members.removeDialog.description'
+                ) | transloco: { name: memberLabel() }
               }}
             </p>
           </hlm-dialog-header>
@@ -46,9 +55,19 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
               @if (syncingSeats()) {
                 {{ 'org.members.inviteDialog.syncingSeats' | transloco }}
               } @else if (removing()) {
-                {{ 'org.members.removeDialog.removing' | transloco }}
+                {{
+                  (mode() === 'revoke'
+                    ? 'org.members.revokeDialog.revoking'
+                    : 'org.members.removeDialog.removing'
+                  ) | transloco
+                }}
               } @else {
-                {{ 'org.members.removeDialog.submit' | transloco }}
+                {{
+                  (mode() === 'revoke'
+                    ? 'org.members.revokeDialog.submit'
+                    : 'org.members.removeDialog.submit'
+                  ) | transloco
+                }}
               }
             </button>
           </hlm-dialog-footer>
@@ -59,6 +78,7 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 })
 export class RemoveMemberDialogComponent {
   readonly open = input(false);
+  readonly mode = input<MemberRemovalDialogMode>('remove');
   readonly memberLabel = input.required<string>();
   readonly removing = input(false);
   readonly syncingSeats = input(false);

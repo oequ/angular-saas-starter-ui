@@ -38,6 +38,11 @@ export interface OrgPort {
     userId: string,
   ): Promise<PortResult<void>>;
 
+  revokeInvitation(
+    organizationId: OrganizationId,
+    invitationId: string,
+  ): Promise<PortResult<void>>;
+
   updateMemberRole(
     organizationId: OrganizationId,
     userId: string,

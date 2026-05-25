@@ -53,7 +53,10 @@ import {
   InviteMemberDialogComponent,
   type InviteMemberInput,
 } from './invite-member-dialog.component';
-import { RemoveMemberDialogComponent } from './remove-member-dialog.component';
+import {
+  RemoveMemberDialogComponent,
+  type MemberRemovalDialogMode,
+} from './remove-member-dialog.component';
 
 type MemberRoleFilter = 'all' | OrgRole;
 
@@ -251,22 +254,33 @@ type MemberRoleFilter = 'all' | OrgRole;
                         </button>
                         <ng-template #memberActionsMenu>
                           <div hlmDropdownMenu class="min-w-44 p-1">
-                            <button
-                              type="button"
-                              hlmDropdownMenuItem
-                              (triggered)="openChangeRoleDialog(member)"
-                            >
-                              {{ 'org.members.changeRole' | transloco }}
-                            </button>
-                            <div hlmDropdownMenuSeparator></div>
-                            <button
-                              type="button"
-                              hlmDropdownMenuItem
-                              variant="destructive"
-                              (triggered)="openRemoveDialog(member)"
-                            >
-                              {{ 'org.members.remove' | transloco }}
-                            </button>
+                            @if (member.status === 'invited') {
+                              <button
+                                type="button"
+                                hlmDropdownMenuItem
+                                variant="destructive"
+                                (triggered)="openRevokeDialog(member)"
+                              >
+                                {{ 'org.members.revoke' | transloco }}
+                              </button>
+                            } @else {
+                              <button
+                                type="button"
+                                hlmDropdownMenuItem
+                                (triggered)="openChangeRoleDialog(member)"
+                              >
+                                {{ 'org.members.changeRole' | transloco }}
+                              </button>
+                              <div hlmDropdownMenuSeparator></div>
+                              <button
+                                type="button"
+                                hlmDropdownMenuItem
+                                variant="destructive"
+                                (triggered)="openRemoveDialog(member)"
+                              >
+                                {{ 'org.members.remove' | transloco }}
+                              </button>
+                            }
                           </div>
                         </ng-template>
                       }
@@ -312,12 +326,13 @@ type MemberRoleFilter = 'all' | OrgRole;
     />
 
     <oequ-remove-member-dialog
-      [open]="removeDialogOpen()"
-      [memberLabel]="removeTargetLabel()"
-      [removing]="removing()"
-      [syncingSeats]="syncingSeatsOnRemove()"
-      (confirmed)="confirmRemove()"
-      (cancelled)="closeRemoveDialog()"
+      [open]="memberActionDialogOpen()"
+      [mode]="memberActionDialogMode()"
+      [memberLabel]="memberActionTargetLabel()"
+      [removing]="memberActionInProgress()"
+      [syncingSeats]="syncingSeatsAfterMemberAction()"
+      (confirmed)="confirmMemberAction()"
+      (cancelled)="closeMemberActionDialog()"
     />
   `,
 })
@@ -365,7 +380,6 @@ export class OrgSettingsMembersComponent {
   protected readonly inviteDialogOpen = signal(false);
   protected readonly inviting = signal(false);
   protected readonly syncingSeats = signal(false);
-  protected readonly syncingSeatsOnRemove = signal(false);
   protected readonly inviteSubmitError = signal<string | null>(null);
   protected readonly seatChargeConfirmOpen = signal(false);
   protected readonly pendingInvite = signal<InviteMemberInput | null>(null);
@@ -428,11 +442,14 @@ export class OrgSettingsMembersComponent {
     return member?.role === 'admin' ? 'admin' : 'member';
   });
 
-  protected readonly removeDialogOpen = signal(false);
-  protected readonly removeTarget = signal<OrganizationMember | null>(null);
-  protected readonly removing = signal(false);
-  protected readonly removeTargetLabel = computed(() => {
-    const member = this.removeTarget();
+  protected readonly memberActionDialogOpen = signal(false);
+  protected readonly memberActionDialogMode =
+    signal<MemberRemovalDialogMode>('remove');
+  protected readonly memberActionTarget = signal<OrganizationMember | null>(null);
+  protected readonly memberActionInProgress = signal(false);
+  protected readonly syncingSeatsAfterMemberAction = signal(false);
+  protected readonly memberActionTargetLabel = computed(() => {
+    const member = this.memberActionTarget();
     return member ? (member.displayName ?? member.email) : '';
   });
 
@@ -723,30 +740,48 @@ export class OrgSettingsMembersComponent {
   }
 
   protected openRemoveDialog(member: OrganizationMember): void {
-    this.removeTarget.set(member);
-    this.removeDialogOpen.set(true);
+    this.memberActionTarget.set(member);
+    this.memberActionDialogMode.set('remove');
+    this.memberActionDialogOpen.set(true);
   }
 
-  protected closeRemoveDialog(): void {
-    if (this.removing()) {
-      return;
-    }
-    this.removeDialogOpen.set(false);
-    this.removeTarget.set(null);
+  protected openRevokeDialog(member: OrganizationMember): void {
+    this.memberActionTarget.set(member);
+    this.memberActionDialogMode.set('revoke');
+    this.memberActionDialogOpen.set(true);
   }
 
-  protected async confirmRemove(): Promise<void> {
-    const member = this.removeTarget();
-    if (!member || this.removing() || this.syncingSeatsOnRemove()) {
+  protected closeMemberActionDialog(): void {
+    if (this.memberActionInProgress() || this.syncingSeatsAfterMemberAction()) {
+      return;
+    }
+    this.memberActionDialogOpen.set(false);
+    this.memberActionTarget.set(null);
+  }
+
+  protected async confirmMemberAction(): Promise<void> {
+    const member = this.memberActionTarget();
+    const mode = this.memberActionDialogMode();
+    if (
+      !member ||
+      this.memberActionInProgress() ||
+      this.syncingSeatsAfterMemberAction()
+    ) {
       return;
     }
 
-    this.removing.set(true);
-    const result = await this.orgPort.removeMember(
-      this.organizationId(),
-      member.userId,
-    );
-    this.removing.set(false);
+    this.memberActionInProgress.set(true);
+    const result =
+      mode === 'revoke'
+        ? await this.orgPort.revokeInvitation(
+            this.organizationId(),
+            member.userId,
+          )
+        : await this.orgPort.removeMember(
+            this.organizationId(),
+            member.userId,
+          );
+    this.memberActionInProgress.set(false);
 
     if (!result.ok) {
       toast.error(translatePortError(result.error, this.transloco));
@@ -755,38 +790,45 @@ export class OrgSettingsMembersComponent {
 
     const label = member.displayName ?? member.email;
     this.dataRefresh.update((value) => value + 1);
-
     await this.billingResource.reload();
+    await this.syncSeatsAfterSeatConsumerRemoved();
+
+    this.memberActionDialogOpen.set(false);
+    this.memberActionTarget.set(null);
+    toast.success(
+      this.transloco.translate(
+        mode === 'revoke'
+          ? 'org.members.toast.invitationRevoked'
+          : 'org.members.toast.memberRemoved',
+        { name: label },
+      ),
+    );
+  }
+
+  private async syncSeatsAfterSeatConsumerRemoved(): Promise<void> {
     const summary = this.billingResource.value();
     if (
-      summary &&
-      needsPerSeatSeatSyncAfterRemove(
+      !summary ||
+      !needsPerSeatSeatSyncAfterRemove(
         summary,
         this.billingProviderId as BillingProviderId,
       )
     ) {
-      this.syncingSeatsOnRemove.set(true);
-      const syncResult = await this.billingPort.syncSubscriptionSeats(
-        this.organizationId(),
-        targetSeatQuantityAfterMemberRemoved(summary),
-      );
-      this.syncingSeatsOnRemove.set(false);
-
-      if (!syncResult.ok) {
-        toast.error(
-          translatePortError(syncResult.error, this.transloco),
-        );
-      } else {
-        this.billingResource.reload();
-      }
+      return;
     }
 
-    this.removeDialogOpen.set(false);
-    this.removeTarget.set(null);
-    toast.success(
-      this.transloco.translate('org.members.toast.memberRemoved', {
-        name: label,
-      }),
+    this.syncingSeatsAfterMemberAction.set(true);
+    const syncResult = await this.billingPort.syncSubscriptionSeats(
+      this.organizationId(),
+      targetSeatQuantityAfterMemberRemoved(summary),
     );
+    this.syncingSeatsAfterMemberAction.set(false);
+
+    if (!syncResult.ok) {
+      toast.error(translatePortError(syncResult.error, this.transloco));
+      return;
+    }
+
+    this.billingResource.reload();
   }
 }

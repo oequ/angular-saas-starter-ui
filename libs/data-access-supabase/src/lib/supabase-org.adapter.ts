@@ -330,6 +330,31 @@ export class SupabaseOrgAdapter implements OrgPort {
     return portOk(undefined);
   }
 
+  async revokeInvitation(
+    organizationId: OrganizationId,
+    invitationId: string,
+  ): Promise<PortResult<void>> {
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const { data, error } = await client
+      .from('organization_invitations')
+      .delete()
+      .eq('id', invitationId)
+      .eq('organization_id', organizationId)
+      .select('id');
+
+    if (error) {
+      return supabaseErrFromPostgrest(error);
+    }
+    if (!data?.length) {
+      return supabaseErr('NOT_FOUND', 'invitationNotFound');
+    }
+    return portOk(undefined);
+  }
+
   async updateMemberRole(
     organizationId: OrganizationId,
     userId: string,
