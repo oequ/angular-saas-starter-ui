@@ -3,7 +3,7 @@
 Living plan for **saas-starter** `apps/web` (Supabase + ports).  
 UI kit demo backlog remains in [ROADMAP.md](./ROADMAP.md).
 
-Last updated: **2026-05-24**.
+Last updated: **2026-05-25**.
 
 ---
 
@@ -30,7 +30,7 @@ Cursor plan archive: Stripe phase 2 implementation notes in `.cursor/plans/` (if
 | 1 | **Per-seat pricing in Stripe** | **Done** — Team Checkout `quantity = seats_used`; webhook → `p_seats_limit` (`0015`); [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) runbook |
 | 2 | **Sync quantity on invite** | **Done** — `billing-update-subscription` + Members invite auto-bump (Team / Stripe) |
 | 3 | **Embedded Checkout / Elements** | Later — alternative to hosted redirect |
-| 4 | **E2E with Stripe** | Optional local smoke; **not** in CI |
+| 4 | **Stripe API smoke in CI** | **Done (nightly)** — [stripe-smoke.yml](../.github/workflows/stripe-smoke.yml) + `stripe:smoke:ci`; **not** PR-blocking; no Playwright Checkout |
 
 **Done (Stripe v2):** Cancel subscription, invoices, multi-provider (`0013`/`0014`), per-seat Team checkout, seat sync on invite, **seat decrease on remove**, **confirm before Stripe seat charge**, **mock e2e Team seat bump** (`billing-seats-sync.spec.ts`).
 
@@ -64,15 +64,31 @@ Cursor plan archive: Stripe phase 2 implementation notes in `.cursor/plans/` (if
 
 YooKassa and others: implement as `provider = 'yookassa'` (or your slug); invoices via `upsert_organization_invoice`.
 
-## Explicitly later
+## Starter-ready vs production
 
-- **Hosted deploy** — Supabase project secrets, production webhook URL  
-- **Demo app (`apps/demo`)** — stays mock unless we intentionally parity features  
+**Ready as a SaaS starter** (clone, local dev, extend): auth, multi-tenant orgs, seat limits, mock billing + CI (`pre-release:web`), optional Stripe (Checkout, Portal, Team per-seat sync on invite/remove).
+
+**Not “production out of the box”** without operator work — track below.
+
+---
+
+## Explicitly later (not blocking starter)
+
+| Item | Notes |
+|------|--------|
+| **Prod deploy** | Supabase hosted project, Edge Function secrets (`STRIPE_*`), production Stripe webhook URL, env for `apps/web` — see deploy runbook when added |
+| **Stripe in PR CI** | `e2e:web:release` stays **mock** only |
+| **Stripe nightly CI** | API smoke — [stripe-smoke.yml](../.github/workflows/stripe-smoke.yml) (webhook + `billing-update-subscription`); not browser Checkout |
+| **Manual Stripe smoke (UI)** | Operator-run: `functions serve`, `stripe listen`, `BILLING_PROVIDER=stripe` — full Checkout + Members flows — [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) |
+| **Cancel pending invite** | No UI to revoke a pending invitation; no seat decrease on invite cancel |
+| **`apps/demo` parity** | Demo stays mock-first; not full feature parity with `apps/web` |
+| **Embedded Checkout / Elements** | Alternative to hosted Checkout redirect (Stripe v2 row #3) |
+| **Custom providers in prod** | YooKassa etc. — implement `provider` slug + webhooks per [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVIDER.md) |
 
 ---
 
 ## How to use
 
-1. Pick a **Stripe v2** row (Phase 3 ports are done).  
-2. Open a PR with one vertical (migration + adapter + tests).  
+1. Pick a row from **Explicitly later** or **Stripe v2** (only Embedded Checkout remains optional).  
+2. Open a PR with one vertical (migration + adapter + tests + docs).  
 3. Update this doc and [README.md](../README.md) capability table when shipped.

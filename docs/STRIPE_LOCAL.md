@@ -135,7 +135,47 @@ With Stripe enabled, paywall downgrades open **Customer Portal**. Seat limits up
 
 ## CI / E2E
 
-`e2e:web:release` keeps mock billing (`STRIPE_ENABLED` unset). No Stripe keys in CI.
+| Check | Billing | When |
+|-------|---------|------|
+| PR / push [`ci.yml`](../.github/workflows/ci.yml) `web-e2e` | **mock** (`STRIPE_ENABLED` unset) | Every PR |
+| Nightly [`stripe-smoke.yml`](../.github/workflows/stripe-smoke.yml) | **Stripe test API** (API-only, no browser) | Daily 04:00 UTC + manual |
+
+### CI (nightly) — API smoke
+
+Workflow: **Stripe smoke** (`workflow_dispatch` or cron). Not a required PR check.
+
+**GitHub secrets** (repository settings):
+
+| Secret | Purpose |
+|--------|---------|
+| `STRIPE_SECRET_KEY` | `sk_test_…` |
+| `STRIPE_WEBHOOK_SECRET` | Any `whsec_…` string; must match value written to `supabase/.env` in the job (used to sign synthetic webhook payloads — not from `stripe listen`) |
+| `STRIPE_PRICE_TEAM` | Per-seat Team price id |
+| `STRIPE_PRICE_PRO` | Pro price id (optional; enables `billing-create-checkout` assert in smoke) |
+
+**What the job runs:** `supabase start` → `db reset` → `functions serve` → [`npm run stripe:smoke:ci`](../package.json) ([`scripts/stripe-ci-smoke.mjs`](../scripts/stripe-ci-smoke.mjs)):
+
+1. Create user + org in Postgres  
+2. Stripe Customer + Team subscription (`quantity: 1`)  
+3. Signed `customer.subscription.updated` → `stripe-webhook`  
+4. Assert `plan_id = team`, `seats_limit = 1`  
+5. Invoke `billing-update-subscription` → assert `seats_limit = 2`  
+
+**Local replay** (same as CI, with Terminal 1–2 from runbook above):
+
+```bash
+npm run db:start && npm run db:reset
+npm run functions:serve
+# another shell:
+export STRIPE_SECRET_KEY=sk_test_...
+export STRIPE_WEBHOOK_SECRET=whsec_...
+export STRIPE_PRICE_TEAM=price_...
+export STRIPE_PRICE_PRO=price_...
+export SUPABASE_URL=http://127.0.0.1:54321
+export SUPABASE_SERVICE_ROLE_KEY=...   # from: supabase status -o env
+export SUPABASE_ANON_KEY=...
+npm run stripe:smoke:ci
+```
 
 ## Functions
 

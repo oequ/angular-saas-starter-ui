@@ -5,7 +5,7 @@
 | | **Demo** | **Web (full-stack)** |
 |---|----------|----------------------|
 | **Run** | `npx nx serve demo` → http://localhost:4200 | `npm run start:web` → http://localhost:4201 |
-| **Backend** | All mock (`provideDemoAdapters`) | Auth + org: **Supabase**; billing, metrics, … still mock |
+| **Backend** | All mock (`provideDemoAdapters`) | Auth, org, metrics, API keys, emails: **Supabase**; billing **mock** (default) or **Stripe** |
 | **Needs** | `npm install` only | Docker + `npm run db:start` |
 | **Ship target** | GitHub Pages, BYO API | Local/prod Supabase project |
 
@@ -67,7 +67,7 @@ Honest split — UI is largely shared; **adapters** decide what is real.
 | Members invite / org writes | Mock (seat cap in adapter) | Supabase RPC + RLS; Postgres enforces `seats_limit` (`0007`) |
 | Billing plan → seat cap | Mock only | Mock (`0008`) or provider webhooks (`0013`) update Postgres `seats_limit` |
 | Tenant isolation + invite claim | N/A (mock) | RLS + `web-e2e` (`@web` smoke) |
-| Billing, paywall, payment methods | Mock | `billingProvider`: `mock` (default), `stripe`, or `custom` — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md), [BILLING_CUSTOM_PROVIDER.md](docs/BILLING_CUSTOM_PROVIDER.md) |
+| Billing, paywall, cancel, invoices | Mock | `billingProvider`: `mock` (default), `stripe`, or `custom` — Team per-seat sync on invite/remove — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md), [BILLING_CUSTOM_PROVIDER.md](docs/BILLING_CUSTOM_PROVIDER.md) |
 | Metrics, API keys, emails, activation | Mock | Supabase (`0010`–`0012`) + adapters; mock integrations/support |
 | i18n (English) | Yes | Yes |
 
@@ -81,6 +81,26 @@ libs/features-* / libs/shell  →  AuthPort, OrgPort, BillingPort, …
 libs/adapters-mock            →  demo + non-auth ports for web
 libs/data-access-supabase     →  Supabase auth/org adapters
 ```
+
+---
+
+## Starter-ready vs production
+
+**Ready as a starter** — clone, `npm run db:reset`, `npm run start:web` or `pre-release:web`: multi-tenant app with mock billing in CI and optional Stripe (Checkout, Portal, Team per-seat bump on invite, decrease on remove).
+
+**Not production out of the box** without operator setup:
+
+| Gap | What you do |
+|-----|-------------|
+| **Prod deploy** | Hosted Supabase, Edge secrets (`STRIPE_*`), production webhook URL, web env |
+| **Stripe in PR CI** | `e2e:web:release` uses mock only |
+| **Stripe nightly CI** | API smoke workflow (webhook + seat bump) — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md#cie2e); needs GitHub secrets |
+| **Stripe UI smoke** | Manual on your machine: Checkout + Members — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md) |
+| **Pending invite cancel** | Not implemented — no revoke UI, no seat decrease on cancel |
+| **`apps/demo`** | Mock-first; not full parity with `apps/web` |
+| **Embedded Checkout** | Hosted redirect only (Elements later) |
+
+Full backlog: [docs/APPS_WEB_PLAN.md](./docs/APPS_WEB_PLAN.md).
 
 ---
 
@@ -115,6 +135,8 @@ supabase/                 # Migrations, seed, local CLI config
 
 | Doc | Use when |
 |-----|----------|
+| [docs/APPS_WEB_PLAN.md](./docs/APPS_WEB_PLAN.md) | Web full-stack status, starter vs prod gaps |
+| [docs/STRIPE_LOCAL.md](./docs/STRIPE_LOCAL.md) | Local Stripe + Edge Functions smoke |
 | [docs/ROADMAP.md](./docs/ROADMAP.md) | What to build next (P0 demo gaps vs Supabase phase 3) |
 | [docs/STACK.md](./docs/STACK.md) | Version pins before `npm install` anything |
 | [docs/I18N.md](./docs/I18N.md) | Adding locales |
