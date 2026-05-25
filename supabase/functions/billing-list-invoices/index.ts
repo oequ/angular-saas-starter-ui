@@ -21,11 +21,11 @@ interface ListInvoicesBody {
 const PAGE_LIMIT = 24;
 
 async function listFromPostgres(
-  admin: ReturnType<typeof createServiceClient>,
+  userClient: ReturnType<typeof createUserClient>,
   organizationId: string,
   cursor?: string,
 ): Promise<InvoiceListPageDto> {
-  const { data, error } = await admin.rpc('list_organization_invoices', {
+  const { data, error } = await userClient.rpc('list_organization_invoices', {
     p_organization_id: organizationId,
     p_limit: PAGE_LIMIT,
     p_cursor: cursor ?? null,
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
       }
       page = await listFromStripe(customerId, cursor);
     } else {
-      page = await listFromPostgres(admin, organizationId, cursor);
+      page = await listFromPostgres(userClient, organizationId, cursor);
     }
 
     return jsonResponse(page);

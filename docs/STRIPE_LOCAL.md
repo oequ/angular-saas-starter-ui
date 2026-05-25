@@ -28,7 +28,7 @@ STRIPE_PRICE_TEAM=price_...
 
 ```bash
 npm run db:reset
-supabase functions serve
+npx supabase functions serve --env-file supabase/.env
 ```
 
 In another terminal:
