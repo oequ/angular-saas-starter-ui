@@ -116,7 +116,9 @@ export class DeleteWorkspaceDialogComponent {
 
   protected readonly submitAttempted = signal(false);
 
-  protected readonly form = new FormGroup({
+  protected readonly form = new FormGroup<{
+    slug: FormControl<string>;
+  }>({
     slug: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required],

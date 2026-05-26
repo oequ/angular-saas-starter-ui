@@ -50,7 +50,9 @@ export class AccountProfilePageComponent {
     initialValue: null,
   });
 
-  protected readonly profileForm = new FormGroup({
+  protected readonly profileForm = new FormGroup<{
+    displayName: FormControl<string>;
+  }>({
     displayName: new FormControl('', {
       nonNullable: true,
       validators: [

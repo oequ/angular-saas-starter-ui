@@ -165,7 +165,10 @@ export class LoginPageComponent {
   protected readonly submitAttempted = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
-  protected readonly form = new FormGroup({
+  protected readonly form = new FormGroup<{
+    email: FormControl<string>;
+    password: FormControl<string>;
+  }>({
     email: new FormControl(DEMO_AUTH_EMAIL, {
       nonNullable: true,
       validators: [Validators.required, Validators.email],

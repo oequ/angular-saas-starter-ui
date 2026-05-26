@@ -190,7 +190,10 @@ export class InviteMemberDialogComponent {
 
   protected readonly submitAttempted = signal(false);
 
-  protected readonly form = new FormGroup({
+  protected readonly form = new FormGroup<{
+    email: FormControl<string>;
+    role: FormControl<'admin' | 'member'>;
+  }>({
     email: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.email],

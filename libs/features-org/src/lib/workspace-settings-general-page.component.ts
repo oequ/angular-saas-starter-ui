@@ -53,7 +53,9 @@ export class WorkspaceSettingsGeneralPageComponent {
     { initialValue: null },
   );
 
-  protected readonly generalForm = new FormGroup({
+  protected readonly generalForm = new FormGroup<{
+    name: FormControl<string>;
+  }>({
     name: new FormControl('', {
       nonNullable: true,
       validators: [
