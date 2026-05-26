@@ -19,6 +19,7 @@ import {
   comparePlanTiers,
   formatUsageNumber,
   getDowngradeBlocker,
+  isAllowedStripeRedirectUrl,
   ORG_PORT,
   resolveCurrentPlanId,
   type BillingPlan,
@@ -408,7 +409,7 @@ export class PaywallDialogComponent {
         );
         return;
       }
-      if (result.data.url) {
+      if (result.data.url && isAllowedStripeRedirectUrl(result.data.url)) {
         globalThis.location.assign(result.data.url);
         return;
       }
@@ -426,7 +427,7 @@ export class PaywallDialogComponent {
       return;
     }
 
-    if (result.data.url) {
+    if (result.data.url && isAllowedStripeRedirectUrl(result.data.url)) {
       globalThis.location.assign(result.data.url);
       return;
     }
@@ -611,7 +612,7 @@ export class PaywallDialogComponent {
 
     const returnUrl = `${globalThis.location.origin}/workspace/settings/billing`;
     const portal = await this.billingPort.createPortalSession(org.id, returnUrl);
-    if (portal.ok && portal.data.url) {
+    if (portal.ok && portal.data.url && isAllowedStripeRedirectUrl(portal.data.url)) {
       globalThis.location.assign(portal.data.url);
       return;
     }

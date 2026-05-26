@@ -9,6 +9,24 @@ import type {
 } from './models/billing.model';
 import type { OrganizationMember } from './models/org.model';
 
+/**
+ * Validates that a Stripe redirect URL points to a legitimate Stripe domain.
+ * Prevents open-redirect attacks if the Edge Function response is tampered.
+ */
+export function isAllowedStripeRedirectUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.protocol === 'https:' &&
+      (parsed.hostname === 'checkout.stripe.com' ||
+        parsed.hostname === 'billing.stripe.com' ||
+        parsed.hostname.endsWith('.stripe.com'))
+    );
+  } catch {
+    return false;
+  }
+}
+
 export type CommercialPlanId = 'free' | 'pro' | 'team';
 
 /** Subscription statuses that block invites and seat bumps (soft lock). */

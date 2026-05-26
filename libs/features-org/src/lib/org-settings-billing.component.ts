@@ -11,6 +11,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   BILLING_PORT,
+  isAllowedStripeRedirectUrl,
   STRIPE_BILLING_ENABLED,
   formatPlanLabel,
   resolveCurrentPlanId,
@@ -402,7 +403,7 @@ export class OrgSettingsBillingComponent {
       returnUrl,
     );
     this.portalLoading.set(false);
-    if (result.ok && result.data.url) {
+    if (result.ok && result.data.url && isAllowedStripeRedirectUrl(result.data.url)) {
       globalThis.location.assign(result.data.url);
       return;
     }
