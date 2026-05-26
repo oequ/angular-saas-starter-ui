@@ -2,7 +2,7 @@
   "title": "Billing",
   "subscription": {
     "title": "Subscription Plan",
-    "lead": "Each workspace has its own subscription plan, billing cycle, payment methods and usage quotas.",
+    "lead": "Each workspace has its own subscription plan, billing cycle, and usage quotas.",
     "loading": "Loading subscription…",
     "unavailable": "Billing information is not available.",
     "statusLabel": "Status",

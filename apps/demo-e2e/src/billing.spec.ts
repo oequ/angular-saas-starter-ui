@@ -105,7 +105,7 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await expect(seatsRow.locator('p.font-semibold')).toHaveText(/4 \/ 10/);
   });
 
-  test('billing page shows subscription, invoices, and payment sections', async ({
+  test('billing page shows subscription and invoices sections', async ({
     page,
   }) => {
     await page.goto('/workspace/settings/billing');
@@ -114,34 +114,9 @@ test.describe('Billing v0.3 (mock demo)', () => {
 
     await expect(page.getByRole('heading', { name: 'Subscription Plan' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Past Invoices' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Payment Methods' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Invoice number' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Change subscription plan' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Add payment method' })).toBeVisible();
-    await expect(page.getByText('Visa •••• 4242')).toBeVisible();
-  });
-
-  test('add payment method: Lumen free workspace', async ({ page }) => {
-    await page.goto('/workspace/settings/billing');
-    await switchWorkspace(page, LUMEN_WORKSPACE);
-    await waitForBillingLoaded(page);
-
-    await expect(page.getByText('No payment methods')).toBeVisible();
-    await page.getByRole('button', { name: 'Add payment method' }).click();
-    await expect(
-      page.getByRole('heading', { name: 'Add payment method' }),
-    ).toBeVisible();
-
-    await page.getByLabel('Name on card').fill('Demo User');
-    await page.getByLabel('Card number').fill('4242 4242 4242 4242');
-    await page.getByLabel('Expiry').fill('12/30');
-    await page.getByLabel('CVC').fill('123');
-    await page.getByRole('button', { name: 'Add card' }).click();
-
-    await expect(page.getByText('Visa •••• 4242')).toBeVisible({
-      timeout: 15_000,
-    });
-    await expect(page.getByText('No payment methods')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Payment Methods' })).toHaveCount(0);
   });
 
   test('legacy billing sub-routes redirect to unified billing page', async ({

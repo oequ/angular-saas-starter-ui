@@ -12,16 +12,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   BILLING_PORT,
   STRIPE_BILLING_ENABLED,
-  formatPaymentMethodBrand,
-  formatPaymentMethodExpiry,
   formatPlanLabel,
   resolveCurrentPlanId,
   USAGE_SETTINGS_PATH,
-  type AddPaymentMethodInput,
   type BillingSummary,
   type Invoice,
   type InvoiceStatus,
-  type PaymentMethod,
   type SubscriptionStatus,
 } from '@oequ/ports';
 import {
@@ -32,14 +28,13 @@ import {
 } from '@oequ/i18n';
 import { PaywallDialogService } from '@oequ/shell';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCreditCard, lucideReceipt } from '@ng-icons/lucide';
+import { lucideReceipt } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmBadgeImports, type BadgeVariants } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 
-import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.component';
 import { CancelSubscriptionDialogComponent } from './cancel-subscription-dialog.component';
 
 @Component({
@@ -53,11 +48,10 @@ import { CancelSubscriptionDialogComponent } from './cancel-subscription-dialog.
     HlmButtonImports,
     HlmBadgeImports,
     HlmTooltipImports,
-    AddPaymentMethodDialogComponent,
     CancelSubscriptionDialogComponent,
     TranslocoPipe,
   ],
-  providers: [provideIcons({ lucideCreditCard, lucideReceipt })],
+  providers: [provideIcons({ lucideReceipt })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">
@@ -288,110 +282,7 @@ import { CancelSubscriptionDialogComponent } from './cancel-subscription-dialog.
         }
       </section>
 
-      @if (!stripeBillingEnabled) {
-      <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
-        <div hlmCardContent class="!p-6">
-          <h2 class="text-xl leading-8 font-semibold tracking-tight">
-            {{ 'org.billing.paymentMethods.title' | transloco }}
-          </h2>
-          <p class="text-muted-foreground mt-3 text-sm leading-6">
-            {{ 'org.billing.paymentMethods.lead' | transloco }}
-          </p>
-          @if (paymentMethodsResource.isLoading()) {
-            <p class="text-muted-foreground mt-4 text-sm">
-              {{ 'org.billing.paymentMethods.loading' | transloco }}
-            </p>
-          } @else if (paymentMethodsResource.error(); as err) {
-            <p class="text-destructive mt-4 text-sm">{{ err.message }}</p>
-          } @else if (paymentMethods().length === 0) {
-            <p class="text-muted-foreground mt-4 text-sm">
-              {{ 'org.billing.paymentMethods.empty' | transloco }}
-            </p>
-          } @else {
-            <ul class="divide-border mt-4 divide-y rounded-[5px] border">
-              @for (method of paymentMethods(); track method.id) {
-                <li
-                  class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div class="flex min-w-0 items-center gap-3">
-                    <span
-                      class="bg-muted text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-[5px]"
-                      aria-hidden="true"
-                    >
-                      <ng-icon name="lucideCreditCard" class="size-4" />
-                    </span>
-                    <div class="min-w-0">
-                      <p class="font-medium">
-                        {{ formatPaymentMethodBrand(method.brand) }} ••••
-                        {{ method.last4 }}
-                      </p>
-                      <p class="text-muted-foreground text-sm">
-                        {{ 'org.billing.paymentMethods.expires' | transloco }}
-                        {{
-                          formatPaymentMethodExpiry(
-                            method.expMonth,
-                            method.expYear
-                          )
-                        }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="flex flex-wrap items-center gap-2">
-                    @if (method.isDefault) {
-                      <span hlmBadge variant="secondary">{{
-                        'org.billing.paymentMethods.default' | transloco
-                      }}</span>
-                    } @else {
-                      <button
-                        hlmBtn
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        [disabled]="paymentMethodActionId() === method.id"
-                        (click)="setDefaultPaymentMethod(method)"
-                      >
-                        {{ 'org.billing.paymentMethods.makeDefault' | transloco }}
-                      </button>
-                    }
-                    <button
-                      hlmBtn
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      class="text-muted-foreground"
-                      [disabled]="paymentMethodActionId() === method.id"
-                      (click)="removePaymentMethod(method)"
-                    >
-                      {{ 'org.billing.paymentMethods.remove' | transloco }}
-                    </button>
-                  </div>
-                </li>
-              }
-            </ul>
-          }
-        </div>
-        <div
-          hlmCardFooter
-          class="border-border flex min-h-[57px] items-center justify-end border-t !py-3"
-        >
-          <button hlmBtn type="button" (click)="openAddPaymentMethodDialog()">
-            {{ 'org.billing.paymentMethods.addButton' | transloco }}
-          </button>
-        </div>
-      </section>
-      }
-
     </div>
-
-    @if (!stripeBillingEnabled) {
-      <oequ-add-payment-method-dialog
-        [open]="addPaymentDialogOpen()"
-        [saving]="addPaymentSaving()"
-        [serverError]="addPaymentError()"
-        (submitted)="onAddPaymentMethodSubmitted($event)"
-        (cancelled)="closeAddPaymentMethodDialog()"
-      />
-    }
 
     <oequ-cancel-subscription-dialog
       [open]="cancelDialogOpen()"
@@ -412,8 +303,6 @@ export class OrgSettingsBillingComponent {
   protected readonly stripeBillingEnabled = inject(STRIPE_BILLING_ENABLED);
 
   protected readonly formatPlanLabel = formatPlanLabel;
-  protected readonly formatPaymentMethodBrand = formatPaymentMethodBrand;
-  protected readonly formatPaymentMethodExpiry = formatPaymentMethodExpiry;
   protected readonly resolveCurrentPlanId = resolveCurrentPlanId;
   protected readonly usageSettingsPath = USAGE_SETTINGS_PATH;
 
@@ -446,10 +335,6 @@ export class OrgSettingsBillingComponent {
       });
     }
   }
-  protected readonly addPaymentDialogOpen = signal(false);
-  protected readonly addPaymentSaving = signal(false);
-  protected readonly addPaymentError = signal<string | null>(null);
-  protected readonly paymentMethodActionId = signal<string | null>(null);
   protected readonly cancelDialogOpen = signal(false);
   protected readonly cancelLoading = signal(false);
 
@@ -486,25 +371,6 @@ export class OrgSettingsBillingComponent {
 
   protected readonly invoices = computed(
     (): readonly Invoice[] => this.invoicesResource.value() ?? [],
-  );
-
-  protected readonly paymentMethodsResource = resource({
-    params: () => ({ orgId: this.organizationId() }),
-    loader: async ({ params, abortSignal }) => {
-      const result = await this.billingPort.listPaymentMethods(
-        params.orgId,
-        abortSignal,
-      );
-      if (!result.ok) {
-        throw portErrorToError(result.error, this.transloco);
-      }
-      return result.data;
-    },
-  });
-
-  protected readonly paymentMethods = computed(
-    (): readonly PaymentMethod[] =>
-      this.paymentMethodsResource.value() ?? [],
   );
 
   protected planDisplayLabel(summary: BillingSummary): string {
@@ -594,76 +460,6 @@ export class OrgSettingsBillingComponent {
     this.billingResource.reload();
     toast.success(
       this.transloco.translate('org.billing.subscription.cancelSuccess'),
-    );
-  }
-
-  protected openAddPaymentMethodDialog(): void {
-    this.addPaymentError.set(null);
-    this.addPaymentDialogOpen.set(true);
-  }
-
-  protected closeAddPaymentMethodDialog(): void {
-    this.addPaymentDialogOpen.set(false);
-    this.addPaymentSaving.set(false);
-    this.addPaymentError.set(null);
-  }
-
-  protected async onAddPaymentMethodSubmitted(
-    input: AddPaymentMethodInput,
-  ): Promise<void> {
-    this.addPaymentSaving.set(true);
-    this.addPaymentError.set(null);
-    const result = await this.billingPort.addPaymentMethod(
-      this.organizationId(),
-      input,
-    );
-    this.addPaymentSaving.set(false);
-    if (!result.ok) {
-      this.addPaymentError.set(
-        translatePortError(result.error, this.transloco),
-      );
-      return;
-    }
-    this.paymentMethodsResource.reload();
-    this.closeAddPaymentMethodDialog();
-    toast.success(
-      this.transloco.translate('org.billing.paymentMethods.toastAdded'),
-    );
-  }
-
-  protected async setDefaultPaymentMethod(
-    method: PaymentMethod,
-  ): Promise<void> {
-    this.paymentMethodActionId.set(method.id);
-    const result = await this.billingPort.setDefaultPaymentMethod(
-      this.organizationId(),
-      method.id,
-    );
-    this.paymentMethodActionId.set(null);
-    if (!result.ok) {
-      toast.error(translatePortError(result.error, this.transloco));
-      return;
-    }
-    this.paymentMethodsResource.reload();
-    toast.success(
-      this.transloco.translate('org.billing.paymentMethods.toastDefaultUpdated'),
-    );
-  }
-
-  protected async removePaymentMethod(method: PaymentMethod): Promise<void> {
-    this.paymentMethodActionId.set(method.id);
-    const result = await this.billingPort.removePaymentMethod(
-      this.organizationId(),
-      method.id,
-    );
-    this.paymentMethodActionId.set(null);
-    if (!result.ok) {
-      toast.error(translatePortError(result.error, this.transloco));
-      return;
-    }
-    this.paymentMethodsResource.reload();
-    toast.success(
-      this.transloco.translate('org.billing.paymentMethods.toastRemoved'),
     );
   }
 
