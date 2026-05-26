@@ -34,6 +34,9 @@ jobs:
       - name: Lint
         run: npx nx run-many -t lint --all
 
+      - name: Unit tests
+        run: npx nx run-many -t test --projects=ports
+
       - name: Build demo
         run: npx nx build demo
 
