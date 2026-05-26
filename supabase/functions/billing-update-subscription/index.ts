@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
 
     const admin = createServiceClient();
 
-    const { data: snapshotData, error: snapshotError } = await admin.rpc(
+    const { data: snapshotData, error: snapshotError } = await userClient.rpc(
       'get_organization_billing_snapshot',
       { p_organization_id: organizationId },
     );

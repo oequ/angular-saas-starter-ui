@@ -16,6 +16,23 @@ const REQUIRED_ENV = [
   'SUPABASE_ANON_KEY',
 ];
 
+/** Trim; strip wrapping quotes (Windows `supabase status -o env`). */
+function envValue(key) {
+  const raw = process.env[key];
+  if (raw == null) {
+    return '';
+  }
+  return raw.trim().replace(/^["']|["']$/g, '');
+}
+
+function resolveSupabaseEnv() {
+  const url = envValue('SUPABASE_URL') || envValue('API_URL');
+  const serviceRoleKey =
+    envValue('SUPABASE_SERVICE_ROLE_KEY') || envValue('SERVICE_ROLE_KEY');
+  const anonKey = envValue('SUPABASE_ANON_KEY') || envValue('ANON_KEY');
+  return { url, serviceRoleKey, anonKey };
+}
+
 function fail(message) {
   console.error(`stripe-ci-smoke: ${message}`);
   process.exit(1);
@@ -31,10 +48,12 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForFunctions(webhookUrl, attempts = 45) {
+async function waitForFunctions(supabaseUrl, attempts = 45) {
+  // stripe-webhook is POST-only (no CORS OPTIONS); probe a billing function instead.
+  const healthUrl = `${supabaseUrl}/functions/v1/billing-create-checkout`;
   for (let i = 0; i < attempts; i++) {
     try {
-      const res = await fetch(webhookUrl, { method: 'OPTIONS' });
+      const res = await fetch(healthUrl, { method: 'OPTIONS' });
       if (res.ok) {
         return;
       }
@@ -44,7 +63,7 @@ async function waitForFunctions(webhookUrl, attempts = 45) {
     await sleep(2000);
   }
   fail(
-    `Edge Functions not reachable at ${webhookUrl}. Run: npm run functions:serve`,
+    `Edge Functions not reachable at ${healthUrl}. Run: npm run functions:serve`,
   );
 }
 
@@ -150,14 +169,22 @@ async function fetchBillingSnapshot(userClient, organizationId) {
 
 async function main() {
   for (const key of REQUIRED_ENV) {
-    if (!process.env[key]?.trim()) {
+    if (key.startsWith('SUPABASE_')) {
+      continue;
+    }
+    if (!envValue(key)) {
       fail(`missing env ${key}. See docs/STRIPE_LOCAL.md (CI section).`);
     }
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL.replace(/\/$/, '');
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
+  const { url, serviceRoleKey, anonKey } = resolveSupabaseEnv();
+  if (!url || !serviceRoleKey || !anonKey) {
+    fail(
+      'missing Supabase URL/keys. Set SUPABASE_* or run: supabase status -o env',
+    );
+  }
+
+  const supabaseUrl = url.replace(/\/$/, '');
   const webhookUrl = `${supabaseUrl}/functions/v1/stripe-webhook`;
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -167,7 +194,7 @@ async function main() {
   const priceTeam = process.env.STRIPE_PRICE_TEAM;
 
   console.log('Waiting for Edge Functions…');
-  await waitForFunctions(webhookUrl);
+  await waitForFunctions(supabaseUrl);
 
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -218,16 +245,18 @@ async function main() {
     metadata: { organization_id: organizationId },
   });
 
+  let defaultPaymentMethodId;
   try {
-    await stripe.paymentMethods.attach('pm_card_visa', {
+    const attached = await stripe.paymentMethods.attach('pm_card_visa', {
       customer: customer.id,
     });
+    defaultPaymentMethodId = attached.id;
   } catch (err) {
     fail(`attach pm_card_visa: ${err instanceof Error ? err.message : err}`);
   }
 
   await stripe.customers.update(customer.id, {
-    invoice_settings: { default_payment_method: 'pm_card_visa' },
+    invoice_settings: { default_payment_method: defaultPaymentMethodId },
   });
 
   const subscription = await stripe.subscriptions.create({
