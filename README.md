@@ -1,6 +1,6 @@
 # Oequ SaaS Starter
 
-[![Quality: 721/1000](https://img.shields.io/badge/Quality_Framework-721%2F1000-0ea5e9)](./docs/QUALITY.md)
+[![Quality: 770/1000](https://img.shields.io/badge/Quality_Framework-770%2F1000-0ea5e9)](./docs/QUALITY.md)
 
 **Angular B2B SaaS control plane** in one Nx monorepo: workspace shell, org settings, billing UI, metrics, API keys — wired through **ports** so you swap mock, Supabase, or HTTP without rewriting features.
 

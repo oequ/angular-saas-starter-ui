@@ -8,18 +8,17 @@ Assessment of **angular-saas-starter-ui** against [Quality Framework v1.0](https
 | **Rubric version** | Quality Framework v1.0 |
 | **Assessment date** | 2026-05-26 |
 | **Assessed by** | automated audit + manual review |
-| **Total score** | **721 / 1000** |
-| **Maturity level** | Score qualifies for L1; **Must gates not yet met** (see below) |
+| **Total score** | **770 / 1000** |
+| **Maturity level** | Score qualifies for L1; **Angular Must gate cleared**; Architecture and Security Must gates remain (see below) |
 
 ## Summary
 
 This Angular 21 + Nx 22 monorepo implements ports-and-adapters architecture with strong SaaS domain coverage: multi-tenant workspaces, billing via port, members lifecycle, RBAC guards, and onboarding flows. Playwright E2E covers critical paths across both demo and web apps. Signal-first components, built-in control flow, and `resource()` loaders are used throughout.
 
-**Score exceeds the L1 threshold (>600), but three Must-gate categories have gaps:**
+**Score exceeds the L1 threshold (>600). Angular Must gate is fully cleared. Two Must-gate categories remain:**
 
 - **Architecture:** `libs/ports` imports `@angular/core` (for `InjectionToken`) and `rxjs` — fails A1 strict framework-free check.
 - **Security:** Demo uses Supabase `localStorage` JWT (S5), no CSRF config (S6), CSP has `unsafe-inline` (S1 partial). These are documented demo exceptions; production deployments require operator hardening.
-- **Angular:** Minor gaps in form typing (NG7 partial) and a few remaining `subscribe()` patterns (NG6 partial).
 
 ## Category scores
 
@@ -27,13 +26,13 @@ This Angular 21 + Nx 22 monorepo implements ports-and-adapters architecture with
 |----------|-----|--------|---|
 | Architecture & boundaries | 200 | 167 | 84% |
 | Security & privacy | 200 | 104 | 52% |
-| Angular platform | 150 | 128 | 85% |
+| Angular platform | 150 | 142 | 95% |
 | SaaS domain | 150 | 116 | 77% |
-| Testing & CI | 100 | 71 | 71% |
+| Testing & CI | 100 | 86 | 86% |
 | UX & design system | 100 | 83 | 83% |
 | Performance & a11y | 50 | 29 | 57% |
-| Documentation & OSS | 50 | 23 | 46% |
-| **Total** | **1000** | **721** | **72%** |
+| Documentation & OSS | 50 | 43 | 86% |
+| **Total** | **1000** | **770** | **77%** |
 
 Scoring method: [docs/scoring.md](https://github.com/oequ/quality-framework/blob/main/docs/scoring.md)
 
@@ -68,8 +67,8 @@ Scoring method: [docs/scoring.md](https://github.com/oequ/quality-framework/blob
 |----|-----------|--------|----------|
 | NG3 | Standalone-only | **Pass** | Zero `@NgModule` in source. `bootstrapApplication()` everywhere. |
 | NG4 | Signal inputs/outputs | **Pass** | Zero `@Input`/`@Output` decorators. `input()`, `output()` used throughout. |
-| NG6 | Derived state via computed | **Partial** | 100+ `computed()` usages. Eight `subscribe()` calls remain for form `valueChanges` — should migrate to `toSignal()`. |
-| NG7 | Typed reactive forms | **Partial** | `FormControl` with `nonNullable` and union types, but no explicit `FormGroup<T>` interfaces. |
+| NG6 | Derived state via computed | **Pass** | 100+ `computed()` usages. Feature-layer `subscribe()` migrated to `toSignal()`. Only UI/infrastructure subscribe remains (Spartan internals, adapter bootstrap). |
+| NG7 | Typed reactive forms | **Pass** | `FormGroup<T>` with explicit type parameters on key forms. `nonNullable: true` on all controls. |
 | NG8 | Functional guards | **Pass** | All guards are `CanActivateFn` exports in `shell.guards.ts`. |
 | NG9 | Built-in control flow | **Pass** | `@if`, `@for`, `@switch` everywhere. Zero `*ngIf`/`*ngFor`. |
 | NG10 | track in @for | **Pass** | All 40+ `@for` blocks include `track` expressions. |
@@ -89,15 +88,15 @@ Scoring method: [docs/scoring.md](https://github.com/oequ/quality-framework/blob
 | T1 | Testing | Pass | Playwright E2E: auth, org switch, billing, members, seat limits. |
 | T4 | Testing | Pass | Port tests are framework-free (`billing.utils.spec.ts`). |
 | T6 | Testing | Pass | Bundle budgets in `apps/web` (1mb/2mb) and `apps/demo` (500kb). |
-| T7 | Testing | Fail | No Dependabot or Renovate configured. |
+| T7 | Testing | Pass | Dependabot configured for npm and GitHub Actions with grouped PRs. |
 | T10 | Testing | Pass | CI: two parallel jobs (`lint-and-build`, `web-e2e`). |
 | U2 | UX | Pass | `@spartan-ng/brain` headless primitives for dialogs, selects, dropdowns. |
 | U7 | UX | Pass | Confirmation dialogs for delete, remove, revoke, cancel subscription. |
 | U9 | UX | Pass | oklch design tokens in CSS variables consumed via Tailwind theme. |
 | D1 | Docs | Pass | `AGENTS.md` at repo root with commands, layout, rules. |
 | D2 | Docs | Pass | ADRs: `0001-supabase-tenant-rls.md`, `0002-billing-multi-provider.md`. |
-| D4 | Docs | Fail | No `CONTRIBUTING.md` or `SECURITY.md`. |
-| D7 | Docs | Fail | No PR template. |
+| D4 | Docs | Pass | `CONTRIBUTING.md` and `SECURITY.md` at repo root. |
+| D7 | Docs | Pass | `.github/pull_request_template.md` with CI-aligned checklist. |
 
 ## SaaS domain
 
@@ -133,12 +132,12 @@ Scoring method: [docs/scoring.md](https://github.com/oequ/quality-framework/blob
 Score-based badge (Must gates for L1 not yet met):
 
 ```markdown
-[![Quality: 721/1000](https://img.shields.io/badge/Quality_Framework-721%2F1000-0ea5e9)](./docs/QUALITY.md)
+[![Quality: 770/1000](https://img.shields.io/badge/Quality_Framework-770%2F1000-0ea5e9)](./docs/QUALITY.md)
 ```
 
 ## L1 blockers
 
-To claim **L1 Starter-ready**, close these Must-level gaps:
+To claim **L1 Starter-ready**, close these remaining Must-level gaps:
 
 | Blocker | Criteria | Effort |
 |---------|----------|--------|
@@ -147,16 +146,15 @@ To claim **L1 Starter-ready**, close these Must-level gaps:
 | HttpOnly token storage (production) | S5 | Medium — BFF or Supabase SSR adapter |
 | CSRF configuration | S6 | Low — `withXsrfConfiguration` when using cookie auth |
 | Auth interceptor | S7 | Low — centralize via `withInterceptors` |
-| Replace remaining `subscribe` with `toSignal` | NG6 | Low — 8 call sites |
-| Typed `FormGroup<T>` interfaces | NG7 | Low — add explicit type parameters |
+
+**Cleared gates:** Angular Must criteria all pass (NG3–NG11).
 
 ## Next actions
 
-1. Add `CONTRIBUTING.md` and `SECURITY.md` (D4)
-2. Add PR template `.github/pull_request_template.md` (D7)
-3. Configure Dependabot or Renovate (T7)
-4. Add `provideZonelessChangeDetection()` (NG2)
-5. Close L1 Must-gate blockers above
-6. Re-assess and update score
+1. Add `provideZonelessChangeDetection()` (NG2)
+2. Close remaining L1 Must-gate blockers (A1, S1, S5, S6, S7)
+3. Add coverage thresholds on ports/adapters (T8)
+4. Add skip-to-content link (P5)
+5. Re-assess and update score after closing gates
 
 Full rubric: [github.com/oequ/quality-framework/tree/main/docs/rubric](https://github.com/oequ/quality-framework/tree/main/docs/rubric)
