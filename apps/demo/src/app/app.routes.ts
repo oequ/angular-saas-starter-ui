@@ -6,6 +6,7 @@ import {
   onboardingRouteGuard,
   ShellLayoutComponent,
   WorkspaceEntryComponent,
+  workspaceAdminGuard,
   workspaceContextGuard,
 } from '@oequ/shell';
 
@@ -168,6 +169,7 @@ export const appRoutes: Route[] = [
           },
           {
             path: 'settings',
+            canActivate: [workspaceAdminGuard],
             loadComponent: () =>
               import('@oequ/features-org').then(
                 (m) => m.WorkspaceSettingsLayoutComponent,

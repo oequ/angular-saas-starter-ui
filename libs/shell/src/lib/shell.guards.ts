@@ -88,6 +88,22 @@ export const workspaceContextGuard: CanActivateFn = async () => {
   return result.ok ? true : router.createUrlTree(['/onboarding']);
 };
 
+/**
+ * Admin-only workspace routes (settings, billing, members).
+ * Requires an active org with role === 'admin'; redirects members to the workspace root.
+ */
+export const workspaceAdminGuard: CanActivateFn = async () => {
+  const authPort = inject(AUTH_PORT);
+  const router = inject(Router);
+  const session = await firstValueFrom(authPort.session$);
+
+  if (session?.claims.org?.role === 'admin') {
+    return true;
+  }
+
+  return router.createUrlTree(['/workspace']);
+};
+
 /** Entering account routes clears workspace selection (personal context). */
 export const accountContextGuard: CanActivateFn = async () => {
   const orgPort = inject(ORG_PORT);
