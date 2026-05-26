@@ -2,14 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -124,18 +123,12 @@ export class DeleteWorkspaceDialogComponent {
     }),
   });
 
-  private readonly slugValue = signal('');
+  private readonly slugValue = toSignal(this.form.controls.slug.valueChanges, {
+    initialValue: '',
+  });
   private confirming = false;
 
   constructor() {
-    const destroyRef = inject(DestroyRef);
-
-    this.form.controls.slug.valueChanges
-      .pipe(takeUntilDestroyed(destroyRef))
-      .subscribe((value) => {
-        this.slugValue.set(value);
-      });
-
     effect(() => {
       if (this.open()) {
         this.resetForm();
@@ -169,6 +162,5 @@ export class DeleteWorkspaceDialogComponent {
   private resetForm(): void {
     this.submitAttempted.set(false);
     this.form.reset();
-    this.slugValue.set('');
   }
 }

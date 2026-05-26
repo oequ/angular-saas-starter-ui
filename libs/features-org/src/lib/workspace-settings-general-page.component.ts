@@ -69,11 +69,13 @@ export class WorkspaceSettingsGeneralPageComponent {
   private readonly savedName = signal<string | null>(null);
   /** Last org id synced into the form — avoid reset on same-org updates after save. */
   private readonly syncedOrgId = signal<string | null>(null);
-  /** Bumps when the name control is patched without emitting valueChanges. */
-  private readonly nameStateVersion = signal(0);
+  private readonly nameChanges = toSignal(
+    this.generalForm.controls.name.valueChanges,
+    { initialValue: '' },
+  );
 
   protected readonly canSaveGeneral = computed(() => {
-    this.nameStateVersion();
+    this.nameChanges();
     const saved = this.savedName();
     const name = this.generalForm.controls.name.value.trim();
     return (
@@ -97,10 +99,6 @@ export class WorkspaceSettingsGeneralPageComponent {
   });
 
   constructor() {
-    this.generalForm.controls.name.valueChanges.subscribe(() => {
-      this.nameStateVersion.update((v) => v + 1);
-    });
-
     effect(() => {
       const org = this.activeOrganization();
       if (!org) {
@@ -113,11 +111,10 @@ export class WorkspaceSettingsGeneralPageComponent {
       this.savedName.set(org.name);
 
       if (isOrgSwitch) {
-        this.generalForm.patchValue({ name: org.name }, { emitEvent: false });
+        this.generalForm.patchValue({ name: org.name });
         this.generalForm.markAsPristine();
         this.submitAttempted.set(false);
         this.logoPreviewUrl.set(null);
-        this.nameStateVersion.update((v) => v + 1);
       }
     });
   }
@@ -266,9 +263,8 @@ export class WorkspaceSettingsGeneralPageComponent {
 
       if (result.ok) {
         this.savedName.set(name);
-        this.generalForm.patchValue({ name }, { emitEvent: false });
+        this.generalForm.patchValue({ name });
         this.generalForm.markAsPristine();
-        this.nameStateVersion.update((v) => v + 1);
         toast.success(
           this.transloco.translate('org.general.toast.nameUpdated'),
         );

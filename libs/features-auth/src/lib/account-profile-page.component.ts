@@ -68,11 +68,13 @@ export class AccountProfilePageComponent {
   private readonly savedDisplayName = signal<string | null>(null);
   /** Last user id synced into the form — avoid reset on profile updates after save. */
   private readonly syncedUserId = signal<string | null>(null);
-  /** Bumps when display name is patched without emitting valueChanges. */
-  private readonly displayNameStateVersion = signal(0);
+  private readonly displayNameChanges = toSignal(
+    this.profileForm.controls.displayName.valueChanges,
+    { initialValue: '' },
+  );
 
   protected readonly canSaveProfile = computed(() => {
-    this.displayNameStateVersion();
+    this.displayNameChanges();
     const saved = this.savedDisplayName();
     const name = this.profileForm.controls.displayName.value.trim();
     return (
@@ -85,10 +87,6 @@ export class AccountProfilePageComponent {
   );
 
   constructor() {
-    this.profileForm.controls.displayName.valueChanges.subscribe(() => {
-      this.displayNameStateVersion.update((v) => v + 1);
-    });
-
     effect(() => {
       const user = this.session()?.user;
       if (!user) {
@@ -103,11 +101,10 @@ export class AccountProfilePageComponent {
       this.savedDisplayName.set(displayName);
 
       if (isUserSwitch) {
-        this.profileForm.patchValue({ displayName }, { emitEvent: false });
+        this.profileForm.patchValue({ displayName });
         this.profileForm.markAsPristine();
         this.statusMessage.set(null);
         this.submitAttempted.set(false);
-        this.displayNameStateVersion.update((v) => v + 1);
       }
     });
   }
@@ -140,9 +137,8 @@ export class AccountProfilePageComponent {
 
       if (result.ok) {
         this.savedDisplayName.set(displayName);
-        this.profileForm.patchValue({ displayName }, { emitEvent: false });
+        this.profileForm.patchValue({ displayName });
         this.profileForm.markAsPristine();
-        this.displayNameStateVersion.update((v) => v + 1);
         toast.success(this.transloco.translate('account.profile.toastUpdated'));
       } else {
         toast.error(translatePortError(result.error, this.transloco));

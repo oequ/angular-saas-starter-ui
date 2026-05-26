@@ -2,14 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -114,18 +113,12 @@ export class DeleteAccountDialogComponent {
     }),
   });
 
-  private readonly emailValue = signal('');
+  private readonly emailValue = toSignal(this.form.controls.email.valueChanges, {
+    initialValue: '',
+  });
   private confirming = false;
 
   constructor() {
-    const destroyRef = inject(DestroyRef);
-
-    this.form.controls.email.valueChanges
-      .pipe(takeUntilDestroyed(destroyRef))
-      .subscribe((value) => {
-        this.emailValue.set(value);
-      });
-
     effect(() => {
       if (this.open()) {
         this.resetForm();
@@ -159,6 +152,5 @@ export class DeleteAccountDialogComponent {
   private resetForm(): void {
     this.submitAttempted.set(false);
     this.form.reset();
-    this.emailValue.set('');
   }
 }
