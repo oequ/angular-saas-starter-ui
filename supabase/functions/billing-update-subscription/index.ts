@@ -26,6 +26,8 @@ const BILLABLE_STATUSES = new Set<Stripe.Subscription.Status>([
   'trialing',
 ]);
 
+const PAYMENT_BLOCKED_STATUSES = new Set(['past_due', 'unpaid']);
+
 function parseBillingSnapshot(data: unknown): {
   planId: string;
   seatsUsed: number;
@@ -101,6 +103,10 @@ Deno.serve(async (req) => {
 
     if (snapshot.cancelAtPeriodEnd) {
       return jsonResponse({ error: 'subscription_canceling' }, 409);
+    }
+
+    if (PAYMENT_BLOCKED_STATUSES.has(snapshot.subscriptionStatus)) {
+      return jsonResponse({ error: 'payment_past_due' }, 409);
     }
 
     const { data: billingRow, error: billingError } = await admin

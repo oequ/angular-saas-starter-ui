@@ -50,6 +50,13 @@ export function supabaseErrFromRpc<T>(error: PostgrestError): PortResult<T> {
     };
   }
 
+  if (code === 'P0001' && message.includes('billing payment past due')) {
+    return {
+      ok: false,
+      error: portErrorReason('VALIDATION', 'billingPaymentPastDue'),
+    };
+  }
+
   if (code === 'P0001' && message.includes('seats exhausted')) {
     return {
       ok: false,

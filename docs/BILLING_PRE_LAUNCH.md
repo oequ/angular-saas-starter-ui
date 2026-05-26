@@ -74,12 +74,12 @@ Priority for the next billing hardening work:
 | P | Item | Suggested work |
 |---|------|----------------|
 | **P0** | **Auto-renewal verified** | **CI (iter 3):** Test Clock advance + signed `subscription.updated` → `current_period_end` in Postgres. Manual: Dashboard Test Clock + `stripe listen` for Billing UI. |
-| **P0** | **Failed payment / dunning** | **Partial (iter 3)** — smoke: Test Clock + `invoice.payment_failed` → `past_due`; policy doc [BILLING_DUNNING.md](./BILLING_DUNNING.md). Still needed: grace period, feature lock in app. |
+| **P0** | **Failed payment / dunning** | **Partial (iter 3–4)** — smoke + [BILLING_DUNNING.md](./BILLING_DUNNING.md); soft lock on invite/seat bump. Grace period / hard lock still optional. |
 | **P1** | Webhook failure ops | Alert if webhook 5xx; Stripe Dashboard retry; runbook |
 | ~~P1 Duplicate webhook~~ | **Done (iter 1)** — `stripe-ci-smoke` replays same `event.id` |
 | ~~P1 Webhook / org integrity (CI)~~ | **Done (iter 2)** — unsigned + bad signature → 400; cross-org `billing-update-subscription` → 403 |
-| ~~P1 `past_due` policy doc~~ | **Done (iter 3)** — [BILLING_DUNNING.md](./BILLING_DUNNING.md) (banner vs access gap) |
-| **P1** | `past_due` feature lock | Implement guards (invites, seat bump) per product decision in dunning doc |
+| ~~P1 `past_due` policy doc~~ | **Done (iter 3)** — [BILLING_DUNNING.md](./BILLING_DUNNING.md) |
+| ~~P1 `past_due` feature lock~~ | **Done (iter 4)** — invite RPC + `billing-update-subscription` + Members UI |
 | **P2** | In-app payment methods | Only if not using Portal — SetupIntent + Elements; store `pm_` + last4 only |
 | **P2** | Browser Checkout in CI | Optional Playwright + test clock or Stripe test mode (heavy; keep nightly API-only) |
 
@@ -116,7 +116,7 @@ Run in **Stripe test mode** with [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) four-termi
 ### CI expectations (do not over-trust)
 
 - [ ] **`e2e:web:release`** passes — mock billing only.
-- [x] **`stripe:smoke:ci`** — sync, idempotency, seat bump, integrity (iter 2), Test Clock renewal + `invoice.payment_failed` (iter 3); **does not** replace browser Checkout or manual Billing UI.
+- [x] **`stripe:smoke:ci`** — sync, idempotency, seat bump, integrity (iter 2), Test Clock + `invoice.payment_failed` (iter 3), past_due blocks invite/bump (iter 4); **does not** replace browser Checkout or manual Billing UI.
 - [ ] GitHub secrets set: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM`, (`STRIPE_PRICE_PRO` optional).
 
 ---

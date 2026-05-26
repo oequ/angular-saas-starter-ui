@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { BillingSummary } from './models/billing.model';
 import {
   billingStatusBanner,
+  isBillingPaymentBlocked,
   checkoutBillableSeatCount,
   effectiveTeamSeatsLimitFromSnapshot,
   needsPerSeatSeatSyncAfterRemove,
@@ -181,6 +182,31 @@ describe('needsPerSeatSeatSyncAfterRemove', () => {
         'custom',
       ),
     ).toBe(false);
+  });
+});
+
+describe('isBillingPaymentBlocked', () => {
+  it('returns true for past_due and unpaid', () => {
+    expect(
+      isBillingPaymentBlocked(
+        summary({ status: 'past_due', seatsUsed: 1, seatsLimit: 3 }),
+      ),
+    ).toBe(true);
+    expect(
+      isBillingPaymentBlocked(
+        summary({ status: 'unpaid', seatsUsed: 1, seatsLimit: 3 }),
+      ),
+    ).toBe(true);
+  });
+
+  it('returns false for active and when summary is missing', () => {
+    expect(
+      isBillingPaymentBlocked(
+        summary({ status: 'active', seatsUsed: 1, seatsLimit: 3 }),
+      ),
+    ).toBe(false);
+    expect(isBillingPaymentBlocked(null)).toBe(false);
+    expect(isBillingPaymentBlocked(undefined)).toBe(false);
   });
 });
 

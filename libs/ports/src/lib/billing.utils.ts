@@ -11,6 +11,25 @@ import type { OrganizationMember } from './models/org.model';
 
 export type CommercialPlanId = 'free' | 'pro' | 'team';
 
+/** Subscription statuses that block invites and seat bumps (soft lock). */
+export const BILLING_PAYMENT_BLOCKED_STATUSES = ['past_due', 'unpaid'] as const;
+
+export type BillingPaymentBlockedStatus =
+  (typeof BILLING_PAYMENT_BLOCKED_STATUSES)[number];
+
+/** True when failed payment should block invite / seat sync (not Portal/Checkout). */
+export function isBillingPaymentBlocked(
+  summary: BillingSummary | null | undefined,
+): boolean {
+  if (!summary?.status) {
+    return false;
+  }
+  const status = summary.status.toLowerCase();
+  return (BILLING_PAYMENT_BLOCKED_STATUSES as readonly string[]).includes(
+    status,
+  );
+}
+
 /** Max seats on Team (catalog + Postgres `seat_limit_for_plan` cap). */
 export const TEAM_PLAN_MAX_SEATS = 50;
 

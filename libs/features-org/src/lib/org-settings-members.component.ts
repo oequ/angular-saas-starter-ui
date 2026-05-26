@@ -16,6 +16,7 @@ import {
   BILLING_PROVIDER_ID,
   countMembersTowardSeats,
   formatSeatUsageValue,
+  isBillingPaymentBlocked,
   isBillingSeatsExhausted,
   needsPerSeatSeatSyncAfterRemove,
   needsPerSeatSeatSyncBeforeInvite,
@@ -130,11 +131,22 @@ type MemberRoleFilter = 'all' | OrgRole;
         </hlm-select>
 
         <div class="flex shrink-0 items-center gap-2 sm:ms-auto">
-          <button hlmBtn type="button" (click)="openInviteDialog()">
+          <button
+            hlmBtn
+            type="button"
+            [disabled]="inviteBlockedByPayment()"
+            (click)="openInviteDialog()"
+          >
             {{ 'org.members.inviteButton' | transloco }}
           </button>
         </div>
       </div>
+
+      @if (inviteBlockedByPayment()) {
+        <p class="text-destructive text-sm" role="alert">
+          {{ 'org.members.paymentBlockedHint' | transloco }}
+        </p>
+      }
 
       @if (membersLoading() && members().length === 0) {
         <div
@@ -154,7 +166,12 @@ type MemberRoleFilter = 'all' | OrgRole;
             </p>
           </hlm-empty-header>
           <hlm-empty-content>
-            <button hlmBtn type="button" (click)="openInviteDialog()">
+            <button
+              hlmBtn
+              type="button"
+              [disabled]="inviteBlockedByPayment()"
+              (click)="openInviteDialog()"
+            >
               {{ 'org.members.inviteButton' | transloco }}
             </button>
           </hlm-empty-content>
@@ -299,6 +316,7 @@ type MemberRoleFilter = 'all' | OrgRole;
       [inviting]="inviting()"
       [syncingSeats]="syncingSeats()"
       [seatsExhausted]="inviteSeatsExhausted()"
+      [billingPaymentBlocked]="inviteBlockedByPayment()"
       [seatsUsageLabel]="inviteSeatsUsageLabel()"
       [submitError]="inviteSubmitError()"
       [roleOptions]="inviteRoleOptions"
@@ -401,6 +419,10 @@ export class OrgSettingsMembersComponent {
       return result.data;
     },
   });
+
+  protected readonly inviteBlockedByPayment = computed(() =>
+    isBillingPaymentBlocked(this.billingResource.value()),
+  );
 
   protected readonly inviteSeatsExhausted = computed(() => {
     const summary = this.billingResource.value();
@@ -540,6 +562,12 @@ export class OrgSettingsMembersComponent {
   }
 
   protected openInviteDialog(): void {
+    if (this.inviteBlockedByPayment()) {
+      this.inviteSubmitError.set(
+        this.transloco.translate('errors.billingPaymentPastDue'),
+      );
+      return;
+    }
     this.inviteSubmitError.set(null);
     this.inviteDialogOpen.set(true);
   }
@@ -567,6 +595,13 @@ export class OrgSettingsMembersComponent {
     }
 
     this.inviteSubmitError.set(null);
+
+    if (this.inviteBlockedByPayment()) {
+      this.inviteSubmitError.set(
+        this.transloco.translate('errors.billingPaymentPastDue'),
+      );
+      return;
+    }
 
     const summary = this.billingResource.value();
     if (

@@ -620,6 +620,42 @@ async function main() {
       `expected subscription_status past_due, got ${pastDueSnapshot.subscription_status}`,
     );
     console.log('invoice.payment_failed sync OK (past_due).');
+
+    console.log(
+      'Invoking billing-update-subscription while past_due (expect 409)…',
+    );
+    const bumpPastDue = await invokeEdgeFunction(
+      supabaseUrl,
+      anonKey,
+      accessToken,
+      'billing-update-subscription',
+      { organization_id: organizationId, seat_quantity: 3 },
+    );
+    assert(
+      bumpPastDue.status === 409,
+      `past_due bump: expected 409, got ${bumpPastDue.status}: ${bumpPastDue.text}`,
+    );
+    assert(
+      bumpPastDue.json?.error === 'payment_past_due' ||
+        bumpPastDue.json?.error === 'subscription_not_billable',
+      `past_due bump: expected payment_past_due, got ${bumpPastDue.text}`,
+    );
+    console.log('past_due blocks seat bump OK.');
+
+    const inviteEmail = `stripe-ci-pastdue-${runId}@example.com`;
+    const { error: invitePastDueError } = await userClient.rpc(
+      'invite_organization_member',
+      {
+        p_organization_id: organizationId,
+        p_email: inviteEmail,
+        p_role: 'member',
+      },
+    );
+    assert(
+      invitePastDueError?.message?.toLowerCase().includes('billing payment past due'),
+      `past_due invite: expected billing payment past due, got ${invitePastDueError?.message ?? 'no error'}`,
+    );
+    console.log('past_due blocks invite OK.');
   }
 
   try {

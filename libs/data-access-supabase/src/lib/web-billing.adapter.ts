@@ -388,6 +388,9 @@ export class WebBillingAdapter implements BillingPort {
     if (message.includes('not_per_seat_plan')) {
       return supabaseErr('VALIDATION', 'billingNotPerSeatPlan');
     }
+    if (message.includes('payment_past_due')) {
+      return supabaseErr('VALIDATION', 'billingPaymentPastDue');
+    }
     if (
       message.includes('subscription_canceling') ||
       message.includes('subscription_not_billable')

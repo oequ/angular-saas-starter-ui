@@ -1,6 +1,7 @@
 {
   "title": "Members",
   "inviteButton": "+ Invite member",
+  "paymentBlockedHint": "Your last payment failed. Update billing before inviting members or adding seats.",
   "loading": "Loading members…",
   "emptyTitle": "No members yet",
   "emptyDescription": "Invite teammates by email. They receive a link to join this workspace.",

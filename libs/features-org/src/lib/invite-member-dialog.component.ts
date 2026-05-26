@@ -123,7 +123,11 @@ export interface InviteMemberRoleOption {
               </hlm-select>
             </div>
 
-            @if (seatsExhausted()) {
+            @if (billingPaymentBlocked()) {
+              <p class="text-destructive text-sm leading-relaxed" role="alert">
+                {{ 'org.members.paymentBlockedHint' | transloco }}
+              </p>
+            } @else if (seatsExhausted()) {
               <p class="text-destructive text-sm leading-relaxed" role="alert">
                 @if (seatsUsageLabel(); as usage) {
                   {{ 'org.members.inviteDialog.seatsExhaustedWithUsage' | transloco: { usage } }}
@@ -150,7 +154,7 @@ export interface InviteMemberRoleOption {
               <button
                 hlmBtn
                 type="submit"
-                [disabled]="inviting() || seatsExhausted()"
+                [disabled]="inviting() || seatsExhausted() || billingPaymentBlocked()"
               >
                 @if (syncingSeats()) {
                   {{ 'org.members.inviteDialog.syncingSeats' | transloco }}
@@ -172,6 +176,7 @@ export class InviteMemberDialogComponent {
   readonly inviting = input(false);
   readonly syncingSeats = input(false);
   readonly seatsExhausted = input(false);
+  readonly billingPaymentBlocked = input(false);
   readonly seatsUsageLabel = input<string | null>(null);
   readonly submitError = input<string | null>(null);
   readonly roleOptions = input.required<readonly InviteMemberRoleOption[]>();

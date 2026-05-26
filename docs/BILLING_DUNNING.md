@@ -38,19 +38,19 @@ The UI reads billing via `get_organization_billing_snapshot` — not Stripe dire
 
 ---
 
-## Access control gap (document before prod)
+## Access control (iter 4 — soft lock)
 
-| Action | Blocked when `past_due`? |
-|--------|-------------------------|
+| Action | Blocked when `past_due` or `unpaid`? |
+|--------|--------------------------------------|
 | View workspace / existing features | **No** |
-| Invite members / seat bump | **No** |
-| Upgrade via Checkout | Depends on Stripe/Portal (not gated in app RPC) |
+| Invite members | **Yes** — UI + `invite_organization_member` RPC |
+| Seat bump (`billing-update-subscription`) | **Yes** — Edge Function `payment_past_due` |
+| Billing / Customer Portal | **No** — fix payment path |
+| Checkout upgrade | **No** — not gated in Edge Functions |
 
-There is **no grace-period timer** and **no hard feature lock** in this starter. Product should decide explicitly, for example:
+Implemented via [`isBillingPaymentBlocked`](../libs/ports/src/lib/billing.utils.ts) (client) and Postgres/Edge guards (server).
 
-- **Banner-only (current):** warn admins; rely on Stripe retries and Portal.
-- **Soft lock:** block invites and `billing-update-subscription` while `past_due`.
-- **Hard lock:** read-only workspace after N days (requires new guards + policy).
+**Not implemented:** grace-period timer (N days banner-only before lock), read-only workspace hard lock.
 
 ---
 

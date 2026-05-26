@@ -171,8 +171,10 @@ Workflow: **Stripe smoke** (`workflow_dispatch` or cron). Not a required PR chec
 8. Second user invokes `billing-update-subscription` for first user's `organization_id` → `403`  
 9. **Test Clock** advance → signed `subscription.updated` → `current_period_end` advanced in Postgres  
 10. Declining PM + second advance → signed `invoice.payment_failed` → `subscription_status = past_due`  
+11. `billing-update-subscription` while `past_due` → `409` `payment_past_due`  
+12. `invite_organization_member` while `past_due` → RPC error `billing payment past due`  
 
-Optional: `STRIPE_SMOKE_SKIP_TEST_CLOCK=true` skips steps 9–10 (local fallback if Test Clock API fails).
+Optional: `STRIPE_SMOKE_SKIP_TEST_CLOCK=true` skips steps 9–12 (local fallback if Test Clock API fails).
 
 Dunning policy: [BILLING_DUNNING.md](./BILLING_DUNNING.md).
 

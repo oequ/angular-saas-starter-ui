@@ -41,6 +41,7 @@
     "billingCancelFailed": "Could not cancel the subscription. Try again in a moment.",
     "billingSeatSyncFailed": "Could not update subscription seats. Try again in a moment.",
     "billingNotPerSeatPlan": "Seat billing applies only on the Team plan.",
+    "billingPaymentPastDue": "Your last payment failed. Update billing in Settings before inviting members or adding seats.",
     "billingSubscriptionNotBillable": "Subscription cannot be changed while canceled or past due. Open Billing to fix payment.",
     "billingTeamSeatCapReached": "Team plan supports at most 50 seats.",
     "billingInvoicesUnavailable": "Could not load invoices. Try again in a moment.",
