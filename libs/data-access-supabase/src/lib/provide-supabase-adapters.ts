@@ -30,6 +30,10 @@ import { SupabaseEmailsAdapter, SUPABASE_EMAILS_PROVIDER } from './supabase-emai
 import { SupabaseOrgAdapter, SUPABASE_ORG_PROVIDER } from './supabase-org.adapter';
 import { WebBillingAdapter, WEB_BILLING_PROVIDER } from './web-billing.adapter';
 import { WebMetricsAdapter, WEB_METRICS_PROVIDER } from './web-metrics.adapter';
+import {
+  SupabaseProjectAdapter,
+  SUPABASE_PROJECT_PROVIDER,
+} from './supabase-project.adapter';
 
 export function provideSupabaseAdapters(
   config: SupabaseConfig,
@@ -76,11 +80,13 @@ export function provideWebAdapters(
       SupabaseEmailsAdapter,
       WebMetricsAdapter,
       SupabaseActivationAdapter,
+      SupabaseProjectAdapter,
       WEB_BILLING_PROVIDER,
       SUPABASE_API_KEYS_PROVIDER,
       SUPABASE_EMAILS_PROVIDER,
       WEB_METRICS_PROVIDER,
       SUPABASE_ACTIVATION_PROVIDER,
+      SUPABASE_PROJECT_PROVIDER,
       {
         provide: BILLING_PROVIDER_ID,
         useValue: resolveBillingProvider(config),

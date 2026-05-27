@@ -35,7 +35,7 @@ supabase/                     # Migrations, seed, Edge Functions, config
 ## Architecture rules (ports & adapters)
 
 1. **NEVER** import adapter libraries from `libs/features-*` or `libs/ui`.
-2. Features inject ports via `InjectionToken` (e.g. `ORG_PORT`, `AUTH_PORT`, `BILLING_PORT`).
+2. Features inject ports via `InjectionToken` (e.g. `ORG_PORT`, `PROJECT_PORT`, `AUTH_PORT`, `BILLING_PORT`).
 3. Swap mock vs production adapters only in `app.config.ts` via `provideDemoAdapters()` or `provideWebAdapters()`.
 4. `libs/ports` must not import `@angular/*` or `rxjs`.
 5. Route guards are UX-only; backend RLS enforces authorization.

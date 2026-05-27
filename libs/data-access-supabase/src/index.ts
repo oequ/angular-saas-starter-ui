@@ -12,3 +12,4 @@ export { SupabaseApiKeysAdapter } from './lib/supabase-api-keys.adapter';
 export { SupabaseEmailsAdapter } from './lib/supabase-emails.adapter';
 export { SupabaseActivationAdapter } from './lib/supabase-activation.adapter';
 export { WebMetricsAdapter } from './lib/web-metrics.adapter';
+export { SupabaseProjectAdapter } from './lib/supabase-project.adapter';
